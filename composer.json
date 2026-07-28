@@ -1,0 +1,48 @@
+{
+  "name": "the-firehub-project/foundation",
+  "description": "A high-level foundation layer of the FireHub ecosystem, built on top of Runtime to provide expressive and developer-friendly APIs for common programming tasks.",
+  "type": "library",
+  "keywords": ["php", "foundation", "firehub"],
+  "homepage": "https://the-firehub-project.github.io/foundation",
+  "license": "Apache-2.0",
+  "require": {
+    "php": "^8.5"
+  },
+  "minimum-stability": "stable",
+  "authors": [
+    {
+      "name": "Danijel Galić",
+      "email": "danijel.galic@outlook.com",
+      "homepage": "https://github.com/dieselxxx",
+      "role": "Owner"
+    }
+  ],
+  "support": {
+    "email": "danijel.galic@outlook.com",
+    "issues": "https://github.com/The-FireHub-Project/Foundation/issues",
+    "forum": "https://github.com/orgs/The-FireHub-Project/discussions",
+    "wiki": "https://github.com/The-FireHub-Project/Foundation/wiki",
+    "source": "https://github.com/The-FireHub-Project/Foundation",
+    "docs": "https://the-firehub-project.github.io/Foundation",
+    "security": "https://github.com/The-FireHub-Project/Foundation/security/policy"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/The-FireHub-Project"
+    }
+  ],
+  "config": {
+    "prepend-autoloader": false,
+    "optimize-autoloader": true,
+    "platform-check": true
+  },
+  "extra": {
+    "firehub": {
+      "layer": "runtime",
+      "edition": "standard",
+      "role": "execution",
+      "criticality": "medium"
+    }
+  }
+}
