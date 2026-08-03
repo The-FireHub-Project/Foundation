@@ -9,7 +9,7 @@
     "php": "^8.5",
     "ext-mbstring": "*",
 
-    "the-firehub-project/core-standard": "dev-develop",
+    "the-firehub-project/core-standard": "dev-architecture/foundation-support as dev-develop",
     "the-firehub-project/runtime": ">=0.1.0 <1.0.0"
   },
   "require-dev": {
