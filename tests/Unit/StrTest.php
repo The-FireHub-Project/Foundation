@@ -16,6 +16,8 @@ namespace FireHub\Tests\Foundation\Unit;
 use FireHub\Testing\FireHubTestCase;
 use FireHub\Foundation\Str;
 use FireHub\Core\Type\Str\Encoding;
+use FireHub\Foundation\Str\Case\Converter;
+use FireHub\Foundation\Str\Pattern;
 use FireHub\Runtime;
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
@@ -65,6 +67,28 @@ final class StrTest extends FireHubTestCase {
     public function testJoin (string $expected, iterable $values, string $separator = '', ?string $conjunction = null):void {
 
         self::assertSame($expected, Str::join($values, $separator, $conjunction)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    public function testToCase ():void {
+
+        self::assertInstanceOf(Converter::class, new Str('fireHub')->toCase());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    public function testPattern ():void {
+
+        self::assertInstanceOf(Pattern::class, new Str('fireHub')->pattern());
 
     }
 

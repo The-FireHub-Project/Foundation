@@ -15,8 +15,11 @@ namespace FireHub\Foundation;
 
 use FireHub\Foundation\Str\Base;
 use FireHub\Foundation\Str\Trait\Instantiable;
-use FireHub\Foundation\Str\Boundary\CaseTransformable;
+use FireHub\Foundation\Str\Boundary\ {
+    CaseTransformable, Patternable
+};
 use FireHub\Foundation\Str\Case\Converter;
+use FireHub\Foundation\Str\Pattern;
 
 /**
  * ### Provides an immutable string value object with a high-level developer API
@@ -37,7 +40,7 @@ use FireHub\Foundation\Str\Case\Converter;
  *
  * @extends \FireHub\Foundation\Str\Base<TValue>
  */
-readonly class Str extends Base implements CaseTransformable {
+readonly class Str extends Base implements CaseTransformable, Patternable {
 
     /**
      * ### Instantiable
@@ -55,6 +58,17 @@ readonly class Str extends Base implements CaseTransformable {
     public function toCase ():Converter {
 
         return new Converter($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     */
+    public function pattern ():Pattern {
+
+        return new Pattern($this);
 
     }
 

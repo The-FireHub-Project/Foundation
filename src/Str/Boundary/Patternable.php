@@ -13,39 +13,41 @@
 
 namespace FireHub\Foundation\Str\Boundary;
 
-use FireHub\Foundation\Str\Case\Converter;
+use FireHub\Foundation\Str\Pattern;
 use FireHub\Core\Type\Str\Encoding;
 
 /**
- * ### Defines the contract for strings supporting case transformations
+ * ### Defines the contract for strings supporting pattern-based operations
  *
- * Provides a capability contract for string value objects that support conversion between different casing formats.
+ * Provides a capability contract for string value objects that support regular expression-based matching, replacing,
+ * and splitting operations.
+ *
+ * Implementations expose access to pattern processing while keeping the underlying string value immutable.
  * @since 1.0.0
  */
-interface CaseTransformable {
+interface Patternable {
 
     /**
-     * ### Creates a new instance of the string value object with a different case format
+     * ### Creates a new string value object from the given string and encoding
      * @since 1.0.0
      *
      * @param string $value <p>
-     * The string value to convert.
+     * The string value to encapsulate.
      * </p>
      * @param \FireHub\Core\Type\Str\Encoding $encoding <p>
      * The encoding of the string.
      * </p>
      *
-     * @return static A new instance of the string value object with the converted case.
+     * @return static A new instance of the implementing class.
      */
     public static function of (string $value, Encoding $encoding):static;
 
     /**
-     * ### Converts the string to a different case format
+     * ### Returns the pattern object for this string
      * @since 1.0.0
      *
-     * @return \FireHub\Foundation\Str\Case\Converter<$this> Returns a new instance of
-     * the CaseConverter class.
+     * @return \FireHub\Foundation\Str\Pattern<$this> Returns a new instance of the Pattern class.
      */
-    public function toCase ():Converter;
+    public function pattern ():Pattern;
 
 }

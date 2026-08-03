@@ -15,6 +15,7 @@ namespace FireHub\Tests\Foundation\Unit\Str;
 
 use FireHub\Testing\FireHubTestCase;
 use FireHub\Foundation\Str\Ascii;
+use FireHub\Foundation\Str\Case\Converter;
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
 };
@@ -27,5 +28,16 @@ use PHPUnit\Framework\Attributes\ {
 #[Group('str')]
 #[CoversClass(Ascii::class)]
 final class AsciiTest extends FireHubTestCase {
+
+    /**
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    public function testToCase ():void {
+
+        self::assertInstanceOf(Converter::class, new Ascii('fireHub')->toCase());
+
+    }
 
 }

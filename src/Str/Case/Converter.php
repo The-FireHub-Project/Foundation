@@ -13,6 +13,7 @@
 
 namespace FireHub\Foundation\Str\Case;
 
+use FireHub\Core\Type\Str;
 use FireHub\Foundation\Str\Boundary\CaseTransformable;
 use FireHub\Foundation\Str\Tokenizer;
 use FireHub\Runtime;
@@ -33,14 +34,14 @@ final readonly class Converter {
      * ### Constructor
      * @since 1.0.0
      *
-     * @param TCaseTransformable $str <p>
+     * @param \FireHub\Core\Type\Str<string>&TCaseTransformable $str <p>
      * The string to convert.
      * </p>
      *
      * @return void
      */
     public function __construct (
-        private CaseTransformable $str
+        private Str&CaseTransformable $str
     ) {}
 
     /**
