@@ -51,4 +51,50 @@ final class ReplacerTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param string $replacement
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith(['replaced firehub project', 'the firehub project', 'replaced', ' firehub'])]
+    #[TestWith(['the firehub project', 'the firehub project', 'replaced', 'the'])]
+    public function testBefore (string $expected, string $string, string $replacement, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Replacer(new Str($string), $replacement, -1)->before($pattern)->value()
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param string $replacement
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith(['the firehub replaced', 'the firehub project', 'replaced', 'firehub '])]
+    #[TestWith(['the firehub project', 'the firehub project', 'replaced', 'project'])]
+    public function testAfter (string $expected, string $string, string $replacement, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Replacer(new Str($string), $replacement, -1)->after($pattern)->value()
+        );
+
+    }
+
 }

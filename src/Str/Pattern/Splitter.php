@@ -15,6 +15,9 @@ namespace FireHub\Foundation\Str\Pattern;
 
 use FireHub\Core\Type\Str;
 use FireHub\Foundation\Str\Boundary\Patternable;
+use FireHub\Foundation\Str\Pattern\Expression\ {
+    After, Before
+};
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\ {
     RegexDelimiter, RegexFlag
@@ -100,6 +103,74 @@ final readonly class Splitter extends Base {
             $this->limit,
             $this->remove_empty
         );
+
+    }
+
+    /**
+     * ### Split the string contains the specified pattern before a given substring
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Pattern\Splitter;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Splitter(new Str('the firehub project'), false, -1)->before('firehub');
+     *
+     * // ['the ', 'firehub project']
+     *
+     * $string = new Splitter(new Str('the firehub project'), false, -1)->before('the');
+     *
+     * // ['', 'the firehub project']
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
+     *
+     * @param string $pattern <p>
+     * The pattern to match.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
+     *
+     * @return list<string> A new array of strings with the split content.
+     */
+    public function before (string $pattern):array {
+
+        return $this->custom(new Before()->regex($pattern));
+
+    }
+
+    /**
+     * ### Split the string contains the specified pattern after a given substring
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Pattern\Splitter;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Splitter(new Str('the firehub project'), false, -1)->after('firehub');
+     *
+     * // ['the firehub', ' project']
+     *
+     * $string = new Splitter(new Str('the firehub project'), false, -1)->after('project');
+     *
+     * // [the firehub project', '']
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
+     *
+     * @param string $pattern <p>
+     * The pattern to match.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
+     *
+     * @return list<string> A new array of strings with the split content.
+     */
+    public function after (string $pattern):array {
+
+        return $this->custom(new After()->regex($pattern));
 
     }
 

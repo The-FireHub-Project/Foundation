@@ -15,6 +15,9 @@ namespace FireHub\Foundation\Str\Pattern;
 
 use FireHub\Core\Type\Str;
 use FireHub\Foundation\Str\Boundary\Patternable;
+use FireHub\Foundation\Str\Pattern\Expression\ {
+    After, Before
+};
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\ {
     RegexDelimiter, RegexFlag
@@ -98,6 +101,74 @@ final readonly class Getter extends Base {
         );
 
         return $result[0] ?? []; // @phpstan-ignore return.type
+
+    }
+
+    /**
+     * ### Get the string contains the specified pattern before a given substring
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Pattern\Getter;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Getter(new Str('the firehub project'), 0)->before('firehub');
+     *
+     * // ['the ']
+     *
+     * $string = new Getter(new Str('the firehub project'), 0)->before('the');
+     *
+     * // []
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
+     *
+     * @param string $pattern <p>
+     * The pattern to match.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
+     *
+     * @return array<int, string> The matched groups, or an empty array if no matches were found.
+     */
+    public function before (string $pattern):array {
+
+        return $this->custom('.+'.new Before()->regex($pattern));
+
+    }
+
+    /**
+     * ### Gets the string contains the specified pattern after a given substring
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Pattern\Getter;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Getter(new Str('the firehub project'), 0)->after('firehub');
+     *
+     * // ['firehub']
+     *
+     * $string = new Getter(new Str('the firehub project'), 0)->after('project');
+     *
+     * // []
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
+     *
+     * @param string $pattern <p>
+     * The pattern to match.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
+     *
+     * @return array<int, string> The matched groups, or an empty array if no matches were found.
+     */
+    public function after (string $pattern):array {
+
+        return $this->custom(new After()->regex($pattern).'.+');
 
     }
 

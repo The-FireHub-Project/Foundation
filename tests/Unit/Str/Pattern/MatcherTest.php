@@ -16,6 +16,9 @@ namespace FireHub\Tests\Foundation\Unit\Str\Pattern;
 use FireHub\Testing\FireHubTestCase;
 use FireHub\Foundation\Str\Pattern\Matcher;
 use FireHub\Foundation\Str;
+use FireHub\Foundation\Str\Pattern\Expression\ {
+    After, Before, Contains, EndsWith, StartsWith
+};
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
 };
@@ -27,6 +30,11 @@ use PHPUnit\Framework\Attributes\ {
 #[Small]
 #[Group('str')]
 #[CoversClass(Matcher::class)]
+#[CoversClass(Contains::class)]
+#[CoversClass(StartsWith::class)]
+#[CoversClass(EndsWith::class)]
+#[CoversClass(Before::class)]
+#[CoversClass(After::class)]
 final class MatcherTest extends FireHubTestCase {
 
     /**
@@ -46,6 +54,113 @@ final class MatcherTest extends FireHubTestCase {
         self::assertSame(
             $expected,
             new Matcher(new Str($string), 0)->custom($pattern)
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param string $string
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith([true, 'the firehub project', 'firehub'])]
+    public function testContains (bool $expected, string $string, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Matcher(new Str($string), 0)->contains($pattern)
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param string $string
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith([true, 'the firehub project', 'the'])]
+    public function testStartsWith (bool $expected, string $string, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Matcher(new Str($string), 0)->startsWith($pattern)
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param string $string
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith([true, 'the firehub project', 'project'])]
+    public function testEndsWith (bool $expected, string $string, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Matcher(new Str($string), 0)->endsWith($pattern)
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param string $string
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith([true, 'the firehub project', 'firehub'])]
+    #[TestWith([false, 'the firehub project', 'the'])]
+    public function testBefore (bool $expected, string $string, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Matcher(new Str($string), 0)->before($pattern)
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param string $string
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith([true, 'the firehub project', 'firehub'])]
+    #[TestWith([false, 'the firehub project', 'project'])]
+    public function testAfter (bool $expected, string $string, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Matcher(new Str($string), 0)->after($pattern)
         );
 
     }

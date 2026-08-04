@@ -50,4 +50,48 @@ final class SplitterTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @param list<string> $expected
+     * @param string $string
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith([['the ', 'firehub project'], 'the firehub project', 'firehub'])]
+    #[TestWith([['', 'the firehub project'], 'the firehub project', 'the'])]
+    public function testBefore (array $expected, string $string, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Splitter(new Str($string), false, -1)->before($pattern)
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param list<string> $expected
+     * @param string $string
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith([['the firehub', ' project'], 'the firehub project', 'firehub'])]
+    #[TestWith([['the firehub project', ''], 'the firehub project', 'project'])]
+    public function testAfter (array $expected, string $string, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Splitter(new Str($string), false, -1)->after($pattern)
+        );
+
+    }
+
 }

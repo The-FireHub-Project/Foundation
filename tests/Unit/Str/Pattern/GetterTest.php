@@ -50,4 +50,48 @@ final class GetterTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @param array<int, string> $expected
+     * @param string $string
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith([['the '], 'the firehub project', 'firehub'])]
+    #[TestWith([[], 'the firehub project', 'the'])]
+    public function testBefore (array $expected, string $string, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Getter(new Str($string), 0)->before($pattern)
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param array<int, string> $expected
+     * @param string $string
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith([[' project'], 'the firehub project', 'firehub'])]
+    #[TestWith([[], 'the firehub project', 'project'])]
+    public function testAfter (array $expected, string $string, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Getter(new Str($string), 0)->after($pattern)
+        );
+
+    }
+
 }
