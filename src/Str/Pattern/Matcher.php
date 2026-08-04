@@ -16,8 +16,9 @@ namespace FireHub\Foundation\Str\Pattern;
 use FireHub\Core\Type\Str;
 use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Foundation\Str\Pattern\Expression\ {
-    After, Before, Contains, EndsWith, Is, StartsWith
+    After, Before, Contains, EndsWith, Is, Occurrences, StartsWith
 };
+use FireHub\Foundation\Str\Exception\PatternOccurrencesNumberException;
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\ {
     RegexDelimiter, RegexFlag
@@ -290,6 +291,189 @@ final readonly class Matcher extends Base {
     public function after (string $pattern):bool {
 
         return $this->custom(new After()->regex($pattern).'(?:.+)');
+
+    }
+
+    /**
+     * ### Checks if the string contains the specified pattern at least a given number of times
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Pattern\Matcher;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Matcher(new Str('the firehub project, the firehub project'))->atLeast(2, 'firehub');
+     *
+     * // true
+     *
+     * $string = new Matcher(new Str('the firehub project, the firehub project'))->atLeast(3, 'firehub');
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
+     *
+     * @throws \FireHub\Foundation\Str\Exception\PatternOccurrencesNumberException If the provided number is less
+     * than 1.
+     *
+     * @param positive-int $occurrences <p>
+     * The minimum number of occurrences to match.
+     * </p>
+     * @param string $pattern <p>
+     * The pattern to match.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
+     *
+     * @return bool True if the pattern matches at least the specified number of times, false otherwise.
+     */
+    public function atLeast (int $occurrences, string $pattern):bool {
+
+        if ($occurrences < 1) throw new PatternOccurrencesNumberException(
+            'The provided occurrences number must be greater than 0.'
+        );
+
+        return $this->custom(new Occurrences($occurrences)->regex($pattern));
+
+    }
+
+    /**
+     * ### Checks if the string exactly the specified pattern at least a given number of times
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Pattern\Matcher;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Matcher(new Str('the firehub project, the firehub project'))->exactly(2, 'firehub');
+     *
+     * // true
+     *
+     * $string = new Matcher(new Str('the firehub project, the firehub project'))->exactly(3, 'firehub');
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
+     *
+     * @throws \FireHub\Foundation\Str\Exception\PatternOccurrencesNumberException If the provided number is less
+     * than 1.
+     *
+     * @param positive-int $occurrences <p>
+     * The minimum number of occurrences to match.
+     * </p>
+     * @param string $pattern <p>
+     * The pattern to match.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
+     *
+     * @return bool True if the pattern matches exactly the specified number of times, false otherwise.
+     */
+    public function exactly (int $occurrences, string $pattern):bool {
+
+        if ($occurrences < 1) throw new PatternOccurrencesNumberException(
+            'The provided occurrences number must be greater than 0.'
+        );
+
+        return $this->custom(new Occurrences($occurrences)->regex($pattern));
+
+    }
+
+    /**
+     * ### Checks if the string contains the specified pattern at most a given number of times
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Pattern\Matcher;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Matcher(new Str('the firehub project, the firehub project'))->atMost(2, 'firehub');
+     *
+     * // true
+     *
+     * $string = new Matcher(new Str('the firehub project, the firehub project'))->atMost(1, 'firehub');
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
+     *
+     * @throws \FireHub\Foundation\Str\Exception\PatternOccurrencesNumberException If the provided number is less
+     * than 1.
+     *
+     * @param positive-int $occurrences <p>
+     * The minimum number of occurrences to match.
+     * </p>
+     * @param string $pattern <p>
+     * The pattern to match.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
+     *
+     * @return bool True if the pattern matches at most the specified number of times, false otherwise.
+     */
+    public function atMost (int $occurrences, string $pattern):bool {
+
+        if ($occurrences < 1) throw new PatternOccurrencesNumberException(
+            'The provided occurrences number must be greater than 0.'
+        );
+
+        return $this->custom(new Occurrences(null, $occurrences)->regex($pattern));
+
+    }
+
+    /**
+     * ### Checks if the string contains the specified pattern between a given range of occurrences
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Pattern\Matcher;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Matcher(new Str('the firehub project, the firehub project'))->between(1, 2, 'firehub');
+     *
+     * // true
+     *
+     * $string = new Matcher(new Str('the firehub project, the firehub project'))->between(3, 4, 'firehub');
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
+     *
+     * @throws \FireHub\Foundation\Str\Exception\PatternOccurrencesNumberException If the provided number is less
+     * than 1.
+     *
+     * @param positive-int $minimal <p>
+     * The minimum number of occurrences to match.
+     * </p>
+     * @param positive-int $maximal <p>
+     * The maximum number of occurrences to match.
+     * </p>
+     * @param string $pattern <p>
+     * The pattern to match.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
+     *
+     * @return bool True if the pattern matches between the specified range of occurrences, false otherwise.
+     */
+    public function between (int $minimal, int $maximal, string $pattern):bool {
+
+        if ($minimal < 1) throw new PatternOccurrencesNumberException(
+            'The provided minimal occurrences number must be greater than 0.'
+        );
+
+        if ($maximal < 1) throw new PatternOccurrencesNumberException(
+            'The provided maximal occurrences number must be greater than 0.'
+        );
+
+        return $this->custom(new Occurrences($minimal, $maximal)->regex($pattern));
 
     }
 
