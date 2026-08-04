@@ -31,6 +31,14 @@ use FireHub\Foundation\Str\Pattern\Matcher;
  * @method self endsWith (string $pattern) Adds a condition to check if the string ends with the specified value.
  * @method self before (string $pattern) Adds a condition to check if the string is before the specified value.
  * @method self after (string $pattern) Adds a condition to check if the string is after the specified value.
+ * @method self exactly (int $occurrences, string $pattern) Adds a condition to check if the string has exactly the
+ * specified number of occurrences.
+ * @method self atLeast (int $occurrences, string $pattern) Adds a condition to check if the string has at least the
+ * specified number of occurrences.
+ * @method self atMost (int $occurrences, string $pattern) Adds a condition to check if the string has at most the
+ * specified number of occurrences.
+ * @method self between (int $minimal, int $maximal, string $pattern) Adds a condition to check if the string has
+ * between the specified minimum and maximum number of occurrences.
  */
 final class Chain {
 

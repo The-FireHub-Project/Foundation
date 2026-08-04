@@ -147,24 +147,24 @@ final readonly class Getter extends Base {
      *
      * $string = new Getter(new Str('the firehub project'), 0)->after('firehub');
      *
-     * // ['firehub']
+     * // [' project']
      *
      * $string = new Getter(new Str('the firehub project'), 0)->after('project');
      *
      * // []
      * </code>
      *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
-     *
      * @param string $pattern <p>
      * The pattern to match.
      * </p>
      *
-     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
-     *
      * @return array<int, string> The matched groups, or an empty array if no matches were found.
+     *@throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
+     *
+     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
+     *
+     * @since 1.0.0
+     *
      */
     public function after (string $pattern):array {
 
