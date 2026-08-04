@@ -18,7 +18,7 @@ use FireHub\Foundation\Str\Pattern\Expression;
 /**
  * ### Matches content occurring before a pattern
  *
- * Creates a regular expression expression that identifies a position immediately before the specified pattern.
+ * Creates a regular expression that identifies a position immediately before the specified pattern.
  *
  * The expression uses a positive lookahead to assert that the target pattern exists after the matched location
  * without including the pattern itself in the result.

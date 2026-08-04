@@ -14,8 +14,11 @@
 namespace FireHub\Foundation\Str;
 
 use FireHub\Foundation\Str\Trait\Instantiable;
-use FireHub\Foundation\Str\Boundary\CaseTransformable;
+use FireHub\Foundation\Str\Boundary\ {
+    CaseTransformable, Patternable
+};
 use FireHub\Foundation\Str\Case\Converter;
+use FireHub\Core\Type\Str\Encoding;
 
 /**
  * ### Represents an ASCII encoded string value object
@@ -30,7 +33,20 @@ use FireHub\Foundation\Str\Case\Converter;
  *
  * @extends \FireHub\Foundation\Str\Base<TValue>
  */
-readonly class Ascii extends Base implements CaseTransformable {
+readonly class Ascii extends Base implements CaseTransformable, Patternable {
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     */
+    public function __construct (string $value, Encoding $encoding = self::DEFAULT_ENCODING) {
+
+        parent::__construct($value, $encoding);
+
+        //var_dump($this->pattern()->match()->ascii());
+
+    }
 
     /**
      * ### Instantiable
@@ -48,6 +64,17 @@ readonly class Ascii extends Base implements CaseTransformable {
     public function toCase ():Converter {
 
         return new Converter($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     */
+    public function pattern ():Pattern {
+
+        return new Pattern($this);
 
     }
 

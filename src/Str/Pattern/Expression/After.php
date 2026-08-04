@@ -18,7 +18,7 @@ use FireHub\Foundation\Str\Pattern\Expression;
 /**
  * ### Matches a position after a pattern
  *
- * Creates a regular expression expression using a positive lookbehind to match content located after the given
+ * Creates a regular expression using a positive lookbehind to match content located after the given
  * pattern without consuming the pattern itself.
  * @since 1.0.0
  */

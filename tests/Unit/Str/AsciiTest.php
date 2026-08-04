@@ -16,8 +16,9 @@ namespace FireHub\Tests\Foundation\Unit\Str;
 use FireHub\Testing\FireHubTestCase;
 use FireHub\Foundation\Str\Ascii;
 use FireHub\Foundation\Str\Case\Converter;
+use FireHub\Foundation\Str\Pattern;
 use PHPUnit\Framework\Attributes\ {
-    CoversClass, Group, Small, TestWith
+    CoversClass, Group, Small
 };
 
 /**
@@ -37,6 +38,17 @@ final class AsciiTest extends FireHubTestCase {
     public function testToCase ():void {
 
         self::assertInstanceOf(Converter::class, new Ascii('fireHub')->toCase());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    public function testPattern ():void {
+
+        self::assertInstanceOf(Pattern::class, new Ascii('fireHub')->pattern());
 
     }
 
