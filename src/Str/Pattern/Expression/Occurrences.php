@@ -87,7 +87,7 @@ final readonly class Occurrences implements Expression {
             return '^(?=(?:.*?'.$pattern.'){'.$this->min.',}).*$';
         }
 
-        return '^(?!(?:.*?'.$pattern.'){'.($this->max + 1).',}).*$';
+        return '^(?!(?:.*?'.$pattern.'){'.(($this->max ?? 0) + 1).',}).*$';
 
     }
 

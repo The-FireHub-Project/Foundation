@@ -46,7 +46,7 @@ final class Chain {
      * ### Constructor
      * @since 1.0.0
      *
-     * @param \FireHub\Foundation\Str\Pattern\Matcher $matcher <p>
+     * @param \FireHub\Foundation\Str\Pattern\Matcher<\FireHub\Foundation\Str\Boundary\Patternable> $matcher <p>
      * The matcher to use for the chain.
      * </p>
      *
@@ -78,7 +78,7 @@ final class Chain {
      * @param string $method <p>
      * The method name to call on the matcher.
      * </p>
-     * @param array $arguments <p>
+     * @param array<array-key, mixed> $arguments <p>
      * The arguments to pass to the method.
      * </p>
      *
@@ -86,7 +86,7 @@ final class Chain {
      */
     public function __call (string $method, array $arguments):self {
 
-        $this->checks[] = fn():bool => $this->matcher->$method(...$arguments);
+        $this->checks[] = fn():bool => $this->matcher->$method(...$arguments); // @phpstan-ignore-line
 
         return $this;
 
