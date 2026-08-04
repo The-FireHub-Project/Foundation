@@ -16,7 +16,7 @@ namespace FireHub\Foundation\Str\Pattern;
 use FireHub\Core\Type\Str;
 use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Foundation\Str\Pattern\Expression\ {
-    After, Before, Contains, EndsWith, StartsWith
+    After, Before, Contains, EndsWith, Is, StartsWith
 };
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\ {
@@ -98,6 +98,40 @@ final readonly class Matcher extends Base {
             $this->str->value(),
             $this->offset
         );
+
+    }
+
+    /**
+     * ### Checks if the string is the specified pattern
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Pattern\Matcher;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Matcher(new Str('the firehub project'))->is('the firehub project');
+     *
+     * // true
+     *
+     * $string = new Matcher(new Str('the firehub project'))->is('firehub');
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
+     *
+     * @param string $pattern <p>
+     * The pattern to match.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
+     *
+     * @return bool True if the pattern matches, false otherwise.
+     */
+    public function is (string $pattern):bool {
+
+        return $this->custom(new Is()->regex($pattern));
 
     }
 
@@ -221,7 +255,7 @@ final readonly class Matcher extends Base {
      */
     public function before (string $pattern):bool {
 
-        return $this->custom('.+'.new Before()->regex($pattern));
+        return $this->custom('(?:.+)'.new Before()->regex($pattern));
 
     }
 
@@ -255,7 +289,7 @@ final readonly class Matcher extends Base {
      */
     public function after (string $pattern):bool {
 
-        return $this->custom(new After()->regex($pattern).'.+');
+        return $this->custom(new After()->regex($pattern).'(?:.+)');
 
     }
 

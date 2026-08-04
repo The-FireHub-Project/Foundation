@@ -134,7 +134,7 @@ final readonly class Getter extends Base {
      */
     public function before (string $pattern):array {
 
-        return $this->custom('.+'.new Before()->regex($pattern));
+        return $this->custom('(?:.+)'.new Before()->regex($pattern));
 
     }
 
@@ -168,7 +168,7 @@ final readonly class Getter extends Base {
      */
     public function after (string $pattern):array {
 
-        return $this->custom(new After()->regex($pattern).'.+');
+        return $this->custom(new After()->regex($pattern).'(?:.+)');
 
     }
 

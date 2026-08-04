@@ -17,7 +17,7 @@ use FireHub\Testing\FireHubTestCase;
 use FireHub\Foundation\Str\Pattern\Matcher;
 use FireHub\Foundation\Str;
 use FireHub\Foundation\Str\Pattern\Expression\ {
-    After, Before, Contains, EndsWith, StartsWith
+    After, Before, Contains, EndsWith, Is, StartsWith
 };
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
@@ -30,6 +30,7 @@ use PHPUnit\Framework\Attributes\ {
 #[Small]
 #[Group('str')]
 #[CoversClass(Matcher::class)]
+#[CoversClass(Is::class)]
 #[CoversClass(Contains::class)]
 #[CoversClass(StartsWith::class)]
 #[CoversClass(EndsWith::class)]
@@ -54,6 +55,28 @@ final class MatcherTest extends FireHubTestCase {
         self::assertSame(
             $expected,
             new Matcher(new Str($string), 0)->custom($pattern)
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param string $string
+     * @param string $pattern
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     *
+     * @return void
+     */
+    #[TestWith([true, 'the firehub project', 'the firehub project'])]
+    #[TestWith([false, 'the firehub project', 'firehub'])]
+    public function testIs (bool $expected, string $string, string $pattern):void {
+
+        self::assertSame(
+            $expected,
+            new Matcher(new Str($string), 0)->is($pattern)
         );
 
     }

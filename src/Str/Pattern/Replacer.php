@@ -141,7 +141,7 @@ final readonly class Replacer extends Base {
      */
     public function before (string $pattern):Str {
 
-        return $this->custom('.+'.new Before()->regex($pattern));
+        return $this->custom('(?:.+)'.new Before()->regex($pattern));
 
     }
 
@@ -175,7 +175,7 @@ final readonly class Replacer extends Base {
      */
     public function after (string $pattern):Str {
 
-        return $this->custom(new After()->regex($pattern).'.+');
+        return $this->custom(new After()->regex($pattern).'(?:.+)');
 
     }
 
