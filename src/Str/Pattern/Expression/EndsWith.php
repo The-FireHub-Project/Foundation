@@ -16,24 +16,21 @@ namespace FireHub\Foundation\Str\Pattern\Expression;
 use FireHub\Foundation\Str\Pattern\Expression;
 
 /**
- * ### Matches the entire string against a pattern
+ * ### Matches a pattern at the end of the string
  *
- * Creates a regular expression that requires the provided pattern to match the complete input string.
- *
- * The generated expression anchors the pattern to the beginning and end of the subject, ensuring that partial
- * matches are not considered successful.
+ * Creates a regular expression fragment that ensures the provided pattern occurs at the end of the input string.
  * @since 1.0.0
  */
-final readonly class Is extends Expression {
+final readonly class EndsWith extends Expression {
 
     /**
      * @inheritDoc
      *
      * @since 1.0.0
      */
-    protected function regex (string $pattern):string {
+    public function regex (string $pattern):string {
 
-        return '\A'.$pattern.'\z';
+        return $pattern.'\z';
 
     }
 

@@ -16,7 +16,7 @@ namespace FireHub\Foundation\Str\Pattern;
 use FireHub\Core\Type\Str;
 use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Foundation\Str\Pattern\Expression\ {
-    Contains, Is
+    Contains, EndsWith, Is, StartsWith
 };
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\ {
@@ -146,6 +146,50 @@ final readonly class Matcher extends Base {
     public function contains ():Contains {
 
         return new Contains($this);
+
+    }
+
+    /**
+     * ### Checks if the string starts with the specified pattern
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Pattern\Matcher;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Matcher(new Str('the firehub project'))->startsWith()->custom('the');
+     *
+     * // true
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @return StartsWith New StartsWith instance.
+     */
+    public function startsWith ():StartsWith {
+
+        return new StartsWith($this);
+
+    }
+
+    /**
+     * ### Checks if the string ends with the specified pattern
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Pattern\Matcher;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Matcher(new Str('the firehub project'))->endsWith()->custom('project');
+     *
+     * // true
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @return EndsWith New EndsWith instance.
+     */
+    public function endsWith ():EndsWith {
+
+        return new EndsWith($this);
 
     }
 
