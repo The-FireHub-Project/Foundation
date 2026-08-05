@@ -16,7 +16,7 @@ namespace FireHub\Foundation\Str;
 use FireHub\Core\Type\Str;
 use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Foundation\Str\Pattern\ {
-    Getter, Matcher, Replacer, Splitter
+    Matcher, Replacer
 };
 
 /**
@@ -64,23 +64,6 @@ final readonly class Pattern {
     }
 
     /**
-     * ### Create a new pattern getter
-     * @since 1.0.0
-     *
-     * @param int $offset [optional] <p>
-     * The offset at which to start the search.
-     * </p>
-     *
-     * @return \FireHub\Foundation\Str\Pattern\Getter<\FireHub\Core\Type\Str<string>&TPatternable> Returns a new
-     * Getter instance for pattern matching.
-     */
-    public function get (int $offset = 0):Getter {
-
-        return new Getter($this->str, $offset);
-
-    }
-
-    /**
      * ### Create a new pattern replacer
      * @since 1.0.0
      *
@@ -97,26 +80,6 @@ final readonly class Pattern {
     public function replace (string $with, int $limit = -1):Replacer {
 
         return new Replacer($this->str, $with, $limit);
-
-    }
-
-    /**
-     * ### Create a new pattern splitter
-     * @since 1.0.0
-     *
-     * @param bool $remove_empty [optional] <p>
-     * Whether to remove empty strings from the result.
-     * </p>
-     * @param int $limit [optional] <p>
-     * The maximum number of splits to perform.
-     * </p>
-     *
-     * @return \FireHub\Foundation\Str\Pattern\Splitter<\FireHub\Core\Type\Str<string>&TPatternable> Returns a new
-     * Splitter instance for pattern splitting.
-     */
-    public function split (bool $remove_empty = false, int $limit = -1):Splitter {
-
-        return new Splitter($this->str, $remove_empty, $limit);
 
     }
 

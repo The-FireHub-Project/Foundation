@@ -17,7 +17,7 @@ use FireHub\Testing\FireHubTestCase;
 use FireHub\Foundation\Str\Pattern;
 use FireHub\Foundation\Str;
 use FireHub\Foundation\Str\Pattern\ {
-    Getter, Matcher, Replacer, Splitter
+    Matcher, Replacer
 };
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small
@@ -48,31 +48,9 @@ final class PatternTest extends FireHubTestCase {
      *
      * @return void
      */
-    public function testGet ():void {
-
-        self::assertInstanceOf(Getter::class, new Pattern(new Str(''))->get());
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
-     * @return void
-     */
     public function testReplace ():void {
 
         self::assertInstanceOf(Replacer::class, new Pattern(new Str(''))->replace(''));
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
-     * @return void
-     */
-    public function testSplit ():void {
-
-        self::assertInstanceOf(Splitter::class, new Pattern(new Str(''))->split());
 
     }
 

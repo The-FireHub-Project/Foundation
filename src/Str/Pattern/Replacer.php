@@ -15,9 +15,7 @@ namespace FireHub\Foundation\Str\Pattern;
 
 use FireHub\Core\Type\Str;
 use FireHub\Foundation\Str\Boundary\Patternable;
-use FireHub\Foundation\Str\Pattern\Expression\ {
-    After, Before
-};
+use FireHub\Foundation\Str\Pattern\Expression\All;
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\ {
     RegexDelimiter, RegexFlag
@@ -118,64 +116,22 @@ final readonly class Replacer extends Base {
      * use FireHub\Foundation\Str\Pattern\Replacer;
      * use FireHub\Foundation\Str;
      *
-     * $string = new Replacer(new Str('the firehub project'), 'replaced', -1)->before(' firehub');
+     * $string = new Replacer(new Str('the firehub project'), 'replaced', -1)->all()->custom('firehub');
      *
-     * // 'replaced firehub replaced' (FireHub\Foundation\Str)
+     * // 'the replaced project' (FireHub\Foundation\Str)
      *
-     * $string = new Replacer(new Str('the firehub project'), 'replaced', -1)->before('the');
+     * $string = new Replacer(new Str('the firehub project'), 'replaced', -1)->all()->custom('the');
      *
-     * // 'the firehub project' (FireHub\Foundation\Str)
+     * // 'replaced firehub project' (FireHub\Foundation\Str)
      * </code>
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
-     *
-     * @param string $pattern <p>
-     * The pattern to match.
-     * </p>
-     *
-     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
-     *
-     * @return \FireHub\Core\Type\Str<string>&TPatternable A new Str instance with the replaced content.
+     * @return \FireHub\Foundation\Str\Pattern\Expression\All New All instance.
      */
-    public function before (string $pattern):Str {
+    public function all ():All {
 
-        return $this->custom('(?:.+)'.new Before()->regex($pattern));
-
-    }
-
-    /**
-     * ### Replace the string contains the specified pattern after a given substring
-     *
-     * <code>
-     * use FireHub\Foundation\Str\Pattern\Replacer;
-     * use FireHub\Foundation\Str;
-     *
-     * $string = new Replacer(new Str('the firehub project'), 'replaced', -1)->after('firehub ');
-     *
-     * // 'the firehub replaced' (FireHub\Foundation\Str)
-     *
-     * $string = new Replacer(new Str('the firehub project'), 'replaced', -1)->after('project');
-     *
-     * // 'the firehub project' (FireHub\Foundation\Str)
-     * </code>
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\Str\Pattern\Matcher::custom() To perform the pattern matching operation.
-     *
-     * @param string $pattern <p>
-     * The pattern to match.
-     * </p>
-     *
-     * @throws \FireHub\Runtime\Exception\InvalidPatternException If the regular expression pattern is invalid.
-     *
-     * @return \FireHub\Core\Type\Str<string>&TPatternable A new Str instance with the replaced content.
-     */
-    public function after (string $pattern):Str {
-
-        return $this->custom(new After()->regex($pattern).'(?:.+)');
+        return new All($this);
 
     }
 

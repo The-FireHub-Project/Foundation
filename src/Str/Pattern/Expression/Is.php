@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=7.4
+ * @php-version >=8.2
  * @package Foundation
  */
 
@@ -24,16 +24,16 @@ use FireHub\Foundation\Str\Pattern\Expression;
  * matches are not considered successful.
  * @since 1.0.0
  */
-final class Is implements Expression {
+final readonly class Is extends Expression {
 
     /**
      * @inheritDoc
      *
      * @since 1.0.0
      */
-    public function regex (string $pattern):string {
+    protected function regex (string $pattern):string {
 
-        return '\A'.$pattern.'\z';
+        return '^'.$pattern.'$';
 
     }
 

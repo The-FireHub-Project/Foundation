@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=7.4
+ * @php-version >=8.2
  * @package Foundation
  */
 
@@ -16,22 +16,24 @@ namespace FireHub\Foundation\Str\Pattern\Expression;
 use FireHub\Foundation\Str\Pattern\Expression;
 
 /**
- * ### Matches a position after a pattern
+ * ### Provides access to pattern-based string operations
  *
- * Creates a regular expression using a positive lookbehind to match content located after the given
- * pattern without consuming the pattern itself.
+ * Serves as the entry point for performing regular expression operations on immutable string value objects.
+ *
+ * This class exposes specialized pattern components for matching, collecting, replacing, and transforming string
+ * content while keeping pattern logic separated from the underlying string representation.
  * @since 1.0.0
  */
-final class After implements Expression {
+final readonly class All extends Expression {
 
     /**
      * @inheritDoc
      *
      * @since 1.0.0
      */
-    public function regex (string $pattern):string {
+    protected function regex (string $pattern):string {
 
-        return '(?<='.$pattern.')';
+        return $pattern;
 
     }
 
