@@ -13,16 +13,20 @@
 
 namespace FireHub\Foundation\Str\Boundary;
 
-use FireHub\Foundation\Str\Case\Converter;
+use FireHub\Foundation\Str\Case\Casing;
 use FireHub\Core\Type\Str\Encoding;
 
 /**
- * ### Defines the contract for strings supporting case transformations
+ * ### Defines an object that supports string casing transformations
  *
- * Provides a capability contract for string value objects that support conversion between different casing formats.
+ * Provides a contract for string-based value objects that can be transformed between different letter casing
+ * formats, such as lowercase, uppercase, and swapped case representations.
+ *
+ * This interface allows casing operations to be applied consistently across different string value objects while
+ * preserving their immutable behavior.
  * @since 1.0.0
  */
-interface CaseTransformable {
+interface Caseable {
 
     /**
      * ### Creates a new instance of the string value object with a different case format
@@ -40,11 +44,11 @@ interface CaseTransformable {
     public static function of (string $value, Encoding $encoding):static;
 
     /**
-     * ### Transform the string to a different case format
+     * ### Returns the case converter object for this string
      * @since 1.0.0
      *
-     * @return \FireHub\Foundation\Str\Case\Converter<$this> Returns a new instance of the Converter class.
+     * @return \FireHub\Foundation\Str\Case\Casing<$this> Returns a new instance of the Casing class.
      */
-    public function transform ():Converter;
+    public function case ():Casing;
 
 }

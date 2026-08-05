@@ -15,9 +15,11 @@ namespace FireHub\Foundation\Str;
 
 use FireHub\Foundation\Str\Trait\Instantiable;
 use FireHub\Foundation\Str\Boundary\ {
-    CaseTransformable, Patternable
+    Caseable, CaseTransformable, Patternable
 };
-use FireHub\Foundation\Str\Case\Converter;
+use FireHub\Foundation\Str\Case\ {
+    Casing, Converter
+};
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Foundation\Str\Exception\InvalidAsciiException;
 use FireHub\Runtime\Type\Str\ {
@@ -37,7 +39,7 @@ use FireHub\Runtime\Type\Str\ {
  *
  * @extends \FireHub\Foundation\Str\Base<TValue>
  */
-readonly class Ascii extends Base implements CaseTransformable, Patternable {
+readonly class Ascii extends Base implements Caseable, CaseTransformable, Patternable {
 
     /**
      * @inheritDoc
@@ -63,6 +65,17 @@ readonly class Ascii extends Base implements CaseTransformable, Patternable {
     }
 
     /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     */
+    public function case ():Casing {
+
+        return new Casing($this);
+
+    }
+
+    /**
      * ### Instantiable
      * @since 1.0.0
      *
@@ -75,7 +88,7 @@ readonly class Ascii extends Base implements CaseTransformable, Patternable {
      *
      * @since 1.0.0
      */
-    public function toCase ():Converter {
+    public function transform ():Converter {
 
         return new Converter($this);
 

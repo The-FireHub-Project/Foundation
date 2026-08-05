@@ -67,51 +67,6 @@ final class ConverterTest extends FireHubTestCase {
      *
      * @return void
      */
-    #[TestWith(['firehub', 'FireHub'])]
-    public function testLower (string $expected, string $value):void {
-
-        self::assertSame($expected, new Converter(new Str($value))->lower()->value());
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
-     * @param string $expected
-     * @param string $value
-     *
-     * @return void
-     */
-    #[TestWith(['FIREHUB', 'FireHub'])]
-    public function testUpper (string $expected, string $value):void {
-
-        self::assertSame($expected, new Converter(new Str($value))->upper()->value());
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
-     * @param string $expected
-     * @param string $value
-     *
-     * @return void
-     */
-    #[TestWith(['tHE fIREhUB pROJECT', 'The FireHub Project'])]
-    public function testSwap (string $expected, string $value):void {
-
-        self::assertSame($expected, new Converter(new Str($value))->swap()->value());
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
-     * @param string $expected
-     * @param string $value
-     *
-     * @return void
-     */
     #[TestWith(['The Firehub', 'the fireHub'])]
     public function testTitle (string $expected, string $value):void {
 

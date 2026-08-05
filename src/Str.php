@@ -16,9 +16,11 @@ namespace FireHub\Foundation;
 use FireHub\Foundation\Str\Base;
 use FireHub\Foundation\Str\Trait\Instantiable;
 use FireHub\Foundation\Str\Boundary\ {
-    CaseTransformable, Patternable
+    Caseable, CaseTransformable, Patternable
 };
-use FireHub\Foundation\Str\Case\Converter;
+use FireHub\Foundation\Str\Case\ {
+    Casing, Converter
+};
 use FireHub\Foundation\Str\Pattern;
 use FireHub\Runtime\Type\Str\ {
     RegexDelimiter, RegexFlag
@@ -43,7 +45,7 @@ use FireHub\Runtime\Type\Str\ {
  *
  * @extends \FireHub\Foundation\Str\Base<TValue>
  */
-readonly class Str extends Base implements CaseTransformable, Patternable {
+readonly class Str extends Base implements Caseable, CaseTransformable, Patternable {
 
     /**
      * ### Instantiable
@@ -58,7 +60,18 @@ readonly class Str extends Base implements CaseTransformable, Patternable {
      *
      * @since 1.0.0
      */
-    public function toCase ():Converter {
+    public function case ():Casing {
+
+        return new Casing($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     */
+    public function transform ():Converter {
 
         return new Converter($this);
 
