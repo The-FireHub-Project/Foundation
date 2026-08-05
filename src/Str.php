@@ -16,7 +16,7 @@ namespace FireHub\Foundation;
 use FireHub\Foundation\Str\Base;
 use FireHub\Foundation\Str\Trait\Instantiable;
 use FireHub\Foundation\Str\Boundary\ {
-    Caseable, CaseTransformable, Patternable
+    CaseTransformable, Patternable
 };
 use FireHub\Foundation\Str\Case\ {
     Casing, Converter
@@ -45,7 +45,7 @@ use FireHub\Runtime\Type\Str\ {
  *
  * @extends \FireHub\Foundation\Str\Base<TValue>
  */
-readonly class Str extends Base implements Caseable, CaseTransformable, Patternable {
+readonly class Str extends Base implements CaseTransformable, Patternable {
 
     /**
      * ### Instantiable
