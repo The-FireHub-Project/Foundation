@@ -18,6 +18,9 @@ use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Foundation\Str\Pattern\ {
     Matcher, Replacer
 };
+use FireHub\Runtime\Type\Str\ {
+    RegexDelimiter, RegexFlag
+};
 
 /**
  * ### Provides access to pattern-based string operations
@@ -33,18 +36,38 @@ use FireHub\Foundation\Str\Pattern\ {
 final readonly class Pattern {
 
     /**
+     * ### The regex flags to apply to the pattern operation
+     * @since 1.0.0
+     *
+     * @var \FireHub\Runtime\Type\Str\RegexFlag[]
+     */
+    private array $flags;
+
+    /**
      * ### Constructor
      * @since 1.0.0
      *
      * @param \FireHub\Core\Type\Str<string>&TPatternable $str <p>
      * The string value to operate on.
      * </p>
+     * @param \FireHub\Runtime\Type\Str\RegexDelimiter $delimiter [optional] <p>
+     * The delimiter to use for pattern matching.
+     * </p>
+     * @param \FireHub\Runtime\Type\Str\RegexFlag ...$flags [optional] <p>
+     * The regex flags to apply to the pattern operation.
+     * </p>
      *
      * @return void
      */
     public function __construct (
-        private Str&Patternable $str
-    ) {}
+        private Str&Patternable $str,
+        private RegexDelimiter $delimiter = RegexDelimiter::SLASH,
+        RegexFlag ...$flags
+    ) {
+
+        $this->flags = $flags;
+
+    }
 
     /**
      * ### Create a new pattern matcher
@@ -59,7 +82,7 @@ final readonly class Pattern {
      */
     public function match (int $offset = 0):Matcher {
 
-        return new Matcher($this->str, $offset);
+        return new Matcher($this->str, $offset, $this->delimiter, ...$this->flags);
 
     }
 
@@ -79,7 +102,7 @@ final readonly class Pattern {
      */
     public function replace (string $with, int $limit = -1):Replacer {
 
-        return new Replacer($this->str, $with, $limit);
+        return new Replacer($this->str, $with, $limit, $this->delimiter, ...$this->flags);
 
     }
 
@@ -96,7 +119,7 @@ final readonly class Pattern {
      */
     public function remove (int $limit = -1):Replacer {
 
-        return new Replacer($this->str, '', $limit);
+        return new Replacer($this->str, '', $limit, $this->delimiter, ...$this->flags);
 
     }
 

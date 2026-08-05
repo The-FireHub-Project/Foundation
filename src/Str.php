@@ -20,6 +20,9 @@ use FireHub\Foundation\Str\Boundary\ {
 };
 use FireHub\Foundation\Str\Case\Converter;
 use FireHub\Foundation\Str\Pattern;
+use FireHub\Runtime\Type\Str\ {
+    RegexDelimiter, RegexFlag
+};
 
 /**
  * ### Provides an immutable string value object with a high-level developer API
@@ -66,9 +69,9 @@ readonly class Str extends Base implements CaseTransformable, Patternable {
      *
      * @since 1.0.0
      */
-    public function pattern ():Pattern {
+    public function pattern (RegexDelimiter $delimiter = RegexDelimiter::SLASH, RegexFlag ...$flags):Pattern {
 
-        return new Pattern($this);
+        return new Pattern($this, $delimiter, ...$flags);
 
     }
 

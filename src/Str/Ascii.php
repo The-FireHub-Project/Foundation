@@ -20,6 +20,9 @@ use FireHub\Foundation\Str\Boundary\ {
 use FireHub\Foundation\Str\Case\Converter;
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Foundation\Str\Exception\InvalidAsciiException;
+use FireHub\Runtime\Type\Str\ {
+    RegexDelimiter, RegexFlag
+};
 
 /**
  * ### Represents an ASCII encoded string value object
@@ -83,9 +86,9 @@ readonly class Ascii extends Base implements CaseTransformable, Patternable {
      *
      * @since 1.0.0
      */
-    public function pattern ():Pattern {
+    public function pattern (RegexDelimiter $delimiter = RegexDelimiter::SLASH, RegexFlag ...$flags):Pattern {
 
-        return new Pattern($this);
+        return new Pattern($this, $delimiter, ...$flags);
 
     }
 

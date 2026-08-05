@@ -15,6 +15,9 @@ namespace FireHub\Foundation\Str\Boundary;
 
 use FireHub\Foundation\Str\Pattern;
 use FireHub\Core\Type\Str\Encoding;
+use FireHub\Runtime\Type\Str\ {
+    RegexDelimiter, RegexFlag
+};
 
 /**
  * ### Defines the contract for strings supporting pattern-based operations
@@ -46,8 +49,15 @@ interface Patternable {
      * ### Returns the pattern object for this string
      * @since 1.0.0
      *
+     * @param \FireHub\Runtime\Type\Str\RegexDelimiter $delimiter [optional] <p>
+     * The delimiter to use for pattern matching.
+     * </p>
+     * @param \FireHub\Runtime\Type\Str\RegexFlag ...$flags [optional] <p>
+     * The regex flags to apply to the pattern operation.
+     * </p>
+     *
      * @return \FireHub\Foundation\Str\Pattern<$this> Returns a new instance of the Pattern class.
      */
-    public function pattern ():Pattern;
+    public function pattern (RegexDelimiter $delimiter = RegexDelimiter::SLASH, RegexFlag ...$flags):Pattern;
 
 }

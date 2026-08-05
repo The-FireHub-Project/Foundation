@@ -17,6 +17,9 @@ use FireHub\Foundation\Str\Trait\Instantiable;
 use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Runtime\Type\Str\CaseMode;
 use FireHub\Runtime;
+use FireHub\Runtime\Type\Str\ {
+    RegexDelimiter, RegexFlag
+};
 
 /**
  * ### Represents a case-insensitive string value object
@@ -49,10 +52,12 @@ readonly class Caseless extends Base implements Patternable {
      * @inheritDoc
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Type\Str\RegexFlag::CASELESS AS included flag.
      */
-    public function pattern ():Pattern {
+    public function pattern (RegexDelimiter $delimiter = RegexDelimiter::SLASH, RegexFlag ...$flags):Pattern {
 
-        return new Pattern($this);
+        return new Pattern($this, $delimiter, RegexFlag::CASELESS, ...$flags);
 
     }
 
