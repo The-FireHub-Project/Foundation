@@ -30,7 +30,7 @@ use FireHub\Runtime\Type\Str\CaseMode;
  *
  * @template TCaseable of \FireHub\Foundation\Str\Boundary\Caseable
  */
-final readonly class Casing {
+readonly class Casing {
 
     /**
      * ### Constructor
@@ -43,7 +43,7 @@ final readonly class Casing {
      * @return void
      */
     public function __construct (
-        private Str&Caseable $str
+        protected Str&Caseable $str
     ) {}
 
     /**

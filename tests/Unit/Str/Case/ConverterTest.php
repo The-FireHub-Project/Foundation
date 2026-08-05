@@ -85,6 +85,24 @@ final class ConverterTest extends FireHubTestCase {
      *
      * @return void
      */
+    #[TestWith(['The FireHub Project', 'the FireHub project'])]
+    public function testTrain (string $expected, string $value):void {
+
+        self::assertSame($expected, new Converter(new Str($value))->train()->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $value
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException
+     *
+     * @return void
+     */
     #[TestWith(['theFirehubProject', 'the firehub project'])]
     #[TestWith(['', ''])]
     public function testCamel (string $expected, string $value):void {
@@ -142,11 +160,85 @@ final class ConverterTest extends FireHubTestCase {
      *
      * @return void
      */
+    #[TestWith(['THE_FIREHUB_PROJECT', 'the firehub project'])]
+    #[TestWith(['', ''])]
+    public function testMacro (string $expected, string $value):void {
+
+        self::assertSame($expected, new Converter(new Str($value))->macro()->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $value
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException
+     *
+     * @return void
+     */
     #[TestWith(['the-firehub-project', 'the firehub project'])]
     #[TestWith(['', ''])]
     public function testKebab (string $expected, string $value):void {
 
         self::assertSame($expected, new Converter(new Str($value))->kebab()->value());
+
+    }
+
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $value
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException
+     *
+     * @return void
+     */
+    #[TestWith(['THE-FIREHUB-PROJECT', 'the firehub project'])]
+    #[TestWith(['', ''])]
+    public function testCobol (string $expected, string $value):void {
+
+        self::assertSame($expected, new Converter(new Str($value))->cobol()->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $value
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException
+     *
+     * @return void
+     */
+    #[TestWith(['the.firehub.project', 'the firehub project'])]
+    #[TestWith(['', ''])]
+    public function testDot (string $expected, string $value):void {
+
+        self::assertSame($expected, new Converter(new Str($value))->dot()->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $value
+     *
+     * @return void
+     */
+    #[TestWith(['tHe fIrEhUb pRoJeCt', 'the firehub project'])]
+    #[TestWith(['', ''])]
+    public function testAlternate (string $expected, string $value):void {
+
+        self::assertSame($expected, new Converter(new Str($value))->alternate()->value());
 
     }
 

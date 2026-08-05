@@ -15,7 +15,6 @@ namespace FireHub\Foundation\Str;
 
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Runtime;
-use FireHub\Runtime\Type\Str\CaseMode;
 
 /**
  * ### Tokenizes strings into structured segments
@@ -58,11 +57,7 @@ final readonly class Tokenizer {
      *
      * $string = new Tokenizer('FireHubProject', Encoding::UTF_8)->words();
      *
-     * // ['fire', 'hub', 'project']
-     *
-     * $string = new Tokenizer('fireHubProject', Encoding::UTF_8)->words();
-     *
-     * // ['fire', 'hub', 'project']
+     * // ['FireHubProject']
      *
      * $string = new Tokenizer('fire_hub_project', Encoding::UTF_8)->words();
      *
@@ -72,24 +67,16 @@ final readonly class Tokenizer {
      *
      * // ['fire', 'hub', 'project']
      *
-     * $string = new Tokenizer('ŠirokiBrijeg', Encoding::UTF_8)->words();
+     * $string = new Tokenizer('firehub project', Encoding::UTF_8)->words();
      *
-     * // ['široki', 'brijeg']
-     *
-     * $string = new Tokenizer('ŽELJKO_ČIČAK', Encoding::UTF_8)->words();
-     *
-     * // ['željko', 'čičak']
+     * // ['firehub', 'project']
      * </code>
      *
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Str\MB\Regex::replace() To split camelCase.
      * @uses \FireHub\Runtime\Str\MB\Regex::split() To split the string into words.
-     * @uses \FireHub\Runtime\Str\MB\Casing::convert() To convert the words to lowercase.
-     * @uses \FireHub\Runtime\Arr\Transform::map() To convert the words to lowercase.
-     * @uses \FireHub\Runtime\Arr\Transform::filter() To remove empty words.
-     * @uses \FireHub\Runtime\Arr\Access::values() To get the words.
-     * @uses \FireHub\Runtime\Type\Str\CaseMode::LOWER To convert the words to lowercase.
+     * @uses \FireHub\Runtime\Str\MB\Transform::trim() To trim the string.
      *
      * @throws \FireHub\Runtime\Exception\InvalidPatternException If an error occurred while performing a regular
      * expression search and replace type, or regular expression split.
@@ -99,35 +86,19 @@ final readonly class Tokenizer {
      */
     public function words ():array {
 
-        $value = Runtime\Str\MB\Regex::replace( // Split camelCase
-                '([[:lower:]])([[:upper:]])',
-                '\1 \2',
+        $value = Runtime\Str\MB\Regex::replace(
+                '[[:space:]_.-]+',
+                ' ',
                 $this->string
             )
-                |> (static fn($x) => Runtime\Str\MB\Regex::replace( // Split XMLParser -> XML Parse
-                    '([[:upper:]]+)([[:upper:]][[:lower:]])',
-                    '\1 \2',
-                    $x))
-                |> (static fn($x) => Runtime\Str\MB\Regex::replace( // Normalize separators
-                    '[[:space:]_\-\.]+',
-                    ' ',
-                    $x))
-                |> trim(...);
+                |> (fn(string $x): string => Runtime\Str\MB\Transform::trim(
+                    $x,
+                    encoding: $this->encoding
+                ));
 
         if ($value === '') return [];
 
-        $words = Runtime\Str\MB\Regex::split('\s+', $value);
-
-        return Runtime\Arr\Transform::map(
-            $words,
-            fn(string $word): string => Runtime\Str\MB\Casing::convert(
-                    $word,
-                    CaseMode::LOWER,
-                    $this->encoding
-                )
-            )
-                |> (static fn($x) => Runtime\Arr\Transform::filter($x, static fn(string $word): bool => $word !== ''))
-                |> Runtime\Arr\Access::values(...);
+        return Runtime\Str\MB\Regex::split('\s+', $value);
 
     }
 

@@ -40,12 +40,10 @@ final class TokenizerTest extends FireHubTestCase {
      *
      * @return void
      */
-    #[TestWith([['fire', 'hub', 'project'], 'FireHubProject'])]
-    #[TestWith([['fire', 'hub', 'project'], 'fireHubProject'])]
+    #[TestWith([['FireHubProject'], 'FireHubProject'])]
     #[TestWith([['fire', 'hub', 'project'], 'fire_hub_project'])]
     #[TestWith([['fire', 'hub', 'project'], 'fire-hub-project'])]
-    #[TestWith([['široki', 'brijeg'], 'ŠirokiBrijeg'])]
-    #[TestWith([['željko', 'čičak'], 'ŽELJKO_ČIČAK'])]
+    #[TestWith([['firehub', 'project'], 'firehub project'])]
     public function testWords (array $expected, string $value):void {
 
         self::assertSame($expected, new Tokenizer($value, Encoding::UTF_8)->words());

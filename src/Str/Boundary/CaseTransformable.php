@@ -14,7 +14,6 @@
 namespace FireHub\Foundation\Str\Boundary;
 
 use FireHub\Foundation\Str\Case\Converter;
-use FireHub\Core\Type\Str\Encoding;
 
 /**
  * ### Defines the contract for strings supporting case transformations
@@ -22,22 +21,7 @@ use FireHub\Core\Type\Str\Encoding;
  * Provides a capability contract for string value objects that support conversion between different casing formats.
  * @since 1.0.0
  */
-interface CaseTransformable {
-
-    /**
-     * ### Creates a new instance of the string value object with a different case format
-     * @since 1.0.0
-     *
-     * @param string $value <p>
-     * The string value to convert.
-     * </p>
-     * @param \FireHub\Core\Type\Str\Encoding $encoding <p>
-     * The encoding of the string.
-     * </p>
-     *
-     * @return static A new instance of the string value object with the converted case.
-     */
-    public static function of (string $value, Encoding $encoding):static;
+interface CaseTransformable extends Caseable {
 
     /**
      * ### Transform the string to a different case format

@@ -27,8 +27,10 @@ use FireHub\Runtime\Type\Str\CaseMode;
  * @since 1.0.0
  *
  * @template TCaseTransformable of \FireHub\Foundation\Str\Boundary\CaseTransformable
+ *
+ * @extends \FireHub\Foundation\Str\Case\Casing<TCaseTransformable>
  */
-final readonly class Converter {
+readonly class Converter extends Casing {
 
     /**
      * ### Constructor
@@ -41,8 +43,12 @@ final readonly class Converter {
      * @return void
      */
     public function __construct (
-        private Str&CaseTransformable $str
-    ) {}
+        Str&CaseTransformable $str
+    ) {
+
+        parent::__construct($str);
+
+    }
 
     /**
      * ### Capitalizes the first character of the string
@@ -133,6 +139,50 @@ final readonly class Converter {
                 $this->str->value(),
                 CaseMode::TITLE,
                 $this->str->encoding()
+            ),
+            $this->str->encoding()
+        );
+
+    }
+
+    /**
+     * ### Converts the string to a train case
+     *
+     * Converts the string into train case format where each word is capitalized.
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Case\Converter;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Converter(new Str('the FireHub project'))->train();
+     *
+     * // The FireHub Project
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new string instance.
+     * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
+     * @uses \FireHub\Runtime\Arr\Transform::map() To transform words.
+     * @uses \FireHub\Runtime\Str\MB\Casing::capitalize() To capitalize words.
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To join words.
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If an error occurred while performing a regular
+     * expression search and replace type, or regular expression split.
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException If string is not valid for the current encoding.
+     *
+     * @return \FireHub\Foundation\Str\Boundary\CaseTransformable Returns a new instance with the string converted
+     * to train case.
+     */
+    public function train ():CaseTransformable {
+
+        return $this->str::of(
+            Runtime\Str\SB\Delimiter::implode(
+                Runtime\Arr\Transform::map(
+                    $this->words(),
+                    static fn(string $word):string => Runtime\Str\MB\Casing::capitalize($word)
+                ),
+                ' '
             ),
             $this->str->encoding()
         );
@@ -264,6 +314,36 @@ final readonly class Converter {
     }
 
     /**
+     * ### Converts the string to a macro case
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Case\Converter;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Converter(new Str('the firehub project'))->macro();
+     *
+     * // THE_FIREHUB_PROJECT
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Case\Converter::snake() To convert the string to snake case.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::case() To convert the string to uppercase.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::upper() To convert the string to uppercase.
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If an error occurred while performing a regular
+     * expression search and replace type, or regular expression split.
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException If string is not valid for the current encoding.
+     *
+     * @return TCaseTransformable Returns a new instance with the string converted to macro case.
+     */
+    public function macro ():CaseTransformable {
+
+        return $this->snake()->case()->upper();
+
+    }
+
+    /**
      * ### Converts the string to kebab case
      *
      * <code>
@@ -297,6 +377,149 @@ final readonly class Converter {
             ),
             $this->str->encoding()
         );
+
+    }
+
+    /**
+     * ### Converts the string to a cobol case
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Case\Converter;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Converter(new Str('the firehub project'))->cobol();
+     *
+     * // THE-FIREHUB-PROJECT
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Case\Converter::kebab() To convert the string to kebab case.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::case() To convert the string to uppercase.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::upper() To convert the string to uppercase.
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If an error occurred while performing a regular
+     * expression search and replace type, or regular expression split.
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException If string is not valid for the current encoding.
+     *
+     * @return TCaseTransformable Returns a new instance with the string converted to cobol case.
+     */
+    public function cobol ():CaseTransformable {
+
+        return $this->kebab()->case()->upper();
+
+    }
+
+    /**
+     * ### Converts the string to a dot case
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Case\Converter;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Converter(new Str('the firehub project'))->dot();
+     *
+     * // the.firehub.project
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
+     * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To implode the array.
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If an error occurred while performing a regular
+     * expression search and replace type, or regular expression split.
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException If string is not valid for the current encoding.
+     *
+     * @return TCaseTransformable Returns a new instance with the string converted to dot case.
+     */
+    public function dot ():CaseTransformable {
+
+        return $this->str::of(
+            Runtime\Str\SB\Delimiter::implode(
+                $this->words(),
+                '.'
+            ),
+            $this->str->encoding()
+        );
+
+    }
+
+    /**
+     * ### Converts the string to an alternate case
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Case\Converter;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Converter(new Str('the firehub project'))->alternate();
+     *
+     * // tHe fIrEhUb pRoJeCt
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::value() To get the string value.
+     * @uses \FireHub\Runtime\Str\MB\Inspection::length() To get the length of the string.
+     * @uses \FireHub\Runtime\Str\MB\Access::part() To get the character at the specified position.
+     * @uses \FireHub\Runtime\Str\MB\Casing::convert() To convert the string to an alternate case.
+     * @uses \FireHub\Runtime\Type\Str\CaseMode::LOWER To convert the string to an alternate case.
+     * @uses \FireHub\Runtime\Type\Str\CaseMode::UPPER To convert the string to an alternate case.
+     *
+     * @return TCaseTransformable Returns a new instance with the string converted to an alternate case.
+     */
+    public function alternate ():CaseTransformable {
+
+        $result = ''; $upper = false;
+
+        $length = Runtime\Str\MB\Inspection::length(
+            $this->str->value(),
+            $this->str->encoding()
+        );
+
+        for ($i = 0; $i < $length; $i++) {
+
+            $char = Runtime\Str\MB\Access::part(
+                $this->str->value(),
+                $i,
+                1,
+                $this->str->encoding()
+            );
+
+            if (Runtime\Str\MB\Casing::convert(
+
+                    $char,
+                    CaseMode::LOWER,
+                    $this->str->encoding()
+                ) !== $char) {
+
+                $result .= $char;
+
+                continue;
+
+            }
+
+            $result .= $upper
+                ? Runtime\Str\MB\Casing::convert(
+                    $char,
+                    CaseMode::UPPER,
+                    $this->str->encoding()
+                )
+                : Runtime\Str\MB\Casing::convert(
+                    $char,
+                    CaseMode::LOWER,
+                    $this->str->encoding()
+                );
+
+            $upper = !$upper;
+
+        }
+
+        return $this->str::of($result, $this->str->encoding());
 
     }
 
