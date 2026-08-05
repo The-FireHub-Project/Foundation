@@ -17,6 +17,7 @@ use FireHub\Testing\FireHubTestCase;
 use FireHub\Foundation\Str\Ascii;
 use FireHub\Foundation\Str\Case\Converter;
 use FireHub\Foundation\Str\Pattern;
+use FireHub\Foundation\Str\Exception\InvalidAsciiException;
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small
 };
@@ -29,6 +30,19 @@ use PHPUnit\Framework\Attributes\ {
 #[Group('str')]
 #[CoversClass(Ascii::class)]
 final class AsciiTest extends FireHubTestCase {
+
+    /**
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    public function testInvalidAscii ():void {
+
+        $this->expectException(InvalidAsciiException::class);
+
+        new Ascii('č test');
+
+    }
 
     /**
      * @since 1.0.0

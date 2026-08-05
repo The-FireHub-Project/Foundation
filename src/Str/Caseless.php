@@ -14,6 +14,7 @@
 namespace FireHub\Foundation\Str;
 
 use FireHub\Foundation\Str\Trait\Instantiable;
+use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Runtime\Type\Str\CaseMode;
 use FireHub\Runtime;
 
@@ -34,7 +35,7 @@ use FireHub\Runtime;
  *
  * @extends \FireHub\Foundation\Str\Base<TValue>
  */
-readonly class Caseless extends Base {
+readonly class Caseless extends Base implements Patternable {
 
     /**
      * ### Instantiable
@@ -43,6 +44,17 @@ readonly class Caseless extends Base {
      * @use \FireHub\Foundation\Str\Trait\Instantiable<TValue>
      */
     use Instantiable;
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     */
+    public function pattern ():Pattern {
+
+        return new Pattern($this);
+
+    }
 
     /**
      * {@inheritDoc}
