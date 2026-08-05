@@ -83,4 +83,21 @@ final readonly class Pattern {
 
     }
 
+    /**
+     * ### Create a new pattern removal
+     * @since 1.0.0
+     *
+     * @param int $limit [optional] <p>
+     * The maximum number of replacements to perform. Defaults to -1 (no limit).
+     * </p>
+     *
+     * @return \FireHub\Foundation\Str\Pattern\Replacer<\FireHub\Core\Type\Str<string>&TPatternable> Returns a new
+     * Replacer instance for pattern removal.
+     */
+    public function remove (int $limit = -1):Replacer {
+
+        return new Replacer($this->str, '', $limit);
+
+    }
+
 }

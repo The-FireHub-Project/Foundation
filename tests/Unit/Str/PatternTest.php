@@ -54,4 +54,15 @@ final class PatternTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    public function testRemove ():void {
+
+        self::assertInstanceOf(Replacer::class, new Pattern(new Str(''))->remove());
+
+    }
+
 }
