@@ -320,6 +320,7 @@ abstract readonly class Base extends Str {
      *
      * // false
      * </code>
+     *
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\Str::contains() To check if the string contains all of the given values.
@@ -343,6 +344,76 @@ abstract readonly class Base extends Str {
         }
 
         return $has_value;
+
+    }
+
+    /**
+     * ### Cleans up the string by removing unwanted characters and whitespace
+     *
+     * This method performs various transformations on the string to clean it up and make it suitable for display or
+     * other purposes. It replaces certain characters with their equivalents, trims whitespace, and removes zero-width
+     * characters.
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('“  The   FireHub Project…  ”')->tidy(');
+     *
+     * // " The FireHub Project... " (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Transform::trim() To trim the string.
+     * @uses \FireHub\Runtime\Str\MB\Regex::replace() To replace certain characters with their equivalents.
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If an error occurred while performing a regular
+     * expression search and replace type.
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException If string is not valid for the current encoding.
+     *
+     * @return static Returns a new instance with the string cleaned up.
+     */
+    public function tidy ():static {
+
+        $replacements = [
+            // Ellipsis
+            '\x{2026}' => '...',
+
+            // Smart quotes
+            '[\x{201C}\x{201D}]' => '"',
+            '[\x{2018}\x{2019}]' => "'",
+
+            // Dashes
+            '[\x{2013}\x{2014}]' => '-',
+
+            // Non-breaking space
+            '\x{00A0}' => ' ',
+
+            // Zero-width characters
+            '[\x{200B}-\x{200D}\x{FEFF}]' => '',
+
+            // Whitespace
+            '[[:space:]]+' => ' ',
+        ];
+
+
+        $value = $this->value;
+
+        foreach ($replacements as $pattern => $replacement) {
+            $value = Runtime\Str\MB\Regex::replace(
+                $pattern,
+                $replacement,
+                $value
+            );
+        }
+
+        return new static(
+            Runtime\Str\MB\Transform::trim(
+                $value,
+                encoding: $this->encoding
+            ),
+            $this->encoding
+        );
 
     }
 

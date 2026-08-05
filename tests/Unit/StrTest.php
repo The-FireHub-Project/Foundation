@@ -258,4 +258,22 @@ final class StrTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException
+     *
+     * @return void
+     */
+    #[TestWith(['" The FireHub Project... "', '“  The   FireHub Project…  ”'])]
+    public function testTidy (string $expected, string $string):void {
+
+        self::assertSame($expected, new Str($string)->tidy()->value());
+
+    }
+
 }

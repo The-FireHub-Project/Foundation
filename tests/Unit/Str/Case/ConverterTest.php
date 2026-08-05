@@ -242,4 +242,23 @@ final class ConverterTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $value
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException
+     *
+     * @return void
+     */
+    #[TestWith(['The firehub project', 'the_firehub_project'])]
+    #[TestWith(['', ''])]
+    public function testHumanize (string $expected, string $value):void {
+
+        self::assertSame($expected, new Converter(new Str($value))->humanize()->value());
+
+    }
+
 }

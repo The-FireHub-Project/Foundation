@@ -524,6 +524,51 @@ readonly class Converter extends Casing {
     }
 
     /**
+     * ### Converts the string into a human-readable format
+     *
+     * Replaces word separators with spaces and converts the string into sentence-style text.
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Case\Converter;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Converter(new Str('the_firehub_project'))->humanize();
+     *
+     * // The firehub project
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
+     * @uses \FireHub\Foundation\Str\Case\Converter::words() To extract words from the string.
+     * @uses \FireHub\Runtime\Str\MB\Casing::convert() To convert the first word to uppercase.
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To join words.
+     * @uses \FireHub\Runtime\Str\MB\Casing::capitalize() To capitalize the first character of the string.
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If an error occurred while performing a regular
+     * expression search and replace type, or regular expression split.
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException If string is not valid for the current encoding.
+     *
+     * @return \FireHub\Foundation\Str\Boundary\CaseTransformable Returns a new instance with the string converted
+     * to a human-readable format.
+     */
+    public function humanize ():CaseTransformable {
+
+        $words = $this->words();
+
+        return $this->str::of(
+            $words === []
+                ? ''
+                : Runtime\Str\MB\Casing::capitalize(
+                Runtime\Str\SB\Delimiter::implode($words, ' ')
+            ),
+            $this->str->encoding()
+        );
+
+    }
+
+    /**
      * ### Extracts words from the string
      * @since 1.0.0
      *
