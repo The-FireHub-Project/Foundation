@@ -175,6 +175,79 @@ final readonly class Converter {
     }
 
     /**
+     * ### Swaps the case of all alphabetic characters
+     *
+     * Converts lowercase characters to uppercase and uppercase characters to lowercase while leaving
+     * non-alphabetic characters unchanged.
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Case\Converter;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Converter(new Str('The FireHub Project'))->swap();
+     *
+     * // tHE fIREhUB pROJECT
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::value() To get the string value.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
+     * @uses \FireHub\Runtime\Type\Str\CaseMode::UPPER To convert the string to uppercase.
+     * @uses \FireHub\Runtime\Type\Str\CaseMode::LOWER To convert the string to lowercase.
+     * @uses \FireHub\Runtime\Str\MB\Inspection::length() To get string length.
+     * @uses \FireHub\Runtime\Str\SB\Access::part() To get part of the string.
+     * @uses \FireHub\Runtime\Str\MB\Casing::convert() To swap lowercase and uppercase.
+     * @uses \FireHub\Runtime\Str\MB\Transform::upper() To convert lowercase characters to uppercase.
+     * @uses \FireHub\Runtime\Str\MB\Transform::lower() To convert uppercase characters to lowercase.
+     *
+     * @return \FireHub\Foundation\Str\Boundary\CaseTransformable Returns a new instance with the string swaped to
+     * kebab case.
+     */
+    public function swap ():CaseTransformable {
+
+        $result = '';
+
+        $length = Runtime\Str\MB\Inspection::length(
+            $this->str->value(),
+            $this->str->encoding()
+        );
+
+        for ($i = 0; $i < $length; $i++) {
+
+            $char = Runtime\Str\MB\Access::part(
+                $this->str->value(),
+                $i,
+                1,
+                $this->str->encoding()
+            );
+
+            $lower = Runtime\Str\MB\Casing::convert(
+                $char,
+                CaseMode::LOWER,
+                $this->str->encoding()
+            );
+
+            $upper = Runtime\Str\MB\Casing::convert(
+                $char,
+                CaseMode::UPPER,
+                $this->str->encoding()
+            );
+
+            $result .= match ($char) {
+                $lower => $upper,
+                $upper => $lower,
+                default => $char,
+            };
+
+        }
+
+        return $this->str::of($result, $this->str->encoding());
+
+    }
+
+    /**
      * ### Converts the string to the title case
      *
      * <code>
@@ -224,6 +297,7 @@ final readonly class Converter {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
      * @uses \FireHub\Runtime\Arr\Structure::slice() To slice the array.
      * @uses \FireHub\Runtime\Arr\Transform::map() To map the array.
@@ -270,6 +344,7 @@ final readonly class Converter {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
      * @uses \FireHub\Runtime\Arr\Transform::map() To map the array.
      * @uses \FireHub\Runtime\Str\MB\Casing::capitalize() To capitalize the first character of the string.
@@ -311,6 +386,7 @@ final readonly class Converter {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
      * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To implode the array.
      *
@@ -348,6 +424,7 @@ final readonly class Converter {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
+     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
      * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To implode the array.
      *

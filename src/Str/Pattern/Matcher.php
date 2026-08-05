@@ -93,8 +93,6 @@ final readonly class Matcher extends Base {
      */
     public function custom (string $pattern):bool {
 
-        var_dump($this->patternBuilder($pattern));
-
         return Runtime\Str\SB\Regex::match(
             $this->patternBuilder($pattern),
             $this->str->value(),
