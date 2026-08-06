@@ -409,6 +409,56 @@ final class StrTest extends FireHubTestCase {
      *
      * @param string $expected
      * @param string $string
+     * @param string $prefix
+     *
+     * @return void
+     */
+    #[TestWith(['The FireHub', 'FireHub', 'The '])]
+    #[TestWith(['The FireHub', 'The FireHub', 'The '])]
+    public function testEnsurePrefix (string $expected, string $string, string $prefix):void {
+
+        self::assertSame($expected, new Str($string)->ensurePrefix($prefix)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param string $suffix
+     *
+     * @return void
+     */
+    #[TestWith(['FireHub Project', 'FireHub', ' Project'])]
+    #[TestWith(['FireHub Project', 'FireHub Project', ' Project'])]
+    public function testEnsureSuffix (string $expected, string $string, string $suffix):void {
+
+        self::assertSame($expected, new Str($string)->ensureSuffix($suffix)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param string $with
+     *
+     * @return void
+     */
+    #[TestWith(['*FireHub*', 'FireHub', '*'])]
+    public function testSurround (string $expected, string $string, string $with):void {
+
+        self::assertSame($expected, new Str($string)->surround($with)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
      *
      * @throws \FireHub\Runtime\Exception\InvalidPatternException
      * @throws \FireHub\Runtime\Exception\InvalidEncodingException
@@ -549,6 +599,43 @@ final class StrTest extends FireHubTestCase {
     public function testPad (string $expected, string $string, int $length, string $pad = ' ', Side $side = Side::RIGHT):void {
 
         self::assertSame($expected, new Str($string)->pad($length, $pad, $side)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param \FireHub\Core\Meta\Enum\Side $side
+     * @param null|string $characters
+     *
+     * @return void
+     */
+    #[TestWith(['FireHub', '   FireHub   '])]
+    public function testTrim (string $expected, string $string, Side $side = Side::BOTH, ?string $characters = null):void {
+
+        self::assertSame($expected, new Str($string)->trim($side, $characters)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $string
+     *
+     * @throws \FireHub\Runtime\Exception\StringSplitLengthException
+     *
+     * @return void
+     */
+    #[TestWith(['The FireHub Project'])]
+    public function testShuffle (string $string):void {
+
+        $expected = $string;
+
+        new Str($string)->shuffle();
+
+        self::assertEqualsCanonicalizing($expected, $string);
 
     }
 

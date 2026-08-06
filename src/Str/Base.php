@@ -19,6 +19,7 @@ use FireHub\Core\Meta\Enum\Side;
 use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
 use FireHub\Foundation\Convert;
 use FireHub\Foundation\Str\Operation\Extract;
+use FireHub\Foundation\Str\Pattern\Expression\StartsWith;
 use FireHub\Runtime;
 
 /**
@@ -541,6 +542,109 @@ abstract readonly class Base extends Str {
     }
 
     /**
+     * ### Ensures that the string starts with a given prefix
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('FireHub')->ensurePrefix('The ');
+     *
+     * // 'The FireHub' (FireHub∖Foundation∖Str)
+     *
+     * $string = Str::of('The FireHub')->ensurePrefix('The ');
+     *
+     * // 'The FireHub' (FireHub∖Foundation∖Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str::startsWith() To check if the string starts with the given prefix.
+     * @uses \FireHub\Foundation\Str::prepend() To prepend the prefix to the string if it does not start with it.
+     *
+     * @param string $prefix <p>
+     * The string to prepend.
+     * </p>
+     *
+     * @return static<string>|static<TValue> Returns a new instance with the string prepended if it does not start
+     * with the prefix.
+     */
+    public function ensurePrefix (string $prefix):self {
+
+        if ($this->startsWith($prefix))
+            return new static(
+                $this->value,
+                $this->encoding
+            );
+
+        return $this->prepend($prefix);
+
+    }
+
+    /**
+     * ### Ensures that the string ends with a given suffix
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('FireHub')->ensureSuffix(' Project');
+     *
+     * // 'FireHub Project' (FireHub∖Foundation∖Str)
+     *
+     * $string = Str::of('The FireHub')->ensureSuffix(' Project');
+     *
+     * // 'FireHub Project' (FireHub∖Foundation∖Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str::endsWith() To check if the string ends with the given suffix.
+     * @uses \FireHub\Foundation\Str::append() To append the suffix to the string if it does not ends with it.
+     *
+     * @param string $suffix <p>
+     * The string to append.
+     * </p>
+     *
+     * @return static<string>|static<TValue> Returns a new instance with the string appended if it does not ends with
+     * the prefix.
+     */
+    public function ensureSuffix (string $suffix):self {
+
+        if ($this->endsWith($suffix))
+            return new static(
+                $this->value,
+                $this->encoding
+            );
+
+        return $this->append($suffix);
+
+    }
+
+    /**
+     * ### Surrounds the string with a given string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('FireHub')->surround('*');
+     *
+     * // '*FireHub*' (FireHub∖Foundation∖Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param string $with <p>
+     * The string to surround the current string with.
+     * </p>
+     *
+     * @return static<string> Returns a new instance with the string surrounded by the given string.
+     */
+    public function surround (string $with):static {
+
+        return $this->prepend($with)->append($with);
+
+    }
+
+    /**
      * ### Cleans up the string by removing unwanted characters and whitespace
      *
      * This method performs various transformations on the string to clean it up and make it suitable for display or
@@ -882,7 +986,7 @@ abstract readonly class Base extends Str {
      *
      * $string = Str::of('The FireHub Project')->pad(30, '-', Side::BOTH);
      *
-     * // '-----The FireHub Project------'  (FireHub\Foundation\Str)
+     * // '-----The FireHub Project------' (FireHub\Foundation\Str)
      * </code>
      *
      * @since 1.0.0
@@ -909,6 +1013,105 @@ abstract readonly class Base extends Str {
 
         return new static(
             Runtime\Str\MB\Transform::pad($this->value, $length, $pad, $side, $this->encoding),
+            $this->encoding
+        );
+
+    }
+
+    /**
+     * ### Trims whitespace (or other characters) from the string
+     *
+     * Without the $characters parameter, trim will strip these characters:
+     *
+     * - " " (Unicode U+0020), an ordinary space.
+     * - "\t" (Unicode U+0009), a tab.
+     * - "\n" (Unicode U+000A), a new line (line feed).
+     * - "\r" (Unicode U+000D), a carriage return.
+     * - "\0" (Unicode U+0000), the NUL-byte.
+     * - "\v" (Unicode U+000B), a vertical tab.
+     * - "\f" (Unicode U+000C), a form feed.
+     * - "\u00A0" (Unicode U+00A0), a NO-BREAK SPACE.
+     * - "\u1680" (Unicode U+1680), an OGHAM SPACE MARK.
+     * - "\u2000" (Unicode U+2000), an EN QUAD.
+     * - "\u2001" (Unicode U+2001), an EM QUAD.
+     * - "\u2002" (Unicode U+2002), an EN SPACE.
+     * - "\u2003" (Unicode U+2003), an EM SPACE.
+     * - "\u2004" (Unicode U+2004), a THREE-PER-EM SPACE.
+     * - "\u2005" (Unicode U+2005), a FOUR-PER-EM SPACE.
+     * - "\u2006" (Unicode U+2006), a SIX-PER-EM SPACE.
+     * - "\u2007" (Unicode U+2007), a FIGURE SPACE.
+     * - "\u2008" (Unicode U+2008), a PUNCTUATION SPACE.
+     * - "\u2009" (Unicode U+2009), a THIN SPACE.
+     * - "\u200A" (Unicode U+200A), a HAIR SPACE.
+     * - "\u2028" (Unicode U+2028), a LINE SEPARATOR.
+     * - "\u2029" (Unicode U+2029), a PARAGRAPH SEPARATOR.
+     * - "\u202F" (Unicode U+202F), a NARROW NO-BREAK SPACE.
+     * - "\u205F" (Unicode U+205F), a MEDIUM MATHEMATICAL SPACE.
+     * - "\u3000" (Unicode U+3000), a IDEOGRAPHIC SPACE.
+     * - "\u0085" (Unicode U+0085), a NEXT LINE (NEL).
+     * - "\u180E" (Unicode U+180E), a MONGOLIAN VOWEL SEPARATOR.
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     * use FireHub\Core\Meta\Enum\Side;
+     *
+     * $string = Str::of('   FireHub   ')->trim();
+     *
+     * // 'FireHub' (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param \FireHub\Core\Meta\Enum\Side $side [optional] <p>
+     * Side to trim string.
+     * </p>
+     * @param null|string $characters [optional] <p>
+     * Optionally, the stripped characters can also be specified using the character parameter.
+     *
+     * List all characters that need to be stripped.
+     * </p>
+     *
+     * @return static<string> Returns a new instance with the string trimmed.
+     */
+    public function trim (Side $side = Side::BOTH, ?string $characters = null):static {
+
+        return new static(
+            Runtime\Str\MB\Transform::trim($this->value, $side, $characters, $this->encoding),
+            $this->encoding
+        );
+
+    }
+
+    /**
+     * ### Shuffles the characters in the string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     * use FireHub\Core\Meta\Enum\Side;
+     *
+     * $string = Str::of('The FireHub Project')->shuffle();
+     *
+     * // 'Pt erceFbr uHehjoTi' (FireHub\Foundation\Str) -- randomly generated
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Arr\Ordering::shuffle() To shuffle the characters in the string.
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To implode the shuffled characters into a string.
+     * @uses \FireHub\Foundation\Str\Base::split() To split the string into an array of characters.
+     *
+     * @throws \FireHub\Runtime\Exception\StringSplitLengthException If the $length parameter is less than 1.
+     *
+     * @return static<string> Returns a new instance with the shuffled string.
+     */
+    public function shuffle ():static {
+
+        $characters = $this->split();
+
+        Runtime\Arr\Ordering::shuffle($characters);
+
+        return new static(
+            Runtime\Str\SB\Delimiter::implode($characters),
             $this->encoding
         );
 
