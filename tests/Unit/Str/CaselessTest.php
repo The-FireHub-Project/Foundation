@@ -16,6 +16,7 @@ namespace FireHub\Tests\Foundation\Unit\Str;
 use FireHub\Testing\FireHubTestCase;
 use FireHub\Foundation\Str\Caseless;
 use FireHub\Foundation\Str\Pattern;
+use FireHub\Foundation\Str\Operation\Extract;
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
 };
@@ -28,6 +29,17 @@ use PHPUnit\Framework\Attributes\ {
 #[Group('str')]
 #[CoversClass(Caseless::class)]
 final class CaselessTest extends FireHubTestCase {
+
+    /**
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    public function testExtract ():void {
+
+        self::assertInstanceOf(Extract::class, new Caseless('fireHub')->extract());
+
+    }
 
     /**
      * @since 1.0.0

@@ -15,8 +15,9 @@ namespace FireHub\Foundation\Str;
 
 use FireHub\Foundation\Str\Trait\Instantiable;
 use FireHub\Foundation\Str\Boundary\Patternable;
-use FireHub\Runtime\Type\Str\CaseMode;
+use FireHub\Foundation\Str\Operation\Extract;
 use FireHub\Runtime;
+use FireHub\Runtime\Type\Str\CaseMode;
 use FireHub\Runtime\Type\Str\ {
     RegexDelimiter, RegexFlag
 };
@@ -47,6 +48,17 @@ readonly class Caseless extends Base implements Patternable {
      * @use \FireHub\Foundation\Str\Trait\Instantiable<TValue>
      */
     use Instantiable;
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0.
+     */
+    public function extract ():Extract {
+
+        return new Extract($this, false);
+
+    }
 
     /**
      * @inheritDoc
