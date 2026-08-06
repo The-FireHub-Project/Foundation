@@ -18,8 +18,8 @@ use FireHub\Core\Type\Str\Encoding;
 use FireHub\Core\Meta\Enum\Side;
 use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
 use FireHub\Foundation\Convert;
+use FireHub\Foundation\Str\Tokenizer;
 use FireHub\Foundation\Str\Operation\Extract;
-use FireHub\Foundation\Str\Pattern\Expression\StartsWith;
 use FireHub\Runtime;
 
 /**
@@ -360,6 +360,29 @@ abstract readonly class Base extends Str {
         }
 
         return $has_value;
+
+    }
+
+    /**
+     * ### Get string length
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->length();
+     *
+     * // 19
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Inspection::length() To get the string length.
+     *
+     * @return non-negative-int String length.
+     */
+    public function length ():int {
+
+        return Runtime\Str\MB\Inspection::length($this->value, $this->encoding);
 
     }
 
@@ -1083,11 +1106,113 @@ abstract readonly class Base extends Str {
     }
 
     /**
+     * ### Truncates a string to a specified length
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->truncate(10);
+     *
+     * // 'The Fir...' (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Operation\Extract::slice() To extract the string to truncate.
+     * @uses \FireHub\Foundation\Str\Base::append() To append the string to the truncated string.
+     * @uses \FireHub\Foundation\Str\Base::length() To get the length of the string.
+     *
+     * @param int $length <p>
+     * The length of the string to return.
+     * </p>
+     * @param string $with [optional] <p>
+     * The string to append to the end of the truncated string.
+     * </p>
+     *
+     * @return static<string> Returns a new instance with the string truncated.
+     */
+    public function truncate (int $length, string $with = '...'):static {
+
+        return $this->extract()->slice(
+            0,
+            $length - new static($with, $this->encoding)->length() - $this->length()
+        )->append($with);
+
+    }
+
+    /**
+     * ### Truncates a string to a specified length while preserving words
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->truncate(13);
+     *
+     * // 'The...' (FireHub\Foundation\Str)
+     *
+     * $string = Str::of('The FireHub Project')->truncate(14);
+     *
+     * // 'The FireHub...' (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Inspection::length() To get the length of the string.
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To join array elements with a string.
+     * @uses \FireHub\Foundation\Str\Tokenizer::words() To get the words of the string.
+     * @uses \FireHub\Foundation\Str\Base::append() To append the string to the truncated string.
+     *
+     * @param int $length <p>
+     * The length of the string to return.
+     * </p>
+     * @param string $with [optional] <p>
+     * The string to append to the end of the truncated string.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If an error occurred while performing a regular
+     * expression search and replace type, or regular expression split.
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException If string is not valid for the current encoding.
+     *
+     * @return static<string> Returns a new instance with the string truncated.
+     */
+    public function truncateSafe (int $length, string $with = '...'):static {
+
+        $with_length = Runtime\Str\MB\Inspection::length(
+            $with,
+            $this->encoding
+        );
+
+        $result = [];
+        $words = new Tokenizer($this->value, $this->encoding)->words();
+        foreach ($words as $word) {
+
+            $candidate = Runtime\Str\SB\Delimiter::implode(
+                [...$result, $word],
+                ' '
+            );
+
+            if (Runtime\Str\MB\Inspection::length(
+                    $candidate,
+                    $this->encoding
+                ) + $with_length > $length
+            ) break;
+
+            $result[] = $word;
+
+        }
+
+        return new static(
+            Runtime\Str\SB\Delimiter::implode($result, ' '),
+            $this->encoding
+        )->append($with);
+
+    }
+
+    /**
      * ### Shuffles the characters in the string
      *
      * <code>
      * use FireHub\Foundation\Str;
-     * use FireHub\Core\Meta\Enum\Side;
      *
      * $string = Str::of('The FireHub Project')->shuffle();
      *

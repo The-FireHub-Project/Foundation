@@ -278,6 +278,21 @@ final class StrTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
+     * @param non-negative-int $expected
+     * @param string $string
+     *
+     * @return void
+     */
+    #[TestWith([19, 'The FireHub Project'])]
+    public function testLength (int $expected, string $string):void {
+
+        self::assertSame($expected, new Str($string)->length());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
      * @param false|non-negative-int $expected
      * @param string $string
      * @param string $find
@@ -616,6 +631,44 @@ final class StrTest extends FireHubTestCase {
     public function testTrim (string $expected, string $string, Side $side = Side::BOTH, ?string $characters = null):void {
 
         self::assertSame($expected, new Str($string)->trim($side, $characters)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param int $length
+     * @param string $with
+     *
+     * @return void
+     */
+    #[TestWith(['The Fir...', 'The FireHub Project', 10])]
+    public function testTruncate (string $expected, string $string, int $length, string $with = '...'):void {
+
+        self::assertSame($expected, new Str($string)->truncate($length, $with)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param int $length
+     * @param string $with
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException
+     *
+     * @return void
+     */
+    #[TestWith(['The...', 'The FireHub Project', 13])]
+    #[TestWith(['The FireHub...', 'The FireHub Project', 14])]
+    public function testTruncateSafe (string $expected, string $string, int $length, string $with = '...'):void {
+
+        self::assertSame($expected, new Str($string)->truncateSafe($length, $with)->value());
 
     }
 
