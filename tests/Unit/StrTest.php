@@ -15,6 +15,7 @@ namespace FireHub\Tests\Foundation\Unit;
 
 use FireHub\Testing\FireHubTestCase;
 use FireHub\Core\Type\Str\Encoding;
+use FireHub\Core\Meta\Enum\Side;
 use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
 use FireHub\Foundation\Str;
 use FireHub\Foundation\Str\Case\ {
@@ -510,6 +511,44 @@ final class StrTest extends FireHubTestCase {
     public function testDuplicate (string $expected, string $string, int $times, string $separator = ''):void {
 
         self::assertSame($expected, new Str($string)->duplicate($times, $separator)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     *
+     * @throws \FireHub\Runtime\Exception\StringSplitLengthException
+     *
+     * @return void
+     */
+    #[TestWith(['tcejorP buHeriF ehT', 'The FireHub Project'])]
+    public function testReverse (string $expected, string $string):void {
+
+        self::assertSame($expected, new Str($string)->reverse()->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param int $length
+     * @param non-empty-string $pad
+     * @param \FireHub\Core\Meta\Enum\Side $side
+     *
+     * @throws \FireHub\Runtime\Exception\EmptyPadException
+     *
+     * @return void
+     */
+    #[TestWith(['The FireHub Project-----------', 'The FireHub Project', 30, '-'])]
+    #[TestWith(['-----The FireHub Project------', 'The FireHub Project', 30, '-', Side::BOTH])]
+    public function testPad (string $expected, string $string, int $length, string $pad = ' ', Side $side = Side::RIGHT):void {
+
+        self::assertSame($expected, new Str($string)->pad($length, $pad, $side)->value());
 
     }
 

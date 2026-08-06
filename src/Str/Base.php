@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.2
+ * @php-version >=8.3
  * @package Foundation
  */
 
@@ -15,6 +15,7 @@ namespace FireHub\Foundation\Str;
 
 use FireHub\Core\Type\Str;
 use FireHub\Core\Type\Str\Encoding;
+use FireHub\Core\Meta\Enum\Side;
 use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
 use FireHub\Foundation\Convert;
 use FireHub\Foundation\Str\Operation\Extract;
@@ -465,7 +466,7 @@ abstract readonly class Base extends Str {
      *
      * @since 1.0.0
      *
-     * @uses
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::explode() To split the string by the given separator.
      *
      * @param non-empty-string $separator <p>
      * The boundary string.
@@ -839,6 +840,77 @@ abstract readonly class Base extends Str {
     public function duplicate (int $times, string $separator = ''):self {
 
         return $this->repeat($times + 1, $separator);
+
+    }
+
+    /**
+     * ### Reverses the string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->reverse();
+     *
+     * // 'tcejorP buHeriF ehT' (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Runtime\Exception\StringSplitLengthException If the $length parameter is less than 1.
+     *
+     * @return static<string> Returns a new instance with the reversed string.
+     */
+    public function reverse ():static {
+
+        return new static(
+            Runtime\Str\SB\Delimiter::implode(Runtime\Arr\Transform::reverse($this->split())),
+            $this->encoding
+        );
+
+    }
+
+    /**
+     * ### Pads the string to a specified length with a specified character
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     * use FireHub\Core\Meta\Enum\Side;
+     *
+     * $string = Str::of('The FireHub Project')->pad(30, '-');
+     *
+     * // 'The FireHub Project-----------' (FireHub\Foundation\Str)
+     *
+     * $string = Str::of('The FireHub Project')->pad(30, '-', Side::BOTH);
+     *
+     * // '-----The FireHub Project------'  (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Transform::pad() To pad the string.
+     *
+     * @param int $length <p>
+     * If the value of $length is negative, less than, or equal to the length of the input string, no padding takes
+     * place.
+     * </p>
+     * @param non-empty-string $pad [optional] <p>
+     * The pad may be truncated if the required number of padding characters can't be evenly divided by the pad's
+     * length.
+     * </p>
+     * @param \FireHub\Core\Meta\Enum\Side $side [optional] <p>
+     * Pad side.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\EmptyPadException If the pad is empty.
+     *
+     * @return static<string> Returns a new instance with the string padded to a specified length.
+     */
+    public function pad (int $length, string $pad = ' ', Side $side = Side::RIGHT):static {
+
+        return new static(
+            Runtime\Str\MB\Transform::pad($this->value, $length, $pad, $side, $this->encoding),
+            $this->encoding
+        );
 
     }
 
