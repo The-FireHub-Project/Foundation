@@ -309,6 +309,38 @@ final class StrTest extends FireHubTestCase {
      *
      * @param string $expected
      * @param string $string
+     * @param string $value
+     *
+     * @return void
+     */
+    #[TestWith(['The FireHub', 'FireHub', 'The '])]
+    public function testPrepend (string $expected, string $string, string $value):void {
+
+        self::assertSame($expected, new Str($string)->prepend($value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param string $value
+     *
+     * @return void
+     */
+    #[TestWith(['FireHub Project', 'FireHub', ' Project'])]
+    public function testAppend (string $expected, string $string, string $value):void {
+
+        self::assertSame($expected, new Str($string)->append($value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
      *
      * @throws \FireHub\Runtime\Exception\InvalidPatternException
      * @throws \FireHub\Runtime\Exception\InvalidEncodingException
@@ -319,6 +351,64 @@ final class StrTest extends FireHubTestCase {
     public function testTidy (string $expected, string $string):void {
 
         self::assertSame($expected, new Str($string)->tidy()->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param string $value
+     * @param int $position
+     *
+     * @return void
+     */
+    #[TestWith(['The -FireHub Project', 'The FireHub Project', '-', 4])]
+    #[TestWith(['The FireHub Pro-ject', 'The FireHub Project', '-', -4])]
+    #[TestWith(['The FireHub Project-', 'The FireHub Project', '-', 100])]
+    #[TestWith(['-The FireHub Project', 'The FireHub Project', '-', -100])]
+    public function testInsert (string $expected, string $string, string $value, int $position):void {
+
+        self::assertSame($expected, new Str($string)->insert($value, $position)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param int $from
+     * @param int $length
+     * @param int $to
+     *
+     * @return void
+     */
+    #[TestWith(['FHuireb', 'FireHub', 4, 2, 1])]
+    #[TestWith(['FirHueb', 'FireHub', 4, 2, -2])]
+    public function testMove (string $expected, string $string, int $from, int $length, int $to):void {
+
+        self::assertSame($expected, new Str($string)->move($from, $length, $to)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param int $from
+     * @param int $until
+     * @param string $with
+     *
+     * @return void
+     */
+    #[TestWith(['The Awesome Project', 'The FireHub Project', 4, 11, 'Awesome'])]
+    #[TestWith(['The Awesome Project', 'The FireHub Project', -15, -8, 'Awesome'])]
+    public function test (string $expected, string $string, int $from, int $until, string $with):void {
+
+        self::assertSame($expected, new Str($string)->overwrite($from, $until, $with)->value());
 
     }
 

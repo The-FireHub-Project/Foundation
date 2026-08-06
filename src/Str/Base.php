@@ -423,6 +423,56 @@ abstract readonly class Base extends Str {
     }
 
     /**
+     * ### Prepends a string to the current string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('FireHub')->prepend('The (FireHub∖Foundation∖Str');
+     *
+     * // 'The FireHub' (FireHub∖Foundation∖Str
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param string $value <p>
+     * The string to prepend.
+     * </p>
+     *
+     * @return static<string> Returns a new instance with the string prepended.
+     */
+    public function prepend (string $value):static {
+
+        return new static($value.$this->value, $this->encoding);
+
+    }
+
+    /**
+     * ### Appends a string to the current string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('FireHub')->append(' Project');
+     *
+     * // 'FireHub Project' (FireHub∖Foundation∖Str
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param string $value <p>
+     * The string to prepend.
+     * </p>
+     *
+     * @return static<string> Returns a new instance with the string appeended.
+     */
+    public function append (string $value):static {
+
+        return new static($this->value.$value, $this->encoding);
+
+    }
+
+    /**
      * ### Cleans up the string by removing unwanted characters and whitespace
      *
      * This method performs various transformations on the string to clean it up and make it suitable for display or
@@ -432,7 +482,7 @@ abstract readonly class Base extends Str {
      * <code>
      * use FireHub\Foundation\Str;
      *
-     * $string = Str::of('“  The   FireHub Project…  ”')->tidy(');
+     * $string = Str::of('“  The   FireHub Project…  ”')->tidy();
      *
      * // " The FireHub Project... " (FireHub\Foundation\Str)
      * </code>
@@ -489,6 +539,175 @@ abstract readonly class Base extends Str {
             ),
             $this->encoding
         );
+
+    }
+
+    /**
+     * ### Inserts a string at a specified position in the current string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->insert('-', 4);
+     *
+     * // 'The -FireHub Project' (FireHub\Foundation\Str)
+     *
+     * $string = Str::of('The FireHub Project')->insert('-', -4);
+     *
+     * // 'The FireHub Pro-ject' (FireHub\Foundation\Str)
+     *
+     * $string = Str::of('The FireHub Project')->insert('-', 100);
+     *
+     * // 'The FireHub Project-' (FireHub\Foundation\Str)
+     *
+     * $string = Str::of('The FireHub Project')->insert('-', -100);
+     *
+     * // '-The FireHub Project' (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Operation\Extract::slice() To extract the string at the specified position.
+     * @uses \FireHub\Foundation\Str\Base::value() To get the string value.
+     * @uses \FireHub\Foundation\Str\Base::append() To append the string to the current string.
+     *
+     * @param string $string <p>
+     * The string to insert.
+     * </p>
+     * @param int $position <p>
+     * The position at which to insert the string.
+     * </p>
+     *
+     * @return static<string> Returns a new instance with the string inserted at the specified position.
+     */
+    public function insert (string $string, int $position):static {
+
+        return new static(
+            $this->extract()->slice(0, $position)->value(),
+            $this->encoding
+        )
+            ->append($string)
+            ->append($this->extract()->slice($position)->value());
+
+    }
+
+    /**
+     * ### Moves a portion of the string to another position
+     *
+     * Removes a substring from the given position and inserts it at the target position.
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('FireHub')->move(4, 2, 1);
+     *
+     * // 'FHuireb' (FireHub\Foundation\Str)
+     *
+     * $string = Str::of('FireHub')->move(4, 2, -2);
+     *
+     * // 'FirHueb' (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Operation\Extract::slice() To extract the substring to move.
+     * @uses \FireHub\Runtime\Str\MB\Access::part() To move the substring.
+     * @uses \FireHub\Foundation\Str\Base::value() To get the string value.
+     * @uses \FireHub\Foundation\Str\Base::encoding() To get the string encoding.
+     * @uses \FireHub\Foundation\Str\Base::append() To append the string to the current string.
+     *
+     * @param int $from <p>
+     * The starting character position of the substring to move.
+     * </p>
+     * @param int $length <p>
+     * The number of characters to move.
+     * </p>
+     * @param int $to <p>
+     * The target character position where the substring will be inserted.
+     * </p>
+     *
+     * @return static<string> A new instance with the moved portion.
+     */
+    public function move (int $from, int $length, int $to):static {
+
+        $part = $this->extract()->slice($from, $length)->value();
+
+        $remaining = $this->extract()->slice(0, $from)
+            ->append($this->extract()->slice($from + $length)->value())->value;
+
+        return new static(
+            Runtime\Str\MB\Access::part(
+                $remaining,
+                0,
+                $to,
+                $this->encoding()
+            ),
+            $this->encoding()
+        )
+            ->append($part)
+            ->append(Runtime\Str\MB\Access::part(
+                $remaining,
+                $to,
+                null,
+                $this->encoding()
+            ));
+
+    }
+
+    /**
+     * ### Replaces a substring with a new value
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->overwrite(4, 11, 'Awesome');
+     *
+     * // 'The Awesome Project' (FireHub\Foundation\Str)
+     *
+     * $string = Str::of('The FireHub Project')->overwrite(-15, -8, 'Awesome');
+     *
+     * // 'The Awesome Project' (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Access::part() To replace the substring.
+     * @uses \FireHub\Foundation\Str\Base::value() To get the string value.
+     * @uses \FireHub\Foundation\Str\Base::encoding() To get the string encoding.
+     * @uses \FireHub\Foundation\Str\Base::append() To append the string to the current string.
+     *
+     * @param int $from <p>
+     * The starting character position of the substring to replace.
+     * </p>
+     * @param int $until <p>
+     * The ending character position of the substring to replace.
+     * </p>
+     * @param string $with <p>
+     * The new value to replace the substring with.
+     * </p>
+     *
+     * @since 1.0.0
+     *
+     * @return static<string> A new instance with the replaced substring.
+     */
+    public function overwrite (int $from, int $until, string $with):static {
+
+        return new static(
+            Runtime\Str\MB\Access::part(
+                $this->value(),
+                0,
+                $from,
+                $this->encoding()
+            ),
+            $this->encoding()
+        )
+            ->append($with)
+            ->append(Runtime\Str\MB\Access::part(
+                $this->value(),
+                $until,
+                null,
+                $this->encoding()
+            ));
 
     }
 

@@ -13,18 +13,9 @@
 
 namespace FireHub\Foundation\Str;
 
-use FireHub\Foundation\Str\Trait\Instantiable;
-use FireHub\Foundation\Str\Boundary\ {
-    CaseTransformable, Patternable
-};
-use FireHub\Foundation\Str\Case\ {
-    Casing, Converter
-};
+use FireHub\Foundation\Str;
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Foundation\Str\Exception\InvalidAsciiException;
-use FireHub\Runtime\Type\Str\ {
-    RegexDelimiter, RegexFlag
-};
 
 /**
  * ### Represents an ASCII encoded string value object
@@ -37,9 +28,9 @@ use FireHub\Runtime\Type\Str\ {
  *
  * @template TValue of string
  *
- * @extends \FireHub\Foundation\Str\Base<TValue>
+ * @extends \FireHub\Foundation\Str<TValue>
  */
-readonly class Ascii extends Base implements CaseTransformable, Patternable {
+readonly class Ascii extends Str {
 
     /**
      * @inheritDoc
@@ -61,47 +52,6 @@ readonly class Ascii extends Base implements CaseTransformable, Patternable {
             fn() => $this->pattern()->match()->is()->ascii() === true,
             fn() => new InvalidAsciiException('String must be valid ASCII.')
         );
-
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     */
-    public function case ():Casing {
-
-        return new Casing($this);
-
-    }
-
-    /**
-     * ### Instantiable
-     * @since 1.0.0
-     *
-     * @use \FireHub\Foundation\Str\Trait\Instantiable<TValue>
-     */
-    use Instantiable;
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     */
-    public function transform ():Converter {
-
-        return new Converter($this);
-
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     */
-    public function pattern (RegexDelimiter $delimiter = RegexDelimiter::SLASH, RegexFlag ...$flags):Pattern {
-
-        return new Pattern($this, $delimiter, ...$flags);
 
     }
 

@@ -158,11 +158,29 @@ final class ExtractTest extends FireHubTestCase {
      *
      * @return void
      */
-    #[TestWith(['FireHub', 'The [FireHub] Project', '[', ']'])]
-    #[TestWith(['', 'The FireHub Project', '[', ']'])]
+    #[TestWith(['FireHub] Project, The FireHub [Project', 'The [FireHub] Project, The FireHub [Project]', '[', ']'])]
+    #[TestWith(['', 'The FireHub Project, The FireHub Project', '[', ']'])]
     public function testBetween (string $expected, string $string, string $start, string $end):void {
 
         self::assertSame($expected, new Str($string)->extract()->between($start, $end)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param string $start
+     * @param string $end
+     *
+     * @return void
+     */
+    #[TestWith(['FireHub', 'The [FireHub] Project, The FireHub [Project]', '[', ']'])]
+    #[TestWith(['', 'The FireHub Project, The FireHub Project', '[', ']'])]
+    public function testBetweenFirst (string $expected, string $string, string $start, string $end):void {
+
+        self::assertSame($expected, new Str($string)->extract()->betweenFirst($start, $end)->value());
 
     }
 

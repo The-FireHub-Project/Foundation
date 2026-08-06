@@ -343,23 +343,19 @@ final readonly class Extract {
      * use FireHub\Foundation\Str\Operation\Extract;
      * use FireHub\Foundation\Str;
      *
-     * $string = new Extract(new Str('The [FireHub] Project'))->between('[', ']');
+     * $string = new Extract(new Str('The [FireHub] Project, The FireHub [Project]'))->between('[', ']');
      *
-     * // 'FireHub'
+     * // 'FireHub] Project, The FireHub [Project'
      *
-     * $string = new Extract(new Str('The FireHub Project'))->between('[', ']');
+     * $string = new Extract(new Str('The FireHub Project, The FireHub Project'))->between('[', ']');
      *
      * // ''
      * </code>
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Base::indexOf() To get the position of the starting string.
-     * @uses \FireHub\Foundation\Str\Operation\Extract::slice() To extract the portion of the string.
-     * @uses \FireHub\Runtime\Str\MB\Inspection::length() To get the length of the starting string.
-     * @uses \FireHub\Runtime\Str\MB\Search::firstPosition() To get the position of the ending string.
-     * @uses \FireHub\Foundation\Str\Base::encoding() To get the string encoding.
-     * @uses \FireHub\Foundation\Str\Base::value() To get the string value.
+     * @uses \FireHub\Foundation\Str\Operation\Extract after() To extract the portion of the string.
+     * @uses \FireHub\Foundation\Str\Operation\Extract untilLast() To extract the portion of the string.
      *
      * @param string $start <p>
      * The starting string.
@@ -372,26 +368,43 @@ final readonly class Extract {
      */
     public function between (string $start, string $end):Base {
 
-        $startPosition = $this->base->indexOf($start);
+        return $this->after($start)->extract()->untilLast($end);
 
-        if ($startPosition === false) return $this->slice(0, 0);
+    }
 
-        $from = $startPosition + Runtime\Str\MB\Inspection::length(
-                $start,
-                $this->base->encoding()
-            );
+    /**
+     * ### Extracts the portion of a string between the first occurrence of two strings
+     *
+     * <code>
+     * use FireHub\Foundation\Str\Operation\Extract;
+     * use FireHub\Foundation\Str;
+     *
+     * $string = new Extract(new Str('The [FireHub] Project, The FireHub [Project]'))->betweenFirst('[', ']');
+     *
+     * // 'FireHub'
+     *
+     * $string = new Extract(new Str('The FireHub Project, The FireHub Project'))->betweenFirst('[', ']');
+     *
+     * // ''
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Operation\Extract after() To extract the portion of the string.
+     * @uses \FireHub\Foundation\Str\Operation\Extract until() To extract the portion of the string.
+     *
+     * @param string $start <p>
+     * The starting string.
+     * </p>
+     * @param string $end <p>
+     * The ending string.
+     * </p>
+     *
+     * @return TBase The portion of the string between the first occurrence of the given strings.
+     */
+    public function betweenFirst (string $start, string $end):Base {
 
-        $endPosition = Runtime\Str\MB\Search::firstPosition(
-            $end,
-            $this->base->value(),
-            case_sensitive: $this->case_sensitive,
-            offset: $from,
-            encoding: $this->base->encoding()
-        );
-
-        if ($endPosition === false) return $this->slice(0, 0);
-
-        return $this->slice($from, $endPosition - $from);
+        return $this->after($start)->extract()->until($end);
 
     }
 
@@ -413,12 +426,8 @@ final readonly class Extract {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Base::lastIndexOf() To get the last position of the starting string.
-     * @uses \FireHub\Foundation\Str\Operation\Extract::slice() To extract the portion of the string.
-     * @uses \FireHub\Runtime\Str\MB\Inspection::length() To get the length of the starting string.
-     * @uses \FireHub\Runtime\Str\MB\Search::lastPosition() To get the last position of the ending string.
-     * @uses \FireHub\Foundation\Str\Base::encoding() To get the string encoding.
-     * @uses \FireHub\Foundation\Str\Base::value() To get the string value.
+     * @uses \FireHub\Foundation\Str\Operation\Extract afterLast() To extract the portion of the string.
+     * @uses \FireHub\Foundation\Str\Operation\Extract untilLast() To extract the portion of the string.
      *
      * @param string $start <p>
      * The starting string.
@@ -431,26 +440,7 @@ final readonly class Extract {
      */
     public function betweenLast (string $start, string $end):Base {
 
-        $startPosition = $this->base->lastIndexOf($start);
-
-        if ($startPosition === false) return $this->slice(0, 0);
-
-        $from = $startPosition + Runtime\Str\MB\Inspection::length(
-                $start,
-                $this->base->encoding()
-            );
-
-        $endPosition = Runtime\Str\MB\Search::lastPosition(
-            $end,
-            $this->base->value(),
-            case_sensitive: $this->case_sensitive,
-            offset: $from,
-            encoding: $this->base->encoding()
-        );
-
-        if ($endPosition === false || $endPosition < $from) return $this->slice(0, 0);
-
-        return $this->slice($from, $endPosition - $from);
+        return $this->afterLast($start)->extract()->untilLast($end);
 
     }
 
