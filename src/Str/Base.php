@@ -15,6 +15,7 @@ namespace FireHub\Foundation\Str;
 
 use FireHub\Core\Type\Str;
 use FireHub\Core\Type\Str\Encoding;
+use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
 use FireHub\Foundation\Convert;
 use FireHub\Foundation\Str\Operation\Extract;
 use FireHub\Runtime;
@@ -423,6 +424,72 @@ abstract readonly class Base extends Str {
     }
 
     /**
+     * ### Given a multibyte string, return an array of its characters
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->split(5);
+     *
+     * // ['The F', 'ireHu', 'b Pro', 'ject']
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Access::split() To split the string into an array of characters.
+     *
+     * @param positive-int $length [optional] <p>
+     * The length of each character.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\StringSplitLengthException If the $length parameter is less than 1.
+     *
+     * @return list<non-empty-string> Returns an array of characters.
+     */
+    public function split (int $length = 1):array {
+
+        return Runtime\Str\MB\Access::split($this->value, $length, $this->encoding);
+
+    }
+
+    /**
+     * ### Split a string by a string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->explode(' ');
+     *
+     * // ['The', 'FireHub', 'Project']
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses
+     *
+     * @param non-empty-string $separator <p>
+     * The boundary string.
+     * </p>
+     * @param int<min, max> $limit [optional] <p>
+     * If the limit is set and positive, the returned array will contain a maximum of limit elements with the last
+     * element containing the rest of the string.
+     *
+     * If the limit parameter is negative, all components except the last – limit are returned.
+     *
+     * If the limit parameter is zero, then this is treated as 1.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\EmptySeparatorException If the separator is an empty string.
+     *
+     * @return list<string> Returns an array of substrings.
+     */
+    public function explode (string $separator, int $limit = IntegerLimits::MAX):array {
+
+        return Runtime\Str\SB\Delimiter::explode($this->value, $separator, $limit);
+
+    }
+
+    /**
      * ### Prepends a string to the current string
      *
      * <code>
@@ -708,6 +775,70 @@ abstract readonly class Base extends Str {
                 null,
                 $this->encoding()
             ));
+
+    }
+
+    /**
+     * ### Repeats a string a specified number of times
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('FireHub')->repeat(3, '-');
+     *
+     * // 'FireHub-FireHub-FireHub' (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Transform::repeat() To repeat the string.
+     * @uses \FireHub\Foundation\Str\Base::value() To get the string value.
+     *
+     * @param int $times <p>
+     * The number of times to repeat the string.
+     * </p>
+     * @param string $separator [optional] <p>
+     * The separator to use between repeated strings.
+     * </p>
+     *
+     * @return static<string> Returns a new instance with the repeated string.
+     */
+    public function repeat (int $times, string $separator = ''):self {
+
+        return new static(
+            Runtime\Str\SB\Transform::repeat($this->value(), $times, $separator),
+            $this->encoding
+        );
+
+    }
+
+    /**
+     * ### Duplicated a substring with another string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('FireHub')->duplicate(3, '-');
+     *
+     * // 'FireHub-FireHub-FireHub-FireHub' (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Base::repeat() To repeat the string.
+     *
+     * @param int $times <p>
+     * The number of times to duplicate the string.
+     * </p>
+     * @param string $separator [optional] <p>
+     * The separator to use between duplicate strings.
+     * </p>
+     *
+     * @return static<string> Returns a new instance with the duplicated string.
+     */
+    public function duplicate (int $times, string $separator = ''):self {
+
+        return $this->repeat($times + 1, $separator);
 
     }
 

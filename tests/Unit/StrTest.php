@@ -14,14 +14,18 @@
 namespace FireHub\Tests\Foundation\Unit;
 
 use FireHub\Testing\FireHubTestCase;
-use FireHub\Foundation\Str;
 use FireHub\Core\Type\Str\Encoding;
+use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
+use FireHub\Foundation\Str;
 use FireHub\Foundation\Str\Case\ {
     Casing, Converter
 };
 use FireHub\Foundation\Str\Pattern;
 use FireHub\Foundation\Str\Operation\Extract;
 use FireHub\Runtime;
+use FireHub\Runtime\Exception\ {
+    EmptySeparatorException, StringSplitLengthException
+};
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
 };
@@ -307,6 +311,69 @@ final class StrTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
+     * @param list<non-empty-string> $expected
+     * @param string $string
+     * @param positive-int $length
+     *
+     * @throws \FireHub\Runtime\Exception\StringSplitLengthException
+     *
+     * @return void
+     */
+    #[TestWith([['The F', 'ireHu', 'b Pro', 'ject'], 'The FireHub Project', 5])]
+    public function testSplit (array $expected, string $string, int $length = 1):void {
+
+        self::assertSame($expected, new Str($string)->split($length));
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    public function testSplitNonPositiveLength ():void {
+
+        $this->expectException(StringSplitLengthException::class);
+
+        new Str('')->split(0);
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param list<non-empty-string> $expected
+     * @param string $string
+     * @param non-empty-string $separator
+     * @param int<min, max> $limit
+     *
+     * @throws \FireHub\Runtime\Exception\EmptySeparatorException
+     *
+     * @return void
+     */
+    #[TestWith([['The', 'FireHub', 'Project'], 'The FireHub Project', ' '])]
+    public function testExplode (array $expected, string $string, string $separator, int $limit = IntegerLimits::MAX):void {
+
+        self::assertSame($expected, new Str($string)->explode($separator, $limit));
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    public function testExplodeEmptySeparator ():void {
+
+        $this->expectException(EmptySeparatorException::class);
+
+        new Str('')->explode('');
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
      * @param string $expected
      * @param string $string
      * @param string $value
@@ -406,9 +473,43 @@ final class StrTest extends FireHubTestCase {
      */
     #[TestWith(['The Awesome Project', 'The FireHub Project', 4, 11, 'Awesome'])]
     #[TestWith(['The Awesome Project', 'The FireHub Project', -15, -8, 'Awesome'])]
-    public function test (string $expected, string $string, int $from, int $until, string $with):void {
+    public function testOverwrite (string $expected, string $string, int $from, int $until, string $with):void {
 
         self::assertSame($expected, new Str($string)->overwrite($from, $until, $with)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param int $times
+     * @param string $separator
+     *
+     * @return void
+     */
+    #[TestWith(['FireHub-FireHub-FireHub', 'FireHub', 3, '-'])]
+    public function testRepeat (string $expected, string $string, int $times, string $separator = ''):void {
+
+        self::assertSame($expected, new Str($string)->repeat($times, $separator)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param int $times
+     * @param string $separator
+     *
+     * @return void
+     */
+    #[TestWith(['FireHub-FireHub-FireHub-FireHub', 'FireHub', 3, '-'])]
+    public function testDuplicate (string $expected, string $string, int $times, string $separator = ''):void {
+
+        self::assertSame($expected, new Str($string)->duplicate($times, $separator)->value());
 
     }
 
