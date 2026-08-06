@@ -20,6 +20,7 @@ use FireHub\Foundation\Str\Case\ {
     Casing, Converter
 };
 use FireHub\Foundation\Str\Pattern;
+use FireHub\Foundation\Str\Operation\Extract;
 use FireHub\Runtime;
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
@@ -157,6 +158,17 @@ final class StrTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
+     * @return void
+     */
+    public function testExtract ():void {
+
+        self::assertInstanceOf(Extract::class, new Str('fireHub')->extract());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
      * @param bool $expected
      * @param string $string
      * @param string $value
@@ -255,6 +267,40 @@ final class StrTest extends FireHubTestCase {
     public function testContainsAll (bool $expected, string $string, iterable $values):void {
 
         self::assertSame($expected, new Str($string)->containsAll($values));
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param false|non-negative-int $expected
+     * @param string $string
+     * @param string $find
+     *
+     * @return void
+     */
+    #[TestWith([4, 'The FireHub Project', 'F'])]
+    #[TestWith([false, 'The FireHub Project', 'x'])]
+    public function testIndexOf (int|false $expected, string $string, string $find):void {
+
+        self::assertSame($expected, new Str($string)->indexOf($find));
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param false|non-negative-int $expected
+     * @param string $string
+     * @param string $find
+     *
+     * @return void
+     */
+    #[TestWith([18, 'The FireHub Project', 't'])]
+    #[TestWith([false, 'The FireHub Project', 'x'])]
+    public function testLastIndexOf (int|false $expected, string $string, string $find):void {
+
+        self::assertSame($expected, new Str($string)->lastIndexOf($find));
 
     }
 

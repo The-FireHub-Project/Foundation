@@ -55,7 +55,7 @@ readonly class Casing {
      *
      * $string = new Casing(new Str('FireHub'))->lower();
      *
-     * // firehub
+     * // 'firehub'
      * </code>
      *
      * @since 1.0.0
@@ -90,7 +90,7 @@ readonly class Casing {
      *
      * $string = new Casing(new Str('FireHub'))->upper();
      *
-     * // FIREHUB
+     * // 'FIREHUB'
      * </code>
      *
      * @since 1.0.0
@@ -128,7 +128,7 @@ readonly class Casing {
      *
      * $string = new Casing(new Str('The FireHub Project'))->swap();
      *
-     * // tHE fIREhUB pROJECT
+     * // 'tHE fIREhUB pROJECT'
      * </code>
      *
      * @since 1.0.0

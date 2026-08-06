@@ -59,7 +59,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('firehub'))->capitalize();
      *
-     * // Firehub
+     * // 'Firehub'
      * </code>
      *
      * @since 1.0.0
@@ -89,7 +89,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('FireHub'))->capitalize();
      *
-     * // fireHub
+     * // 'fireHub'
      * </code>
      *
      * @since 1.0.0
@@ -119,7 +119,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('the fireHub'))->title();
      *
-     * // The Firehub
+     * // 'The Firehub'
      * </code>
      *
      * @since 1.0.0
@@ -156,7 +156,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('the FireHub project'))->train();
      *
-     * // The FireHub Project
+     * // 'The FireHub Project'
      * </code>
      *
      * @since 1.0.0
@@ -198,7 +198,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('the firehub project'))->camel();
      *
-     * // theFirehubProject
+     * // 'theFirehubProject'
      * </code>
      *
      * @since 1.0.0
@@ -244,7 +244,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('the firehub project'))->pascal();
      *
-     * // TheFirehubProject
+     * // 'TheFirehubProject'
      * </code>
      *
      * @since 1.0.0
@@ -285,7 +285,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('the firehub project'))->snake();
      *
-     * // the_firehub_project
+     * // 'the_firehub_project'
      * </code>
      *
      * @since 1.0.0
@@ -322,7 +322,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('the firehub project'))->macro();
      *
-     * // THE_FIREHUB_PROJECT
+     * // 'THE_FIREHUB_PROJECT'
      * </code>
      *
      * @since 1.0.0
@@ -352,7 +352,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('the firehub project'))->kebab();
      *
-     * // the-firehub-project
+     * // 'the-firehub-project'
      * </code>
      *
      * @since 1.0.0
@@ -389,7 +389,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('the firehub project'))->cobol();
      *
-     * // THE-FIREHUB-PROJECT
+     * // 'THE-FIREHUB-PROJECT'
      * </code>
      *
      * @since 1.0.0
@@ -419,7 +419,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('the firehub project'))->dot();
      *
-     * // the.firehub.project
+     * // 'the.firehub.project'
      * </code>
      *
      * @since 1.0.0
@@ -456,7 +456,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('the firehub project'))->alternate();
      *
-     * // tHe fIrEhUb pRoJeCt
+     * // 'tHe fIrEhUb pRoJeCt'
      * </code>
      *
      * @since 1.0.0
@@ -534,7 +534,7 @@ readonly class Converter extends Casing {
      *
      * $string = new Converter(new Str('the_firehub_project'))->humanize();
      *
-     * // The firehub project
+     * // 'The firehub project'
      * </code>
      *
      * @since 1.0.0

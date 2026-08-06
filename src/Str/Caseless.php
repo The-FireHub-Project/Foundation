@@ -149,6 +149,68 @@ readonly class Caseless extends Base implements Patternable {
     }
 
     /**
+     * ### Finds the first occurrence of a substring in the string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->indexOf('f');
+     *
+     * // 4
+     *
+     * $string = Sstr::of('The FireHub Project')->indexOf('x');
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Search::firstPosition() To find the first occurrence of the substring.
+     *
+     * @param string $find <p>
+     * A string to find position.
+     * </p>
+     *
+     * @return false|non-negative-int Numeric position of the first occurrence or false if none exist.
+     */
+    public function indexOf (string $find):int|false {
+
+        return Runtime\Str\MB\Search::firstPosition($find, $this->value, false, encoding: $this->encoding);
+
+    }
+
+    /**
+     * ### Finds the last occurrence of a substring in the string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->lastIndexOf('T');
+     *
+     * // 18
+     *
+     * $string = Str::of('The FireHub Project')->lastIndexOf('x');
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Search::lastPosition() To find the last occurrence of the substring.
+     *
+     * @param string $find <p>
+     * A string to find position.
+     * </p>
+     *
+     * @return false|non-negative-int Numeric position of the last occurrence or false if none exist.
+     */
+    public function lastIndexOf (string $find):int|false {
+
+        return Runtime\Str\MB\Search::lastPosition($find, $this->value, false, encoding: $this->encoding);
+
+    }
+
+    /**
      * @inheritDoc
      *
      * @since 1.0.0

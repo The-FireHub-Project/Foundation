@@ -16,6 +16,7 @@ namespace FireHub\Foundation\Str;
 use FireHub\Core\Type\Str;
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Foundation\Convert;
+use FireHub\Foundation\Str\Operation\Extract;
 use FireHub\Runtime;
 
 /**
@@ -140,6 +141,18 @@ abstract readonly class Base extends Str {
     public function convert ():Convert {
 
         return new Convert($this->value);
+
+    }
+
+    /**
+     * ### Creates a new Extract instance for the current string value
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\Str\Operation\Extract<$this> Returns a new instance of the Extract class.
+     */
+    public function extract ():Extract {
+
+        return new Extract($this);
 
     }
 
@@ -348,6 +361,68 @@ abstract readonly class Base extends Str {
     }
 
     /**
+     * ### Finds the first occurrence of a substring in the string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->indexOf('F');
+     *
+     * // 4
+     *
+     * $string = Str::of('The FireHub Project')->indexOf('x');
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Search::firstPosition() To find the first occurrence of the substring.
+     *
+     * @param string $find <p>
+     * A string to find position.
+     * </p>
+     *
+     * @return false|non-negative-int Numeric position of the first occurrence or false if none exist.
+     */
+    public function indexOf (string $find):int|false {
+
+        return Runtime\Str\MB\Search::firstPosition($find, $this->value, encoding: $this->encoding);
+
+    }
+
+    /**
+     * ### Finds the last occurrence of a substring in the string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->lastIndexOf('t');
+     *
+     * // 18
+     *
+     * $string = Str::of('The FireHub Project')->lastIndexOf('x');
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Search::lastPosition() To find the last occurrence of the substring.
+     *
+     * @param string $find <p>
+     * A string to find position.
+     * </p>
+     *
+     * @return false|non-negative-int Numeric position of the last occurrence or false if none exist.
+     */
+    public function lastIndexOf (string $find):int|false {
+
+        return Runtime\Str\MB\Search::lastPosition($find, $this->value, encoding: $this->encoding);
+
+    }
+
+    /**
      * ### Cleans up the string by removing unwanted characters and whitespace
      *
      * This method performs various transformations on the string to clean it up and make it suitable for display or
@@ -371,7 +446,7 @@ abstract readonly class Base extends Str {
      * expression search and replace type.
      * @throws \FireHub\Runtime\Exception\InvalidEncodingException If string is not valid for the current encoding.
      *
-     * @return static Returns a new instance with the string cleaned up.
+     * @return static<string> Returns a new instance with the string cleaned up.
      */
     public function tidy ():static {
 

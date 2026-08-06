@@ -88,4 +88,38 @@ final class CaselessTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @param false|non-negative-int $expected
+     * @param string $string
+     * @param string $find
+     *
+     * @return void
+     */
+    #[TestWith([4, 'The FireHub Project', 'f'])]
+    #[TestWith([false, 'The FireHub Project', 'x'])]
+    public function testIndexOf (int|false $expected, string $string, string $find):void {
+
+        self::assertSame($expected, new Caseless($string)->indexOf($find));
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param false|non-negative-int $expected
+     * @param string $string
+     * @param string $find
+     *
+     * @return void
+     */
+    #[TestWith([18, 'The FireHub Project', 'T'])]
+    #[TestWith([false, 'The FireHub Project', 'x'])]
+    public function testLastIndexOf (int|false $expected, string $string, string $find):void {
+
+        self::assertSame($expected, new Caseless($string)->lastIndexOf($find));
+
+    }
+
 }
