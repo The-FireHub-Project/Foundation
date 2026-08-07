@@ -13,7 +13,9 @@
 
 namespace FireHub\Foundation\Str\Pattern;
 
-use FireHub\Core\Type\Str;
+use FireHub\Core\Type\ {
+    Char, Str
+};
 use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Foundation\Str\Pattern\Expression\ {
     Contains, EndsWith, Is, StartsWith
@@ -36,6 +38,8 @@ use FireHub\Runtime\Type\Str\ {
  * @template TPatternable of \FireHub\Foundation\Str\Boundary\Patternable
  *
  * @extends \FireHub\Foundation\Str\Pattern\Base<TPatternable>
+ *
+ * @phpstan-type StringValue (Char<non-empty-string>&TPatternable)|(Str<string>&TPatternable)
  */
 final readonly class Matcher extends Base {
 
@@ -43,7 +47,7 @@ final readonly class Matcher extends Base {
      * ### Constructor
      * @since 1.0.0
      *
-     * @param \FireHub\Core\Type\Str<string>&TPatternable $str <p>
+     * @param StringValue $str <p>
      * The string value to operate on.
      * </p>
      * @param int $offset <p>
@@ -59,7 +63,7 @@ final readonly class Matcher extends Base {
      * @return void
      */
     public function __construct (
-        Str&Patternable $str,
+        (Str&Patternable)|(Char&Patternable) $str,
         private int $offset,
         RegexDelimiter $delimiter = RegexDelimiter::SLASH,
         RegexFlag ...$flags

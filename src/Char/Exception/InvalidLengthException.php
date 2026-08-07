@@ -11,16 +11,16 @@
  * @package Foundation
  */
 
-namespace FireHub\Foundation\Str\Exception;
+namespace FireHub\Foundation\Char\Exception;
 
-use FireHub\Core\Exception\RuntimeException;
+use FireHub\Core\Exception\DomainException;
 
 /**
- * ### Represents an invalid pattern provided to an operation that requires a valid regex pattern
+ * ### Represents an invalid length provided to an operation that requires a valid length
  * @since 1.0.0
  */
-final class InvalidPatternException extends RuntimeException {
+final class InvalidLengthException extends DomainException {
 
-    protected const string DEFAULT_MESSAGE = 'The pattern is not valid';
+    protected const string DEFAULT_MESSAGE = 'The length of the character is not valid';
 
 }

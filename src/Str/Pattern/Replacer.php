@@ -13,7 +13,9 @@
 
 namespace FireHub\Foundation\Str\Pattern;
 
-use FireHub\Core\Type\Str;
+use FireHub\Core\Type\ {
+    Char, Str
+};
 use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Foundation\Str\Pattern\Expression\All;
 use FireHub\Runtime;
@@ -33,6 +35,8 @@ use FireHub\Runtime\Type\Str\ {
  * @template TPatternable of \FireHub\Foundation\Str\Boundary\Patternable
  *
  * @extends \FireHub\Foundation\Str\Pattern\Base<TPatternable>
+ *
+ * @phpstan-type StringValue (Char<non-empty-string>&TPatternable)|(Str<string>&TPatternable)
  */
 final readonly class Replacer extends Base {
 
@@ -40,7 +44,7 @@ final readonly class Replacer extends Base {
      * ### Constructor
      * @since 1.0.0
      *
-     * @param \FireHub\Core\Type\Str<string>&TPatternable $str <p>
+     * @param StringValue $str <p>
      * The string value to operate on.
      * </p>
      * @param string $with <p>
@@ -59,7 +63,7 @@ final readonly class Replacer extends Base {
      * @return void
      */
     public function __construct (
-        Str&Patternable $str,
+        (Str&Patternable)|(Char&Patternable) $str,
         private string $with,
         private int $limit,
         RegexDelimiter $delimiter = RegexDelimiter::SLASH,
@@ -86,18 +90,17 @@ final readonly class Replacer extends Base {
      *
      * @uses \FireHub\Runtime\Str\SB\Regex::replace() For pattern replacement.
      * @uses \FireHub\Foundation\Str\Pattern\Base::patternBuilder() To build the regular expression pattern.
-     * @uses \FireHub\Core\Type\Str::of() To create a new Str instance with the replaced content.
      * @uses \FireHub\Foundation\Str\Boundary\Patternable::value() To get the string value.
      * @uses \FireHub\Foundation\Str\Boundary\Patternable::encoding() To get the string encoding.
      *
      * @throws \FireHub\Runtime\Exception\InvalidPatternException If error while performing a regular expression,
      * search and replace.
      *
-     * @return \FireHub\Core\Type\Str<string>&TPatternable A new Str instance with the replaced content.
+     * @return StringValue A new Str instance with the replaced content.
      */
-    public function custom (string $pattern):Str {
+    public function custom (string $pattern):(Str&Patternable)|(Char&Patternable) {
 
-        return $this->str::of(
+        return new $this->str(
             Runtime\Str\SB\Regex::replace(
                 $this->patternBuilder($pattern),
                 $this->with,

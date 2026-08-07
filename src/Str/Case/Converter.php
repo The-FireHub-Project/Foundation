@@ -36,15 +36,13 @@ readonly class Converter extends Casing {
      * ### Constructor
      * @since 1.0.0
      *
-     * @param \FireHub\Core\Type\Str<string>&TCaseTransformable $str <p>
+     * @param \FireHub\Foundation\Str<string>&TCaseTransformable $str <p>
      * The string to convert.
      * </p>
      *
      * @return void
      */
-    public function __construct (
-        Str&CaseTransformable $str
-    ) {
+    public function __construct (Str&CaseTransformable $str) {
 
         parent::__construct($str);
 
@@ -65,7 +63,6 @@ readonly class Converter extends Casing {
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Str\MB\Casing::capitalize() To capitalize the first character of the string.
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::value() To get the string value.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      *
@@ -73,7 +70,7 @@ readonly class Converter extends Casing {
      */
     public function capitalize ():CaseTransformable {
 
-        return $this->str::of(
+        return new $this->str(
             Runtime\Str\MB\Casing::capitalize($this->str->value()),
             $this->str->encoding()
         );
@@ -95,7 +92,6 @@ readonly class Converter extends Casing {
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Str\MB\Casing::uncapitalize() To Uncapitalize the first character of the string.
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::value() To get the string value.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      *
@@ -103,7 +99,7 @@ readonly class Converter extends Casing {
      */
     public function uncapitalize ():CaseTransformable {
 
-        return $this->str::of(
+        return new $this->str(
             Runtime\Str\MB\Casing::uncapitalize($this->str->value()),
             $this->str->encoding()
         );
@@ -126,7 +122,6 @@ readonly class Converter extends Casing {
      *
      * @uses \FireHub\Runtime\Str\MB\Casing::convert() To convert the string the title case.
      * @uses \FireHub\Runtime\Type\Str\CaseMode::UPPER To convert the string the title case.
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::value() To get the string value.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      *
@@ -134,7 +129,7 @@ readonly class Converter extends Casing {
      */
     public function title ():CaseTransformable {
 
-        return $this->str::of(
+        return new $this->str(
             Runtime\Str\MB\Casing::convert(
                 $this->str->value(),
                 CaseMode::TITLE,
@@ -161,7 +156,6 @@ readonly class Converter extends Casing {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new string instance.
      * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
      * @uses \FireHub\Runtime\Arr\Transform::map() To transform words.
      * @uses \FireHub\Runtime\Str\MB\Casing::capitalize() To capitalize words.
@@ -176,7 +170,7 @@ readonly class Converter extends Casing {
      */
     public function train ():CaseTransformable {
 
-        return $this->str::of(
+        return new $this->str(
             Runtime\Str\SB\Delimiter::implode(
                 Runtime\Arr\Transform::map(
                     $this->words(),
@@ -203,7 +197,6 @@ readonly class Converter extends Casing {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
      * @uses \FireHub\Runtime\Arr\Structure::slice() To slice the array.
@@ -221,7 +214,7 @@ readonly class Converter extends Casing {
 
         $words = $this->words();
 
-        return $this->str::of(
+        return new $this->str(
             $words === []
                 ? ''
                 : $words[0].(Runtime\Arr\Structure::slice($words, 1) // @phpstan-ignore offsetAccess.notFound
@@ -249,7 +242,6 @@ readonly class Converter extends Casing {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
      * @uses \FireHub\Runtime\Arr\Transform::map() To map the array.
@@ -264,7 +256,7 @@ readonly class Converter extends Casing {
      */
     public function pascal ():CaseTransformable {
 
-        return $this->str::of(
+        return new $this->str(
             Runtime\Str\SB\Delimiter::implode(
                 Runtime\Arr\Transform::map(
                     $this->words(),
@@ -290,7 +282,6 @@ readonly class Converter extends Casing {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
      * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To implode the array.
@@ -303,7 +294,7 @@ readonly class Converter extends Casing {
      */
     public function snake ():CaseTransformable {
 
-        return $this->str::of(
+        return new $this->str(
             Runtime\Str\SB\Delimiter::implode(
                 $this->words(),
                 '_'
@@ -357,7 +348,6 @@ readonly class Converter extends Casing {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
      * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To implode the array.
@@ -370,7 +360,7 @@ readonly class Converter extends Casing {
      */
     public function kebab ():CaseTransformable {
 
-        return $this->str::of(
+        return new $this->str(
             Runtime\Str\SB\Delimiter::implode(
                 $this->words(),
                 '-'
@@ -424,7 +414,6 @@ readonly class Converter extends Casing {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Foundation\Str\Case\Converter::words() To get the words of the string.
      * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To implode the array.
@@ -437,7 +426,7 @@ readonly class Converter extends Casing {
      */
     public function dot ():CaseTransformable {
 
-        return $this->str::of(
+        return new $this->str(
             Runtime\Str\SB\Delimiter::implode(
                 $this->words(),
                 '.'
@@ -461,7 +450,6 @@ readonly class Converter extends Casing {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::value() To get the string value.
      * @uses \FireHub\Runtime\Str\MB\Inspection::length() To get the length of the string.
@@ -519,7 +507,7 @@ readonly class Converter extends Casing {
 
         }
 
-        return $this->str::of($result, $this->str->encoding());
+        return new $this->str($result, $this->str->encoding());
 
     }
 
@@ -539,7 +527,6 @@ readonly class Converter extends Casing {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Foundation\Str\Case\Converter::words() To extract words from the string.
      * @uses \FireHub\Runtime\Str\MB\Casing::convert() To convert the first word to uppercase.
@@ -557,7 +544,7 @@ readonly class Converter extends Casing {
 
         $words = $this->words();
 
-        return $this->str::of(
+        return new $this->str(
             $words === []
                 ? ''
                 : Runtime\Str\MB\Casing::capitalize(

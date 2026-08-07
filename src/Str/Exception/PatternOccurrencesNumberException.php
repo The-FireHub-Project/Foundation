@@ -7,8 +7,8 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=7.0
- * @package Core
+ * @php-version >=8.3
+ * @package Foundation
  */
 
 namespace FireHub\Foundation\Str\Exception;
@@ -16,7 +16,7 @@ namespace FireHub\Foundation\Str\Exception;
 use FireHub\Core\Exception\RuntimeException;
 
 /**
- * ### Pattern Occurrences Number Exception
+ * ### Represents an invalid pattern occurrences number provided to an operation that requires a valid number
  * @since 1.0.0
  */
 final class PatternOccurrencesNumberException extends RuntimeException {

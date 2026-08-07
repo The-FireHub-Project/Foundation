@@ -13,7 +13,9 @@
 
 namespace FireHub\Foundation\Str\Pattern;
 
-use FireHub\Core\Type\Str;
+use FireHub\Core\Type\ {
+    Char, Str
+};
 use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\ {
@@ -32,6 +34,8 @@ use FireHub\Runtime\Type\Str\ {
  * @since 1.0.0
  *
  * @template TPatternable of \FireHub\Foundation\Str\Boundary\Patternable
+ *
+ * @phpstan-type StringValue (Char<non-empty-string>&TPatternable)|(Str<string>&TPatternable)
  */
 abstract readonly class Base {
 
@@ -69,7 +73,7 @@ abstract readonly class Base {
      * @uses \FireHub\Runtime\Arr\Transform::unique() To remove duplicate flags.
      * @uses \FireHub\Foundation\Str\Pattern\Base::DEFAULT_FLAGS To set the default flags.
      *
-     * @param \FireHub\Core\Type\Str<string>&TPatternable $str <p>
+     * @param StringValue $str <p>
      * The string value to operate on.
      * </p>
      * @param \FireHub\Runtime\Type\Str\RegexDelimiter $delimiter [optional] <p>
@@ -85,7 +89,7 @@ abstract readonly class Base {
      * pattern operations.
      */
     public function __construct (
-        protected Str&Patternable $str,
+        protected (Str&Patternable)|(Char&Patternable) $str,
         RegexDelimiter $delimiter = RegexDelimiter::SLASH,
         RegexFlag ...$flags
     ) {

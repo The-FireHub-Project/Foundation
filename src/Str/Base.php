@@ -16,8 +16,8 @@ namespace FireHub\Foundation\Str;
 use FireHub\Core\Type\Str;
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Core\Meta\Enum\Side;
+use FireHub\Foundation\StringValue;
 use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
-use FireHub\Foundation\Convert;
 use FireHub\Foundation\Str\Operation\ {
     Escape, Extract, Sanitize
 };
@@ -41,10 +41,12 @@ use FireHub\Runtime;
 abstract readonly class Base extends Str {
 
     /**
-     * ### Default encoding
+     * ### Base implementation for string-based Value Objects
      * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\StringValue<TValue>
      */
-    protected const Encoding DEFAULT_ENCODING = Encoding::UTF_8;
+    use StringValue;
 
     /**
      * ### Constructor
@@ -63,90 +65,6 @@ abstract readonly class Base extends Str {
         protected string $value,
         protected Encoding $encoding = self::DEFAULT_ENCODING
     ) {}
-
-    /**
-     * {@inheritDoc}
-     *
-     * <code>
-     * use FireHub\Foundation\Str;
-     *
-     * $string = Str::of('FireHub')->value();
-     *
-     * // FireHub
-     * </code>
-     *
-     * @since 1.0.0
-     */
-    public function value ():string {
-
-        return $this->value;
-
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <code>
-     * use FireHub\Foundation\Str;
-     *
-     * $encoding = Str::of('FireHub')->encoding();
-     *
-     * // Encoding::UTF_8
-     * </code>
-     *
-     * @uses \FireHub\Runtime\Str\MB\Configuration::encoding() To get the default encoding.
-     *
-     * @since 1.0.0
-     *
-     */
-    public function encoding ():Encoding {
-
-        return $this->encoding;
-
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <code>
-     * use FireHub\Foundation\Str;
-     * use FireHub\Core\Type\Str\Encoding;
-     *
-     * $string = Str::of('FireHub')->withEncoding(Encoding::ASCII);
-     *
-     * $encoding = $string->encoding();
-     *
-     * // Encoding::ASCII
-     * </code>
-     *
-     * @since 1.0.0
-     */
-    public function withEncoding (Encoding $encoding):static {
-
-        return new static($this->value, $encoding);
-
-    }
-
-    /**
-     * ### Creates a new Convert instance for the current string value
-     *
-     * <code>
-     * use FireHub\Foundation\Str;
-     *
-     * $string = Str::of('123')->convert()->strict()->int();
-     *
-     * // 123
-     * </code>
-     *
-     * @since 1.0.0
-     *
-     * @return \FireHub\Foundation\Convert Returns a new instance of the Convert class.
-     */
-    public function convert ():Convert {
-
-        return new Convert($this->value);
-
-    }
 
     /**
      * ### Creates a new Extract instance for the current string value

@@ -13,7 +13,9 @@
 
 namespace FireHub\Foundation\Str;
 
-use FireHub\Core\Type\Str;
+use FireHub\Core\Type\ {
+    Char, Str
+};
 use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Foundation\Str\Pattern\ {
     Matcher, Replacer
@@ -32,6 +34,8 @@ use FireHub\Runtime\Type\Str\ {
  * @since 1.0.0
  *
  * @template TPatternable of \FireHub\Foundation\Str\Boundary\Patternable
+ *
+ * @phpstan-type StringValue (Char<non-empty-string>&TPatternable)|(Str<string>&TPatternable)
  */
 final readonly class Pattern {
 
@@ -47,7 +51,7 @@ final readonly class Pattern {
      * ### Constructor
      * @since 1.0.0
      *
-     * @param \FireHub\Core\Type\Str<string>&TPatternable $str <p>
+     * @param StringValue $str <p>
      * The string value to operate on.
      * </p>
      * @param \FireHub\Runtime\Type\Str\RegexDelimiter $delimiter [optional] <p>
@@ -60,7 +64,7 @@ final readonly class Pattern {
      * @return void
      */
     public function __construct (
-        private Str&Patternable $str,
+        private (Str&Patternable)|(Char&Patternable) $str,
         private RegexDelimiter $delimiter = RegexDelimiter::SLASH,
         RegexFlag ...$flags
     ) {
@@ -77,8 +81,7 @@ final readonly class Pattern {
      * The offset at which to start the search.
      * </p>
      *
-     * @return \FireHub\Foundation\Str\Pattern\Matcher<\FireHub\Core\Type\Str<string>&TPatternable> Returns a new
-     * Matcher instance for pattern matching.
+     * @return \FireHub\Foundation\Str\Pattern\Matcher<StringValue> Returns a new Matcher instance for pattern matching.
      */
     public function match (int $offset = 0):Matcher {
 
@@ -97,8 +100,8 @@ final readonly class Pattern {
      * The maximum number of replacements to perform. Defaults to -1 (no limit).
      * </p>
      *
-     * @return \FireHub\Foundation\Str\Pattern\Replacer<\FireHub\Core\Type\Str<string>&TPatternable> Returns a new
-     * Replacer instance for pattern replacement.
+     * @return \FireHub\Foundation\Str\Pattern\Replacer<StringValue> Returns a new Replacer instance for pattern
+     * replacement.
      */
     public function replace (string $with, int $limit = -1):Replacer {
 
@@ -114,8 +117,8 @@ final readonly class Pattern {
      * The maximum number of replacements to perform. Defaults to -1 (no limit).
      * </p>
      *
-     * @return \FireHub\Foundation\Str\Pattern\Replacer<\FireHub\Core\Type\Str<string>&TPatternable> Returns a new
-     * Replacer instance for pattern removal.
+     * @return \FireHub\Foundation\Str\Pattern\Replacer<StringValue> Returns a new Replacer instance for pattern
+     * removal.
      */
     public function remove (int $limit = -1):Replacer {
 

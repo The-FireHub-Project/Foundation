@@ -13,7 +13,9 @@
 
 namespace FireHub\Foundation\Str\Case;
 
-use FireHub\Core\Type\Str;
+use FireHub\Core\Type\ {
+    Char, Str
+};
 use FireHub\Foundation\Str\Boundary\Caseable;
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\CaseMode;
@@ -36,14 +38,14 @@ readonly class Casing {
      * ### Constructor
      * @since 1.0.0
      *
-     * @param \FireHub\Core\Type\Str<string>&TCaseable $str <p>
+     * @param (Char<non-empty-string>&TCaseable)|(Str<string>&TCaseable) $str <p>
      * The string to convert.
      * </p>
      *
      * @return void
      */
     public function __construct (
-        protected Str&Caseable $str
+        protected (Str&Caseable)|(Char&Caseable) $str
     ) {}
 
     /**
@@ -62,7 +64,6 @@ readonly class Casing {
      *
      * @uses \FireHub\Runtime\Str\MB\Casing::convert() To convert the string to lowercase.
      * @uses \FireHub\Runtime\Type\Str\CaseMode::LOWER To convert the string to lowercase.
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::value() To get the string value.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      *
@@ -70,7 +71,7 @@ readonly class Casing {
      */
     public function lower ():Caseable {
 
-        return $this->str::of(
+        return new $this->str(
             Runtime\Str\MB\Casing::convert(
                 $this->str->value(),
                 CaseMode::LOWER,
@@ -97,7 +98,6 @@ readonly class Casing {
      *
      * @uses \FireHub\Runtime\Str\MB\Casing::convert() To convert the string to uppercase.
      * @uses \FireHub\Runtime\Type\Str\CaseMode::UPPER To convert the string to uppercase.
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::value() To get the string value.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      *
@@ -105,7 +105,7 @@ readonly class Casing {
      */
     public function upper ():Caseable {
 
-        return $this->str::of(
+        return new $this->str(
             Runtime\Str\MB\Casing::convert(
                 $this->str->value(),
                 CaseMode::UPPER,
@@ -133,7 +133,6 @@ readonly class Casing {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::of() To create a new Str instance.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::value() To get the string value.
      * @uses \FireHub\Foundation\Str\Boundary\CaseTransformable::encoding() To get the string encoding.
      * @uses \FireHub\Runtime\Type\Str\CaseMode::UPPER To convert the string to uppercase.
@@ -184,7 +183,7 @@ readonly class Casing {
 
         }
 
-        return $this->str::of($result, $this->str->encoding());
+        return new $this->str($result, $this->str->encoding());
 
     }
 

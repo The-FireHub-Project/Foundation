@@ -14,7 +14,6 @@
 namespace FireHub\Foundation\Str\Boundary;
 
 use FireHub\Foundation\Str\Pattern;
-use FireHub\Core\Type\Str\Encoding;
 use FireHub\Runtime\Type\Str\ {
     RegexDelimiter, RegexFlag
 };
@@ -29,21 +28,6 @@ use FireHub\Runtime\Type\Str\ {
  * @since 1.0.0
  */
 interface Patternable {
-
-    /**
-     * ### Creates a new string value object from the given string and encoding
-     * @since 1.0.0
-     *
-     * @param string $value <p>
-     * The string value to encapsulate.
-     * </p>
-     * @param \FireHub\Core\Type\Str\Encoding $encoding <p>
-     * The encoding of the string.
-     * </p>
-     *
-     * @return static A new instance of the implementing class.
-     */
-    public static function of (string $value, Encoding $encoding):static;
 
     /**
      * ### Returns the pattern object for this string

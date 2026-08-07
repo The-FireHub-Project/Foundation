@@ -14,7 +14,6 @@
 namespace FireHub\Foundation\Str\Boundary;
 
 use FireHub\Foundation\Str\Case\Casing;
-use FireHub\Core\Type\Str\Encoding;
 
 /**
  * ### Defines an object that supports string casing transformations
@@ -27,21 +26,6 @@ use FireHub\Core\Type\Str\Encoding;
  * @since 1.0.0
  */
 interface Caseable {
-
-    /**
-     * ### Creates a new instance of the string value object with a different case format
-     * @since 1.0.0
-     *
-     * @param string $value <p>
-     * The string value to convert.
-     * </p>
-     * @param \FireHub\Core\Type\Str\Encoding $encoding <p>
-     * The encoding of the string.
-     * </p>
-     *
-     * @return static A new instance of the string value object with the converted case.
-     */
-    public static function of (string $value, Encoding $encoding):static;
 
     /**
      * ### Returns the case converter object for this string
