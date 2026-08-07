@@ -353,6 +353,39 @@ final class StrTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
+     * @param list<\FireHub\Core\Type\Char<non-empty-string>> $expected
+     * @param string $string
+     *
+     * @throws \FireHub\Runtime\Exception\StringSplitLengthException
+     * @throws \FireHub\Foundation\Char\Exception\InvalidLengthException
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     *
+     * @return void
+     */
+    #[TestWith([['F', 'i', 'r', 'e', 'H', 'u', 'b'], 'FireHub'])]
+    public function testToChars (array $expected, string $string):void {
+
+        $chars = new Str($string)->toChars();
+
+        self::assertCount(
+            count($expected),
+            $chars
+        );
+
+        self::assertSame(
+            $expected,
+            array_map(
+                static fn (Char $char):string => $char->value(),
+                $chars
+            )
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
      * @param list<non-empty-string> $expected
      * @param string $string
      * @param positive-int $length

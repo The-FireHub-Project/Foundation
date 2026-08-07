@@ -14,11 +14,12 @@
 namespace FireHub\Foundation\Str;
 
 use FireHub\Core\Type\ {
-    Char, Str
+    Char as BaseChar, Str
 };
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Core\Meta\Enum\Side;
 use FireHub\Foundation\StringValue;
+use FireHub\Foundation\Char;
 use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
 use FireHub\Foundation\Str\Operation\ {
     Escape, Extract, Sanitize
@@ -390,6 +391,33 @@ abstract readonly class Base extends Str {
     public function lastIndexOf (string $find):int|false {
 
         return Runtime\Str\MB\Search::lastPosition($find, $this->value, encoding: $this->encoding);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('FireHub')->toChars();
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Runtime\Exception\StringSplitLengthException If the $length parameter is less than 1.
+     * @throws \FireHub\Foundation\Char\Exception\InvalidLengthException If the string length is not 1.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function toChars ():array {
+
+        $chars = [];
+
+        foreach ($this->split() as $char)
+            $chars[] = new Char($char, $this->encoding);
+
+        return $chars;
 
     }
 
@@ -1298,7 +1326,7 @@ abstract readonly class Base extends Str {
      *
      * @return static<string>|static<TValue> Returns a new instance with the selected portion masked.
      */
-    public function mask (Char $with, int $from, ?int $length = null):static {
+    public function mask (BaseChar $with, int $from, ?int $length = null):static {
 
         if ($length === null) $length = $this->length() - $from;
 
