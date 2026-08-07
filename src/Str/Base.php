@@ -478,6 +478,39 @@ abstract readonly class Base extends Str {
     }
 
     /**
+     * ### Given a multibyte string, return an array of its characters grouped into chunks of a given size
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->group(3);
+     *
+     * // ['The Fir', 'eHub Pr', 'oject']
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Base::split() To split the string into chunks.
+     * @uses \FireHub\Foundation\Str\Base::length() To get the string length.
+     * @uses \FireHub\Runtime\Math::ceil() To calculate the number of chunks.
+     *
+     * @param positive-int $number_of_groups<p>
+     * The number of groups to split the string into.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\StringSplitLengthException If the $length parameter is less than 1.
+     *
+     * @return list<non-empty-string> Grouped string into chunks
+     */
+    public function group (int $number_of_groups):array {
+
+        return $this->split((
+            $size = Runtime\Math::ceil($this->length() / $number_of_groups)) >= 1 ? $size : 1
+        );
+
+    }
+
+    /**
      * ### Split a string by a string
      *
      * <code>
@@ -1205,6 +1238,50 @@ abstract readonly class Base extends Str {
             Runtime\Str\SB\Delimiter::implode($result, ' '),
             $this->encoding
         )->append($with);
+
+    }
+
+    /**
+     * ### Wraps each word in the string with a specified quote
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->quoteWords();
+     *
+     * // '"The" "FireHub" "Project"' (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Tokenizer::words() To get the words of the string.
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To join array elements with a string.
+     * @uses \FireHub\Runtime\Arr\Transform::map() To map array elements.
+     *
+     * @param string $with [optional] <p>
+     * The string to quote every word.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException If an error occurred while performing a regular
+     * expression search and replace type, or regular expression split.
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException If string is not valid for the current encoding.
+     *
+     * @return static<string> Returns a new instance with the string words quoted.
+     */
+    public function quoteWords (string $with = '"'):static {
+
+        $words = new Tokenizer($this->value, $this->encoding)->words();
+
+        return new static(
+            Runtime\Str\SB\Delimiter::implode(
+                Runtime\Arr\Transform::map(
+                    $words,
+                    static fn(string $word) => $with.$word.$with,
+                ),
+                ' '
+            ),
+            $this->encoding
+        );
 
     }
 

@@ -360,6 +360,24 @@ final class StrTest extends FireHubTestCase {
      *
      * @param list<non-empty-string> $expected
      * @param string $string
+     * @param positive-int $number_of_groups
+     *
+     * @throws \FireHub\Runtime\Exception\StringSplitLengthException
+     *
+     * @return void
+     */
+    #[TestWith([['The Fir', 'eHub Pr', 'oject'], 'The FireHub Project', 3])]
+    public function testGroup (array $expected, string $string, int $number_of_groups):void {
+
+        self::assertSame($expected, new Str($string)->group($number_of_groups));
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param list<non-empty-string> $expected
+     * @param string $string
      * @param non-empty-string $separator
      * @param int<min, max> $limit
      *
@@ -669,6 +687,25 @@ final class StrTest extends FireHubTestCase {
     public function testTruncateSafe (string $expected, string $string, int $length, string $with = '...'):void {
 
         self::assertSame($expected, new Str($string)->truncateSafe($length, $with)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param string $with
+     *
+     * @throws \FireHub\Runtime\Exception\InvalidPatternException
+     * @throws \FireHub\Runtime\Exception\InvalidEncodingException
+     *
+     * @return void
+     */
+    #[TestWith(['"The" "FireHub" "Project"', 'The FireHub Project'])]
+    public function testQuoteWords (string $expected, string $string, string $with = '"'):void {
+
+        self::assertSame($expected, new Str($string)->quoteWords($with)->value());
 
     }
 
