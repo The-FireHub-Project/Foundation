@@ -22,7 +22,9 @@ use FireHub\Foundation\Str\Case\ {
     Casing, Converter
 };
 use FireHub\Foundation\Str\Pattern;
-use FireHub\Foundation\Str\Operation\Extract;
+use FireHub\Foundation\Str\Operation\ {
+    Escape, Extract, Sanitize
+};
 use FireHub\Runtime;
 use FireHub\Runtime\Exception\ {
     EmptySeparatorException, StringSplitLengthException
@@ -168,6 +170,28 @@ final class StrTest extends FireHubTestCase {
     public function testExtract ():void {
 
         self::assertInstanceOf(Extract::class, new Str('fireHub')->extract());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    public function testEscape ():void {
+
+        self::assertInstanceOf(Escape::class, new Str('fireHub')->escape());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    public function testSanitize ():void {
+
+        self::assertInstanceOf(Sanitize::class, new Str('fireHub')->sanitize());
 
     }
 

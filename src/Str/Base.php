@@ -18,8 +18,9 @@ use FireHub\Core\Type\Str\Encoding;
 use FireHub\Core\Meta\Enum\Side;
 use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
 use FireHub\Foundation\Convert;
-use FireHub\Foundation\Str\Tokenizer;
-use FireHub\Foundation\Str\Operation\Extract;
+use FireHub\Foundation\Str\Operation\ {
+    Escape, Extract, Sanitize
+};
 use FireHub\Runtime;
 
 /**
@@ -156,6 +157,30 @@ abstract readonly class Base extends Str {
     public function extract ():Extract {
 
         return new Extract($this);
+
+    }
+
+    /**
+     * ### Creates a new Escape instance for the current string value
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\Str\Operation\Escape<$this> Returns a new instance of the Escape class.
+     */
+    public function escape ():Escape {
+
+        return new Escape($this);
+
+    }
+
+    /**
+     * ### Creates a new Sanitize instance for the current string value
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\Str\Operation\Sanitize<$this> Returns a new instance of the Sanitize class.
+     */
+    public function sanitize ():Sanitize {
+
+        return new Sanitize($this);
 
     }
 
