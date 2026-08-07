@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.2
+ * @php-version >=8.4
  * @package Foundation
  */
 
@@ -18,11 +18,11 @@ use FireHub\Core\Type\Str\Encoding;
 use FireHub\Foundation\Str\Boundary\ {
     Caseable, Patternable
 };
-use FireHub\Foundation\Str\Case\ {
-    Casing, Converter
-};
+use FireHub\Foundation\Str\Case\Casing;
 use FireHub\Foundation\Str\Pattern;
-use FireHub\Foundation\Char\Exception\InvalidLengthException;
+use FireHub\Foundation\Char\Exception\ {
+    InvalidCodepointException, InvalidLengthException
+};
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\ {
     RegexDelimiter, RegexFlag
@@ -93,6 +93,49 @@ readonly class Char extends BaseChar implements Caseable, Patternable {
     }
 
     /**
+     * ### Creates a new Char instance from a codepoint value
+     *
+     * <code>
+     * use FireHub\Foundation\Char;
+     *
+     * $char = Char::fromCodepoint(70);
+     *
+     * // 'F'
+     *
+     * $char = Char::fromCodepoint(128293);
+     *
+     * // '🔥'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Char\MB::chr() To get the character value.
+     *
+     * @param int $codepoint <p>
+     * The codepoint value.
+     * </p>
+     * @param \FireHub\Core\Type\Str\Encoding $encoding [optional] <p>
+     * The encoding of the character.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Char\Exception\InvalidLengthException If the string length is not 1.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return static<non-empty-string> Returns a new instance with the character value or false if the codepoint is
+     * invalid.
+     */
+    public static function fromCodepoint (int $codepoint, Encoding $encoding = self::DEFAULT_ENCODING):static {
+
+        /** @var non-empty-string $value */
+        $value = ($value = Runtime\Char\MB::chr($codepoint, $encoding) )!== false
+            ? $value : throw new InvalidCodepointException;
+
+        return new static($value, $encoding);
+
+    }
+
+    /**
      * @inheritDoc
      *
      * @since 1.0.0
@@ -111,6 +154,33 @@ readonly class Char extends BaseChar implements Caseable, Patternable {
     public function pattern (RegexDelimiter $delimiter = RegexDelimiter::SLASH, RegexFlag ...$flags):Pattern {
 
         return new Pattern($this, $delimiter, ...$flags);
+
+    }
+
+    /**
+     * ### Returns the Unicode code point for the first character of the string
+     *
+     * <code>
+     * use FireHub\Foundation\Char;
+     *
+     * $char = new Char('F')->codepoint();
+     *
+     * // 70
+     *
+     * $char = new Char('🔥')->codepoint();
+     *
+     * // 128293
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Char\MB::ord() To get the codepoint value.
+     *
+     * @return non-negative-int|false The Unicode code point for the first character of string.
+     */
+    public function codepoint ():int|false {
+
+        return Runtime\Char\MB::ord($this->value);
 
     }
 

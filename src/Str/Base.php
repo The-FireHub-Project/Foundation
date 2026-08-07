@@ -13,7 +13,9 @@
 
 namespace FireHub\Foundation\Str;
 
-use FireHub\Core\Type\Str;
+use FireHub\Core\Type\ {
+    Char, Str
+};
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Core\Meta\Enum\Side;
 use FireHub\Foundation\StringValue;
@@ -1258,6 +1260,57 @@ abstract readonly class Base extends Str {
         return new static(
             Runtime\Str\SB\Delimiter::implode($characters),
             $this->encoding
+        );
+
+    }
+
+    /**
+     * ### Masks a portion of the string with a given character
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     * use FireHub\Foundation\Char;
+     *
+     * $string = Str::of('FireHub')->mask(Char::of('*'), 1, 4);
+     *
+     * // 'F****ub' (FireHub\Foundation\Str)
+     *
+     * $string = Str::of('FireHub')->mask(Char::of('*'), 4);
+     *
+     * // 'Fire***' (FireHub\Foundation\Str)
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str\Base::length() To get the string length.
+     * @uses \FireHub\Foundation\Str\Base::overwrite() To replace the selected portion.
+     * @uses \FireHub\Runtime\Str\SB\Transform::repeat() To repeat the string.
+     * @uses \FireHub\Foundation\Char::value() To get the character value.
+     *
+     * @param \FireHub\Core\Type\Char<non-empty-string> $with <p>
+     * The character to use for masking.
+     * </p>
+     * @param int $from
+     * The starting character position of the portion to mask.
+     * @param null|int $length [optional] <p>
+     * The number of characters to mask. If null, the remainder of the string is masked.
+     * </p>
+     *
+     * @return static<string>|static<TValue> Returns a new instance with the selected portion masked.
+     */
+    public function mask (Char $with, int $from, ?int $length = null):static {
+
+        if ($length === null) $length = $this->length() - $from;
+
+        if ($length <= 0) return new static($this->value, $this->encoding);
+
+        return $this->overwrite(
+            $from,
+            $from + $length,
+            Runtime\Str\SB\Transform::repeat(
+                $with->value(),
+                $length
+            )
         );
 
     }

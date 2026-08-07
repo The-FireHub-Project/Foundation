@@ -17,7 +17,9 @@ use FireHub\Testing\FireHubTestCase;
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Core\Meta\Enum\Side;
 use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
-use FireHub\Foundation\Str;
+use FireHub\Foundation\{
+    Char, Str
+};
 use FireHub\Foundation\Str\Case\ {
     Casing, Converter
 };
@@ -750,6 +752,29 @@ final class StrTest extends FireHubTestCase {
         new Str($string)->shuffle();
 
         self::assertEqualsCanonicalizing($expected, $string);
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param string $string
+     * @param string $with
+     * @param int $from
+     * @param null|int $length
+     *
+     * @throws \FireHub\Foundation\Char\Exception\InvalidLengthException
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     *
+     * @return void
+     */
+    #[TestWith(['F****ub', 'FireHub', '*', 1, 4])]
+    #[TestWith(['Fire***', 'FireHub', '*', 4])]
+    public function testMask (string $expected, string $string, string $with, int $from, ?int $length = null):void {
+
+        self::assertSame($expected, new Str($string)->mask(new Char($with), $from, $length)->value());
 
     }
 
