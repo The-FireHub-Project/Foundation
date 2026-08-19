@@ -59,7 +59,7 @@ readonly class Boolean extends BaseBoolean {
      * <code>
      * use FireHub\Foundation\Boolean;
      *
-     * $string = Boolean::of(1);
+     * $boolean = Boolean::of(1);
      *
      * // true
      * </code>
@@ -88,7 +88,7 @@ readonly class Boolean extends BaseBoolean {
      * <code>
      * use FireHub\Foundation\Boolean;
      *
-     * $string = new Boolean(true)->isTrue();
+     * $boolean = new Boolean(true)->isTrue();
      *
      * // true
      * </code>
@@ -108,7 +108,7 @@ readonly class Boolean extends BaseBoolean {
      * <code>
      * use FireHub\Foundation\Boolean;
      *
-     * $string = new Boolean(false)->isFalse();
+     * $boolean = new Boolean(false)->isFalse();
      *
      * // true
      * </code>
@@ -129,7 +129,7 @@ readonly class Boolean extends BaseBoolean {
      * <code>
      * use FireHub\Foundation\Boolean;
      *
-     * $string = new Boolean(true)->value();
+     * $boolean = new Boolean(true)->value();
      *
      * // true
      * </code>
