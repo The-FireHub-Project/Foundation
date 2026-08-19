@@ -37,7 +37,7 @@ trait Instantiable {
      * <code>
      * use FireHub\Foundation\Str;
      *
-     * $string = Str::of(['FireHub']);
+     * $string = Str::of('FireHub');
      *
      * // FireHub
      * </code>

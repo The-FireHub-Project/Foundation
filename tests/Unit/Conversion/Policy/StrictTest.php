@@ -73,6 +73,13 @@ final class StrictTest extends FireHubTestCase {
      *
      * @return void
      */
+    #[TestWith([true, 1])]
+    #[TestWith([false, 0])]
+    #[TestWith([true, '1'])]
+    #[TestWith([false, '0'])]
+    #[TestWith([true, 'yes'])]
+    #[TestWith([false, 'no'])]
+    #[TestWith([true, 'on'])]
     #[TestWith([false, 'off'])]
     public function testBool (?bool $expected, mixed $value):void {
 

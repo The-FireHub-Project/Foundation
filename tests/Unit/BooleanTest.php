@@ -32,6 +32,30 @@ final class BooleanTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param bool $expected
+     * @param mixed $value
+     *
+     * @throws \FireHub\Foundation\Conversion\Exception\ConversionException
+     *
+     * @return void
+     */
+    #[TestWith([true, 1])]
+    #[TestWith([false, 0])]
+    #[TestWith([true, '1'])]
+    #[TestWith([false, '0'])]
+    #[TestWith([true, 'yes'])]
+    #[TestWith([false, 'no'])]
+    #[TestWith([true, 'on'])]
+    #[TestWith([false, 'off'])]
+    public function testOf (bool $expected, mixed $value):void {
+
+        self::assertSame($expected, Boolean::of($value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
      * @param bool $value
      *
      * @return void

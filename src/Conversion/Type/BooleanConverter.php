@@ -61,8 +61,8 @@ final readonly class BooleanConverter extends Type {
             : $this->value;
 
         return match ($value) {
-            'true', '1', 'yes', 'on' => true,
-            'false', '0', 'no', 'off' => false,
+            'true', '1', 1, 'yes', 'on' => true,
+            'false', '0', 0, 'no', 'off' => false,
             default => null
         };
 

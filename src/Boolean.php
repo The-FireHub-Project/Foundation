@@ -14,6 +14,7 @@
 namespace FireHub\Foundation;
 
 use FireHub\Core\Type\Boolean as BaseBoolean;
+use FireHub\Foundation\Conversion\Policy\Strict;
 
 /**
  * ### Provides an immutable boolean value object with a high-level developer API
@@ -51,6 +52,35 @@ readonly class Boolean extends BaseBoolean {
     public function __construct (
         protected bool $value
     ) {}
+
+    /**
+     * ### Creates a new boolean instance from a given value
+     *
+     * <code>
+     * use FireHub\Foundation\Boolean;
+     *
+     * $string = Boolean::of(1);
+     *
+     * // true
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Conversion\Policy\Strict::string() To convert the value to a boolean.
+     *
+     * @param mixed $value <p>
+     * The value to convert to a boolean.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Conversion\Exception\ConversionException If the conversion fails.
+     *
+     * @return static<string> A new Boolean instance representing the bool value.
+     */
+    public static function of (mixed $value):static {
+
+        return new static(new Strict($value)->bool());
+
+    }
 
     /**
      * ### Checks if the value is true

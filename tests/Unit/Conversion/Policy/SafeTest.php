@@ -52,6 +52,13 @@ final class SafeTest extends FireHubTestCase {
      *
      * @return void
      */
+    #[TestWith([true, 1])]
+    #[TestWith([false, 0])]
+    #[TestWith([true, '1'])]
+    #[TestWith([false, '0'])]
+    #[TestWith([true, 'yes'])]
+    #[TestWith([false, 'no'])]
+    #[TestWith([true, 'on'])]
     #[TestWith([false, 'off'])]
     #[TestWith([null, null])]
     public function testBool (?bool $expected, mixed $value):void {
