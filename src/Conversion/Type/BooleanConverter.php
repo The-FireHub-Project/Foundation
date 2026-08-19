@@ -32,8 +32,8 @@ final readonly class BooleanConverter extends Type {
      *
      * - A boolean value is returned as is.
      * - A string value is converted to a boolean using the following rules:
-     *   - `'true'`, `'1'`, `'yes'`, `'on'` are converted to `true`.
-     *   - `'false'`, `'0'`, `'no'`, `'off'` are converted to `false`.
+     *   - `'true'`, `'1'`, `1`, `'yes'`, `'on'` are converted to `true`.
+     *   - `'false'`, `'0'`, `0`, `'no'`, `'off'` are converted to `false`.
      *   - All other strings are converted to `null`.
      *
      * <code>

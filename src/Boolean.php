@@ -74,7 +74,7 @@ readonly class Boolean extends BaseBoolean {
      *
      * @throws \FireHub\Foundation\Conversion\Exception\ConversionException If the conversion fails.
      *
-     * @return static<string> A new Boolean instance representing the bool value.
+     * @return static<bool> A new Boolean instance representing the bool value.
      */
     public static function of (mixed $value):static {
 
