@@ -66,7 +66,7 @@ readonly class Boolean extends BaseBoolean {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Conversion\Policy\Strict::string() To convert the value to a boolean.
+     * @uses \FireHub\Foundation\Conversion\Policy\Strict::bool() To convert the value to a boolean.
      *
      * @param mixed $value <p>
      * The value to convert to a boolean.
