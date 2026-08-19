@@ -48,17 +48,18 @@ final class StrTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param string $expected
-     * @param null|scalar|Stringable $value
+     * @param mixed $value
+     *
+     * @throws \FireHub\Foundation\Conversion\Exception\ConversionException
      *
      * @return void
      */
-    #[TestWith(['', null])]
     #[TestWith(['FireHub', 'FireHub'])]
     #[TestWith(['10', 10])]
     #[TestWith(['2.34', 2.34])]
     #[TestWith(['', false])]
     #[TestWith(['1', true])]
-    public function testOf (string $expected, null|string|int|float|bool|Stringable $value):void {
+    public function testOf (string $expected, mixed $value):void {
 
         self::assertSame($expected, Str::of($value)->value());
 

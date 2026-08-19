@@ -14,6 +14,7 @@
 namespace FireHub\Foundation\Str\Trait;
 
 use FireHub\Core\Type\Str\Encoding;
+use FireHub\Foundation\Conversion\Policy\Strict;
 use FireHub\Runtime;
 use Stringable;
 
@@ -43,18 +44,22 @@ trait Instantiable {
      *
      * @since 1.0.0
      *
-     * @param null|scalar|Stringable $value <p>
+     * @uses \FireHub\Foundation\Conversion\Policy\Strict::string() To convert the value to a string.
+     *
+     * @param mixed $value <p>
      * The value to convert to a string.
      * </p>
      * @param \FireHub\Core\Type\Str\Encoding $encoding [optional] <p>
      * The encoding of the string.
      * </p>
      *
+     * @throws \FireHub\Foundation\Conversion\Exception\ConversionException If the conversion fails.
+     *
      * @return static<string> A new Str instance representing the string value.
      */
-    public static function of (null|string|int|float|bool|Stringable $value, Encoding $encoding = self::DEFAULT_ENCODING):static {
+    public static function of (mixed $value, Encoding $encoding = self::DEFAULT_ENCODING):static {
 
-        return new static((string)$value, $encoding);
+        return new static(new Strict($value)->string(), $encoding);
 
     }
 
