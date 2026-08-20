@@ -15,6 +15,7 @@ namespace FireHub\Foundation\Number;
 
 use FireHub\Core\Type\Number\Integer as BaseInteger;
 use FireHub\Foundation\Conversion\Policy\Strict;
+use FireHub\Runtime;
 
 /**
  * ### Provides an immutable integer value object with a high-level developer API
@@ -105,33 +106,6 @@ readonly class Integer extends BaseInteger {
     }
 
     /**
-     * ### Converts the integer value to a decimal number
-     *
-     * <code>
-     * use FireHub\Foundation\Integer;
-     *
-     * $decimal = new Integer(10)->toDecimal();
-     *
-     * // '10'
-     * </code>
-     *
-     * @since 1.0.0
-     *
-     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
-     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
-     * @throws \FireHub\Foundation\Number\Exception\InvalidFractionalException If the value is not a valid decimal
-     * number.
-     *
-     * @return \FireHub\Foundation\Number\Decimal<numeric-string> Returns a new instance of the Decimal class.
-     */
-    public function toDecimal ():Decimal {
-
-        /** @var \FireHub\Foundation\Number\Decimal<numeric-string> */
-        return new Decimal((string)$this->value);
-
-    }
-
-    /**
      * {@inheritDoc}
      *
      * <code>
@@ -147,6 +121,120 @@ readonly class Integer extends BaseInteger {
     public function value ():int {
 
         return $this->value;
+
+    }
+
+    /**
+     * ### Adds a value to the current integer value
+     *
+     * <code>
+     * use FireHub\Foundation\Integer;
+     *
+     * $integer = new Integer(10)->add(20);
+     *
+     * // 30
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param int|self<int> $value <p>
+     * The value to add to the current value.
+     * </p>
+     *
+     * @return static<int> Returns a new instance of the Integer class with the sum of the current value and the given
+     * value.
+     */
+    public function add (int|self $value):static {
+
+        return new static(
+            $this->value + ($value instanceof self ? $value->value() : $value)
+        );
+
+    }
+
+    /**
+     * ### Subtracts a value to the current integer value
+     *
+     * <code>
+     * use FireHub\Foundation\Integer;
+     *
+     * $integer = new Integer(10)->subtract(20);
+     *
+     * // -10
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param int|self<int> $value <p>
+     * The value to subtract to the current value.
+     * </p>
+     *
+     * @return static<int> Returns a new instance of the Integer class with the difference of the current value and the
+     * given value.
+     */
+    public function subtract (int|self $value):static {
+
+        return new static(
+            $this->value - ($value instanceof self ? $value->value() : $value)
+        );
+
+    }
+
+    /**
+     * ### Multiplies the current integer value by a value
+     *
+     * <code>
+     * use FireHub\Foundation\Integer;
+     *
+     * $integer = new Integer(10)->multiply(20);
+     *
+     * // 200
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param int|self<int> $value <p>
+     * The value to multiply the current value by.
+     * </p>
+     *
+     * @return static<int> Returns a new instance of the Integer class with the product of the current value and the
+     * given value.
+     */
+    public function multiply (int|self $value):static {
+
+        return new static(
+            $this->value * ($value instanceof self ? $value->value() : $value)
+        );
+
+    }
+
+    /**
+     * ### Divides the current integer value by a value
+     *
+     * <code>
+     * use FireHub\Foundation\Integer;
+     *
+     * $integer = new Integer(10)->divide(2);
+     *
+     * // 5
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math::divideInt() To divide the current value by the given value.
+     *
+     * @param int|self<int> $value <p>
+     * The value to divide the current value by.
+     * </p>
+     *
+     * @return static<int> Returns a new instance of the Integer class with the quotient of the current value and the
+     * given value.
+     */
+    public function divide (int|self $value):static {
+
+        return new static(
+            Runtime\Math::divideInt($this->value, $value instanceof self ? $value->value() : $value)
+        );
 
     }
 

@@ -129,25 +129,6 @@ final class RealTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
-     * @param numeric-string $expected
-     * @param float $value
-     *
-     * @throws \FireHub\Core\Exception\FireHubException
-     * @throws \FireHub\Core\Type\Exception\ValueObjectException
-     * @throws \FireHub\Foundation\Number\Exception\InvalidFractionalException
-     *
-     * @return void
-     */
-    #[TestWith(['10.2', 10.2])]
-    public function testToDecimal (string $expected, float $value):void {
-
-        self::assertSame($expected, new Real($value)->toDecimal()->value());
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
      * @param float $expected
      * @param float $value
      *
@@ -157,6 +138,70 @@ final class RealTest extends FireHubTestCase {
     public function testValue (float $expected, float $value):void {
 
         self::assertSame($expected, new Real($value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param float $expected
+     * @param float $value
+     * @param float|\FireHub\Foundation\Number\Real $added_value
+     *
+     * @return void
+     */
+    #[TestWith([12.2, 10.2, 2.0])]
+    public function testAdd (float $expected, float $value, float|Real $added_value):void {
+
+        self::assertSame($expected, new Real($value)->add($added_value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param float $expected
+     * @param float $value
+     * @param float|\FireHub\Foundation\Number\Real $added_value
+     *
+     * @return void
+     */
+    #[TestWith([8.2, 10.2, 2.0])]
+    public function testSubtract (float $expected, float $value, float|Real $added_value):void {
+
+        self::assertSame($expected, new Real($value)->subtract($added_value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param float $expected
+     * @param float $value
+     * @param float|\FireHub\Foundation\Number\Real $added_value
+     *
+     * @return void
+     */
+    #[TestWith([21, 10.5, 2])]
+    public function testMultiply (float $expected, float $value, float|Real $added_value):void {
+
+        self::assertSame($expected, new Real($value)->multiply($added_value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param float $expected
+     * @param float $value
+     * @param float|\FireHub\Foundation\Number\Real $added_value
+     *
+     * @return void
+     */
+    #[TestWith([2.5, 10.0, 4.0])]
+    public function testDivide (float $expected, float $value, float|Real $added_value):void {
+
+        self::assertSame($expected, new Real($value)->divide($added_value)->value());
 
     }
 

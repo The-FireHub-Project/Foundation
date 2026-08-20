@@ -212,33 +212,6 @@ readonly class Real extends BaseReal {
     }
 
     /**
-     * ### Converts the real value to a decimal number
-     *
-     * <code>
-     * use FireHub\Foundation\Real;
-     *
-     * $decimal = new Real(10.2)->toDecimal();
-     *
-     * // '10.2'
-     * </code>
-     *
-     * @since 1.0.0
-     *
-     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
-     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
-     * @throws \FireHub\Foundation\Number\Exception\InvalidFractionalException If the value is not a valid decimal
-     * number.
-     *
-     * @return \FireHub\Foundation\Number\Decimal<numeric-string> Returns a new instance of the Decimal class.
-     */
-    public function toDecimal ():Decimal {
-
-        /** @var \FireHub\Foundation\Number\Decimal<numeric-string> */
-        return new Decimal((string)$this->value);
-
-    }
-
-    /**
      * {@inheritDoc}
      *
      * <code>
@@ -254,6 +227,120 @@ readonly class Real extends BaseReal {
     public function value ():float {
 
         return $this->value;
+
+    }
+
+    /**
+     * ### Adds a value to the current real value
+     *
+     * <code>
+     * use FireHub\Foundation\Real;
+     *
+     * $real = new Real(10.2)->add(2.0);
+     *
+     * // 12.2
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param float|self<float> $value <p>
+     * The value to add to the current value.
+     * </p>
+     *
+     * @return static<float> Returns a new instance of the Real class with the sum of the current value and the given
+     * value.
+     */
+    public function add (float|self $value):static {
+
+        return new static(
+            $this->value + ($value instanceof self ? $value->value() : $value)
+        );
+
+    }
+
+    /**
+     * ### Subtracts a value to the current real value
+     *
+     * <code>
+     * use FireHub\Foundation\Real;
+     *
+     * $real = new Real(10.2)->subtract(2.0);
+     *
+     * // 8.2
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param float|self<float> $value <p>
+     * The value to subtract to the current value.
+     * </p>
+     *
+     * @return static<float> Returns a new instance of the Real class with the difference of the current value and the
+     * given value.
+     */
+    public function subtract (float|self $value):static {
+
+        return new static(
+            $this->value - ($value instanceof self ? $value->value() : $value)
+        );
+
+    }
+
+    /**
+     * ### Multiplies the current real value by a value
+     *
+     * <code>
+     * use FireHub\Foundation\Real;
+     *
+     * $real = new Real(10.5)->multiply(2.0);
+     *
+     * // 21.0
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param float|self<float> $value <p>
+     * The value to multiply the current value by.
+     * </p>
+     *
+     * @return static<float> Returns a new instance of the Real class with the product of the current value and the
+     * given value.
+     */
+    public function multiply (float|self $value):static {
+
+        return new static(
+            $this->value * ($value instanceof self ? $value->value() : $value)
+        );
+
+    }
+
+    /**
+     * ### Divides the current real value by a value
+     *
+     * <code>
+     * use FireHub\Foundation\Real;
+     *
+     * $real = new Real(10.0)->divide(4.0);
+     *
+     * // 2.5
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math::divideFloat() To divide the current value by the given value.
+     *
+     * @param float|self<float> $value <p>
+     * The value to divide the current value by.
+     * </p>
+     *
+     * @return static<float> Returns a new instance of the Real class with the quotient of the current value and the
+     * given value.
+     */
+    public function divide (float|self $value):static {
+
+        return new static(
+            Runtime\Math::divideFloat($this->value, ($value instanceof self ? $value->value() : $value))
+        );
 
     }
 

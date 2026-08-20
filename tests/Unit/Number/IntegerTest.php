@@ -64,25 +64,6 @@ final class IntegerTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
-     * @param numeric-string $expected
-     * @param int $value
-     *
-     * @throws \FireHub\Core\Exception\FireHubException
-     * @throws \FireHub\Core\Type\Exception\ValueObjectException
-     * @throws \FireHub\Foundation\Number\Exception\InvalidFractionalException
-     *
-     * @return void
-     */
-    #[TestWith(['10', 10])]
-    public function testToDecimal (string $expected, int $value):void {
-
-        self::assertSame($expected, new Integer($value)->toDecimal()->value());
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
      * @param int $expected
      * @param int $value
      *
@@ -92,6 +73,70 @@ final class IntegerTest extends FireHubTestCase {
     public function testValue (int $expected, int $value):void {
 
         self::assertSame($expected, new Integer($value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int $expected
+     * @param int $value
+     * @param int|\FireHub\Foundation\Number\Integer $added_value
+     *
+     * @return void
+     */
+    #[TestWith([30, 10, 20])]
+    public function testAdd (int $expected, int $value, int|Integer $added_value):void {
+
+        self::assertSame($expected, new Integer($value)->add($added_value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int $expected
+     * @param int $value
+     * @param int|\FireHub\Foundation\Number\Integer $added_value
+     *
+     * @return void
+     */
+    #[TestWith([-10, 10, 20])]
+    public function testSubtract (int $expected, int $value, int|Integer $added_value):void {
+
+        self::assertSame($expected, new Integer($value)->subtract($added_value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int $expected
+     * @param int $value
+     * @param int|\FireHub\Foundation\Number\Integer $added_value
+     *
+     * @return void
+     */
+    #[TestWith([200, 10, 20])]
+    public function testMultiply (int $expected, int $value, int|Integer $added_value):void {
+
+        self::assertSame($expected, new Integer($value)->multiply($added_value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int $expected
+     * @param int $value
+     * @param int|\FireHub\Foundation\Number\Integer $added_value
+     *
+     * @return void
+     */
+    #[TestWith([5, 10, 2])]
+    public function testDivide (int $expected, int $value, int|Integer $added_value):void {
+
+        self::assertSame($expected, new Integer($value)->divide($added_value)->value());
 
     }
 
