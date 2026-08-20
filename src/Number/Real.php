@@ -14,7 +14,9 @@
 namespace FireHub\Foundation\Number;
 
 use FireHub\Core\Type\Number;
-use FireHub\Core\Type\Number\Real as BaseReal;
+use FireHub\Core\Type\Number\ {
+    Integer as BaseInteger, Real as BaseReal
+};
 use FireHub\Core\Meta\Enum\Number\Format;
 use FireHub\Foundation\Conversion\Policy\Strict;
 use FireHub\Foundation\Number\Operation\NumericFormat;
@@ -215,7 +217,7 @@ readonly class Real extends BaseReal {
 
         $parts = Runtime\Str\SB\Delimiter::explode((string)$this->value, '.', 2);
 
-        $integer = $parts[0];
+        $integer = $parts[0] ?? '';
         $fraction = $parts[1] ?? '';
 
         $sign = '';
@@ -345,11 +347,11 @@ readonly class Real extends BaseReal {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Runtime\Math::isNan() To check if the real value is NaN.
+     * @uses \FireHub\Runtime\Math::isNaN() To check if the real value is NaN.
      */
     public function isNaN ():bool {
 
-        return Runtime\Math::isNan($this->value);
+        return Runtime\Math::isNaN($this->value);
 
     }
 
@@ -534,7 +536,7 @@ readonly class Real extends BaseReal {
      *
      * @since 1.0.0
      *
-     * @param float|int|self<float> $exponent <p>
+     * @param float|int|\FireHub\Core\Type\Number<numeric|numeric-string> $exponent <p>
      * The exponent to raise the current value to.
      * </p>
      *
@@ -565,16 +567,97 @@ readonly class Real extends BaseReal {
      *
      * @uses \FireHub\Runtime\Math::remainder() To calculate the floating-point remainder.
      *
-     * @param float|int|\FireHub\Core\Type\Number $value <p>
+     * @param float|int|self<float> $value <p>
      * The divisor.
      * </p>
      *
      * @return static<float> Returns a new Real instance containing the remainder.
      */
-    public function remainder (float|int|Number $value):static {
+    public function remainder (float|int|self $value):static {
 
         return new static(
-            Runtime\Math::remainder($this->value, ($value instanceof self ? $value->value() : (float)$value))
+            Runtime\Math::remainder($this->value, ($value instanceof self ? $value->value() : $value))
+        );
+
+    }
+
+    /**
+     * ### Returns the absolute value
+     *
+     * Returns a new Real instance containing the absolute value of the current real number.
+     *
+     * <code>
+     * use FireHub\Foundation\Number\Real;
+     *
+     * $real = new Real(-10.5)->absolute();
+     *
+     * // 10.5
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math::abs() To calculate the absolute value.
+     *
+     * @return static<float> Returns a new Real instance containing the absolute value.
+     */
+    public function absolute ():static {
+
+        return new static(
+            Runtime\Math::abs($this->value)
+        );
+
+    }
+
+    /**
+     * ### Rounds the real value up
+     *
+     * Returns the smallest integer greater than or equal to the current real value.
+     *
+     * <code>
+     * use FireHub\Foundation\Number\Real;
+     *
+     * $integer = new Real(10.25)->ceil();
+     *
+     * // 11
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math::ceil() To round the value up.
+     *
+     * @return \FireHub\Foundation\Number\Integer<int> Returns a new Integer instance containing the rounded value.
+     */
+    public function ceil ():BaseInteger {
+
+        return new Integer(
+            Runtime\Math::ceil($this->value)
+        );
+
+    }
+
+    /**
+     * ### Rounds the real value down
+     *
+     * Returns the largest integer less than or equal to the current real value.
+     *
+     * <code>
+     * use FireHub\Foundation\Number\Real;
+     *
+     * $integer = new Real(10.75)->floor();
+     *
+     * // 10
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math::floor() To round the value down.
+     *
+     * @return \FireHub\Foundation\Number\Integer<int> Returns a new Integer instance containing the rounded value.
+     */
+    public function floor ():BaseInteger {
+
+        return new Integer(
+            Runtime\Math::floor($this->value)
         );
 
     }

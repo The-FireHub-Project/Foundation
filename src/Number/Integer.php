@@ -294,4 +294,31 @@ readonly class Integer extends BaseInteger {
 
     }
 
+    /**
+     * ### Returns the absolute value
+     *
+     * Returns a new Integer instance containing the absolute value of the current integer.
+     *
+     * <code>
+     * use FireHub\Foundation\Number\Integer;
+     *
+     * $integer = new Integer(-10)->absolute();
+     *
+     * // 10
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math::abs() To calculate the absolute value.
+     *
+     * @return static<non-negative-int> Returns a new Integer instance containing the absolute value.
+     */
+    public function absolute ():static {
+
+        return new static(
+            Runtime\Math::abs($this->value)
+        );
+
+    }
+
 }

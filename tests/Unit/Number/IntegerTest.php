@@ -172,4 +172,19 @@ final class IntegerTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @param int $expected
+     * @param int $value
+     *
+     * @return void
+     */
+    #[TestWith([10, -10])]
+    public function testAbsolute (int $expected, int $value):void {
+
+        self::assertSame($expected, new Integer($value)->absolute()->value());
+
+    }
+
 }

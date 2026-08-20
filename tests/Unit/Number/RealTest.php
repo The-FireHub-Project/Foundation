@@ -315,14 +315,59 @@ final class RealTest extends FireHubTestCase {
      *
      * @param float $expected
      * @param float $value
-     * @param float|\FireHub\Core\Type\Number $added_value
+     * @param float|\FireHub\Foundation\Number\Real $added_value
      *
      * @return void
      */
     #[TestWith([1.5, 10.5, 3.0])]
-    public function testRemainder (float $expected, float $value, float|Number $added_value):void {
+    public function testRemainder (float $expected, float $value, float|Real $added_value):void {
 
         self::assertSame($expected, new Real($value)->remainder($added_value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param float $expected
+     * @param float $value
+     *
+     * @return void
+     */
+    #[TestWith([10.5, -10.5])]
+    public function testAbsolute (float $expected, float $value):void {
+
+        self::assertSame($expected, new Real($value)->absolute()->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int $expected
+     * @param float $value
+     *
+     * @return void
+     */
+    #[TestWith([11, 10.25])]
+    public function testCeil (int $expected, float $value):void {
+
+        self::assertSame($expected, new Real($value)->ceil()->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int $expected
+     * @param float $value
+     *
+     * @return void
+     */
+    #[TestWith([10, 10.75])]
+    public function testFloor (int $expected, float $value):void {
+
+        self::assertSame($expected, new Real($value)->floor()->value());
 
     }
 
