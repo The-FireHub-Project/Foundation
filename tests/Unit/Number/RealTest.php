@@ -96,6 +96,51 @@ final class RealTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
+     * @param bool $expected
+     * @param float $value
+     *
+     * @return void
+     */
+    #[TestWith([true, 10.0])]
+    public function testIsFinite (bool $expected, float $value):void {
+
+        self::assertSame($expected, new Real($value)->isFinite());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param float $value
+     *
+     * @return void
+     */
+    #[TestWith([false, 10.0])]
+    public function testIsInfinite (bool $expected, float $value):void {
+
+        self::assertSame($expected, new Real($value)->isInfinite());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param float $value
+     *
+     * @return void
+     */
+    #[TestWith([false, 10.0])]
+    public function testIsNaN (bool $expected, float $value):void {
+
+        self::assertSame($expected, new Real($value)->isNaN());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
      * @param int $expected
      * @param float $value
      *
@@ -202,6 +247,22 @@ final class RealTest extends FireHubTestCase {
     public function testDivide (float $expected, float $value, float|Real $added_value):void {
 
         self::assertSame($expected, new Real($value)->divide($added_value)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param float $expected
+     * @param float $value
+     * @param float|int|\FireHub\Foundation\Number\Real $exponent
+     *
+     * @return void
+     */
+    #[TestWith([6.25, 2.5, 2])]
+    public function testPower (float $expected, float $value, float|int|Real $exponent):void {
+
+        self::assertSame($expected, new Real($value)->power($exponent)->value());
 
     }
 

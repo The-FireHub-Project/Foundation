@@ -13,6 +13,7 @@
 
 namespace FireHub\Foundation\Number;
 
+use FireHub\Core\Type\Number;
 use FireHub\Core\Type\Number\Real as BaseReal;
 use FireHub\Core\Meta\Enum\Number\Format;
 use FireHub\Foundation\Conversion\Policy\Strict;
@@ -177,12 +178,75 @@ readonly class Real extends BaseReal {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Real;
+     *
+     * $real = new Real(10.0)->isFinite();
+     *
+     * // true
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math::isFinite() To check if the real value is finite.
+     */
+    public function isFinite ():bool {
+
+        return Runtime\Math::isFinite($this->value);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Rea;
+     *
+     * $real = new Real(10.0)->isInfinite();
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math::isInfinite() To check if the real value is infinite.
+     */
+    public function isInfinite ():bool {
+
+        return Runtime\Math::isInfinite($this->value);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Rea;
+     *
+     * $real = new Real(10.0)->isNaN();
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math::isNan() To check if the real value is NaN.
+     */
+    public function isNaN ():bool {
+
+        return Runtime\Math::isNan($this->value);
+
+    }
+
+    /**
      * ### Converts the real value to an integer number
      *
      * <code>
      * use FireHub\Foundation\Real;
      *
-     * $integer = new Real(10.0)->toInteger();
+     * $real = new Real(10.0)->toInteger();
      *
      * // 10
      * </code>
@@ -340,6 +404,33 @@ readonly class Real extends BaseReal {
 
         return new static(
             Runtime\Math::divideFloat($this->value, ($value instanceof self ? $value->value() : $value))
+        );
+
+    }
+
+    /**
+     * ### Raises the current real value to a power
+     *
+     * <code>
+     * use FireHub\Foundation\Number\Real;
+     *
+     * $real = new Real(2.5)->power(2);
+     *
+     * // 6.25
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param float|int|self<float> $exponent <p>
+     * The exponent to raise the current value to.
+     * </p>
+     *
+     * @return static<float> Returns a new Real instance with the result.
+     */
+    public function power (float|int|Number $exponent):static {
+
+        return new static(
+            $this->value ** ($exponent instanceof Number ? $exponent->value() : $exponent)
         );
 
     }

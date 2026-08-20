@@ -140,4 +140,20 @@ final class IntegerTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @param int $expected
+     * @param int $value
+     * @param int|\FireHub\Foundation\Number\Integer $exponent
+     *
+     * @return void
+     */
+    #[TestWith([8, 2, 3])]
+    public function testPower (int $expected, int $value, int|Integer $exponent):void {
+
+        self::assertSame($expected, new Integer($value)->power($exponent)->value());
+
+    }
+
 }

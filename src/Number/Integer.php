@@ -223,7 +223,7 @@ readonly class Integer extends BaseInteger {
      *
      * @uses \FireHub\Runtime\Math::divideInt() To divide the current value by the given value.
      *
-     * @param int|self<int> $value <p>
+     * @param non-zero-int|self<non-zero-int> $value <p>
      * The value to divide the current value by.
      * </p>
      *
@@ -234,6 +234,33 @@ readonly class Integer extends BaseInteger {
 
         return new static(
             Runtime\Math::divideInt($this->value, $value instanceof self ? $value->value() : $value)
+        );
+
+    }
+
+    /**
+     * ### Raises the current integer value to a power
+     *
+     * <code>
+     * use FireHub\Foundation\Number\Integer;
+     *
+     * $integer = new Integer(2)->power(3);
+     *
+     * // 8
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param int|self<int> $exponent <p>
+     * The exponent to raise the current value to.
+     * </p>
+     *
+     * @return static<int> Returns a new Integer instance with the result.
+     */
+    public function power (int|self $exponent):static {
+
+        return new static(
+            $this->value ** ($exponent instanceof self ? $exponent->value() : $exponent)
         );
 
     }
