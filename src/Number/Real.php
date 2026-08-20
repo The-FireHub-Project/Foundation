@@ -178,6 +178,119 @@ readonly class Real extends BaseReal {
     }
 
     /**
+     * ### Converts the real value into a formatted decimal string
+     *
+     * Formats the real value using the given decimal and the thousand separators.
+     *
+     * <code>
+     * use FireHub\Foundation\Number\Real;
+     *
+     * $real = new Real(1234.56);
+     *
+     * $real->toFormat(',', '.');
+     *
+     * // '1.234,56'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::explode() To split the real value into integer and fractional parts.
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To join the integer and fractional parts into a string.
+     * @uses \FireHub\Runtime\Str\SB\Access::part() To access parts of the string.
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the length of the string.
+     * @uses \FireHub\Runtime\Arr\Transform::reverse() To reverse the array.
+     *
+     * @param string $decimal_separator [optional] <p>
+     * The decimal separator to use.
+     * </p>
+     * @param string $thousands_separator [optional] <p>
+     * The thousands separator to use.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\EmptySeparatorException If the separator is an empty string.
+     *
+     * @return string The formatted real value.
+     */
+    public function toFormat (string $decimal_separator = '.', string $thousands_separator = ','):string {
+
+        $parts = Runtime\Str\SB\Delimiter::explode((string)$this->value, '.', 2);
+
+        $integer = $parts[0];
+        $fraction = $parts[1] ?? '';
+
+        $sign = '';
+
+        if ($integer !== '' && ($integer[0] === '-' || $integer[0] === '+')) {
+
+            $sign = $integer[0];
+            $integer = Runtime\Str\SB\Access::part($integer, 1);
+
+        }
+
+        $groups = [];
+
+        while (Runtime\Str\SB\Inspection::length($integer) > 3) {
+
+            $groups[] = Runtime\Str\SB\Access::part($integer, -3);
+            $integer = Runtime\Str\SB\Access::part($integer, 0, -3);
+
+        }
+
+        $groups[] = $integer;
+
+        $integer = Runtime\Str\SB\Delimiter::implode(
+            Runtime\Arr\Transform::reverse($groups),
+            $thousands_separator
+        );
+
+        return $sign.$integer.(
+            $fraction !== ''
+                ? $decimal_separator.$fraction
+                : ''
+            );
+
+    }
+
+    /**
+     * ### Converts the real value into a predefined numeric format
+     *
+     * Formats the real value according to a predefined numeric formatting convention.
+     *
+     * <code>
+     * use FireHub\Foundation\Number\Real;
+     * use FireHub\Core\Meta\Enum\Number\Format;
+     *
+     * $real = new Real(1234.56);
+     *
+     * $real->toStandard(Format::SI);
+     *
+     * // '1 234.56'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Number\Real::toFormat() To format the real value.
+     * @uses \FireHub\Core\Meta\Enum\Number\Format::decimalSeparator() To get the decimal separator.
+     * @uses \FireHub\Core\Meta\Enum\Number\Format::thousandsSeparator() To get the thousands separator.
+     *
+     * @param \FireHub\Core\Meta\Enum\Number\Format $format <p>
+     * The numeric formatting convention used by the value.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\EmptySeparatorException If the separator is an empty string.
+     *
+     * @return string The formatted real value.
+     */
+    public function toStandard (Format $format):string {
+
+        return $this->toFormat(
+            $format->decimalSeparator(),
+            $format->thousandsSeparator()
+        );
+
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <code>
@@ -431,6 +544,37 @@ readonly class Real extends BaseReal {
 
         return new static(
             $this->value ** ($exponent instanceof Number ? $exponent->value() : $exponent)
+        );
+
+    }
+
+    /**
+     * ### Calculates the floating-point remainder of the division
+     *
+     * Returns the floating-point remainder of dividing the current real value by the given value.
+     *
+     * <code>
+     * use FireHub\Foundation\Number\Real;
+     *
+     * $real = new Real(10.5)->remainder(3.0);
+     *
+     * // 1.5
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math::remainder() To calculate the floating-point remainder.
+     *
+     * @param float|int|\FireHub\Core\Type\Number $value <p>
+     * The divisor.
+     * </p>
+     *
+     * @return static<float> Returns a new Real instance containing the remainder.
+     */
+    public function remainder (float|int|Number $value):static {
+
+        return new static(
+            Runtime\Math::remainder($this->value, ($value instanceof self ? $value->value() : (float)$value))
         );
 
     }

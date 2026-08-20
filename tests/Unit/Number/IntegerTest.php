@@ -156,4 +156,20 @@ final class IntegerTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @param int $expected
+     * @param int $value
+     * @param int|\FireHub\Foundation\Number\Integer $added_value
+     *
+     * @return void
+     */
+    #[TestWith([1, 10, 3])]
+    public function testRemainder (int $expected, int $value, int|Integer $added_value):void {
+
+        self::assertSame($expected, new Integer($value)->remainder($added_value)->value());
+
+    }
+
 }

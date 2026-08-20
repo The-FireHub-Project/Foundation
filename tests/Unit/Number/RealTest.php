@@ -14,6 +14,7 @@
 namespace FireHub\Tests\Foundation\Unit\Number;
 
 use FireHub\Testing\FireHubTestCase;
+use FireHub\Core\Type\Number;
 use FireHub\Core\Meta\Enum\Number\Format;
 use FireHub\Foundation\Number\Real;
 use FireHub\Foundation\Number\Exception\InvalidConversionException;
@@ -90,6 +91,49 @@ final class RealTest extends FireHubTestCase {
     public function testFromStandard (float $expected, string $value, Format $format):void {
 
         self::assertSame($expected,  Real::fromStandard($value, $format)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param float $value
+     * @param string $decimal_separator
+     * @param string $thousands_separator
+     *
+     * @throws \FireHub\Runtime\Exception\EmptySeparatorException
+     *
+     * @return void
+     */
+    #[TestWith(['1.234,56', 1234.56, ',', '.'])]
+    public function testToFormat (string $expected, float $value, string $decimal_separator = '.', string $thousands_separator = ','):void {
+
+        self::assertSame(
+            $expected,
+            new Real($value)->toFormat($decimal_separator, $thousands_separator)
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param string $expected
+     * @param float $value
+     * @param \FireHub\Core\Meta\Enum\Number\Format $format
+     *
+     * @throws \FireHub\Runtime\Exception\EmptySeparatorException
+     *
+     * @return void
+     */
+    #[TestWith(['1 234.56', 1234.56, Format::SI])]
+    public function testToStandard (string $expected, float $value, Format $format):void {
+
+        self::assertSame(
+            $expected,
+            new Real($value)->toStandard($format)
+        );
 
     }
 
@@ -255,14 +299,30 @@ final class RealTest extends FireHubTestCase {
      *
      * @param float $expected
      * @param float $value
-     * @param float|int|\FireHub\Foundation\Number\Real $exponent
+     * @param float|int|\FireHub\Core\Type\Number $exponent
      *
      * @return void
      */
     #[TestWith([6.25, 2.5, 2])]
-    public function testPower (float $expected, float $value, float|int|Real $exponent):void {
+    public function testPower (float $expected, float $value, float|int|Number $exponent):void {
 
         self::assertSame($expected, new Real($value)->power($exponent)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param float $expected
+     * @param float $value
+     * @param float|\FireHub\Core\Type\Number $added_value
+     *
+     * @return void
+     */
+    #[TestWith([1.5, 10.5, 3.0])]
+    public function testRemainder (float $expected, float $value, float|Number $added_value):void {
+
+        self::assertSame($expected, new Real($value)->remainder($added_value)->value());
 
     }
 

@@ -265,4 +265,33 @@ readonly class Integer extends BaseInteger {
 
     }
 
+    /**
+     * ### Calculates the integer remainder of the division
+     *
+     * Returns the remainder of dividing the current integer by the given value.
+     *
+     * <code>
+     * use FireHub\Foundation\Number\Integer;
+     *
+     * $integer = new Integer(10)->remainder(3);
+     *
+     * // 1
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param int|self<int> $value <p>
+     * The divisor.
+     * </p>
+     *
+     * @return static<int> Returns a new Integer instance containing the remainder.
+     */
+    public function remainder (int|self $value):static {
+
+        return new static(
+            $this->value % ($value instanceof self ? $value->value() : $value)
+        );
+
+    }
+
 }
