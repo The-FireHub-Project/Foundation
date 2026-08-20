@@ -56,6 +56,10 @@ readonly class Boolean extends BaseBoolean {
     /**
      * ### Creates a new boolean instance from a given value
      *
+     * - A string value is converted to a boolean using the following rules:
+     *   - `'true'`, `'1'`, `1`, `'yes'`, `'on'` are converted to `true`.
+     *   - `'false'`, `'0'`, `0`, `'no'`, `'off'` are converted to `false`.
+     *
      * <code>
      * use FireHub\Foundation\Boolean;
      *
@@ -83,7 +87,7 @@ readonly class Boolean extends BaseBoolean {
     }
 
     /**
-     * ### Checks if the value is true
+     * {@inheritDoc}
      *
      * <code>
      * use FireHub\Foundation\Boolean;
@@ -94,8 +98,6 @@ readonly class Boolean extends BaseBoolean {
      * </code>
      *
      * @since 1.0.0
-     *
-     * @return bool Returns true if the value is true, false otherwise.
      */
     public function isTrue ():bool {
 
@@ -103,7 +105,7 @@ readonly class Boolean extends BaseBoolean {
 
     }
     /**
-     * ### Checks if the value is false
+     * {@inheritDoc}
      *
      * <code>
      * use FireHub\Foundation\Boolean;
@@ -114,8 +116,6 @@ readonly class Boolean extends BaseBoolean {
      * </code>
      *
      * @since 1.0.0
-     *
-     * @return bool Returns true if the value is false, false otherwise.
      */
     public function isFalse ():bool {
 
