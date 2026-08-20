@@ -14,6 +14,7 @@
 namespace FireHub\Tests\Foundation\Unit;
 
 use FireHub\Testing\FireHubTestCase;
+use FireHub\Core\Type\Char\Codepoint;
 use FireHub\Foundation\Char;
 use FireHub\Foundation\Str\Case\Casing;
 use FireHub\Foundation\Str\Pattern;
@@ -60,7 +61,7 @@ final class CharTest extends FireHubTestCase {
     #[TestWith(['🔥', 128293])]
     public function testFromCodepoint (string|false $expected, int $codepoint):void {
 
-        self::assertSame($expected, Char::fromCodepoint($codepoint)->value());
+        self::assertSame($expected, Char::fromCodepoint(new Codepoint($codepoint))->value());
 
     }
 
@@ -102,7 +103,7 @@ final class CharTest extends FireHubTestCase {
     #[TestWith([128293, '🔥'])]
     public function testCodepoint (int|false $expected, string $character):void {
 
-        self::assertSame($expected, new Char($character)->codepoint());
+        self::assertSame($expected, new Char($character)->codepoint()->value());
 
     }
 

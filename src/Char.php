@@ -14,15 +14,15 @@
 namespace FireHub\Foundation;
 
 use FireHub\Core\Type\Char as BaseChar;
+use FireHub\Core\Type\Char\Codepoint;
 use FireHub\Core\Type\Str\Encoding;
+use FireHub\Core\Exception\Runtime\System\Invariant\InvalidCodepointException;
 use FireHub\Foundation\Str\Boundary\ {
     Caseable, Patternable
 };
 use FireHub\Foundation\Str\Case\Casing;
 use FireHub\Foundation\Str\Pattern;
-use FireHub\Foundation\Char\Exception\ {
-    InvalidCodepointException, InvalidLengthException
-};
+use FireHub\Foundation\Char\Exception\InvalidLengthException;
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\ {
     RegexDelimiter, RegexFlag
@@ -97,12 +97,13 @@ readonly class Char extends BaseChar implements Caseable, Patternable {
      *
      * <code>
      * use FireHub\Foundation\Char;
+     * use FireHub\Core\Type\Char\Codepoint;
      *
-     * $char = Char::fromCodepoint(70);
+     * $char = Char::fromCodepoint(new Codepoint(70));
      *
      * // 'F'
      *
-     * $char = Char::fromCodepoint(128293);
+     * $char = Char::fromCodepoint(new Codepoint(128293));
      *
      * // '🔥'
      * </code>
@@ -111,13 +112,14 @@ readonly class Char extends BaseChar implements Caseable, Patternable {
      *
      * @uses \FireHub\Runtime\Char\MB::chr() To get the character value.
      *
-     * @param int $codepoint <p>
+     * @param \FireHub\Core\Type\Char\Codepoint<non-negative-int> $codepoint <p>
      * The codepoint value.
      * </p>
      * @param \FireHub\Core\Type\Str\Encoding $encoding [optional] <p>
      * The encoding of the character.
      * </p>
      *
+     * @throws \FireHub\Core\Exception\Runtime\System\Invariant\InvalidCodepointException If codepoint is not valid.
      * @throws \FireHub\Foundation\Char\Exception\InvalidLengthException If the string length is not 1.
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
      * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
@@ -125,10 +127,10 @@ readonly class Char extends BaseChar implements Caseable, Patternable {
      * @return static<non-empty-string> Returns a new instance with the character value or false if the codepoint is
      * invalid.
      */
-    public static function fromCodepoint (int $codepoint, Encoding $encoding = self::DEFAULT_ENCODING):static {
+    public static function fromCodepoint (Codepoint $codepoint, Encoding $encoding = self::DEFAULT_ENCODING):static {
 
         /** @var non-empty-string $value */
-        $value = ($value = Runtime\Char\MB::chr($codepoint, $encoding) )!== false
+        $value = ($value = Runtime\Char\MB::chr($codepoint->value(), $encoding) )!== false
             ? $value : throw new InvalidCodepointException;
 
         return new static($value, $encoding);
@@ -158,7 +160,7 @@ readonly class Char extends BaseChar implements Caseable, Patternable {
     }
 
     /**
-     * ### Returns the Unicode code point for the first character of the string
+     * {@inheritDoc}
      *
      * <code>
      * use FireHub\Foundation\Char;
@@ -176,11 +178,17 @@ readonly class Char extends BaseChar implements Caseable, Patternable {
      *
      * @uses \FireHub\Runtime\Char\MB::ord() To get the codepoint value.
      *
-     * @return non-negative-int|false The Unicode code point for the first character of string.
+     * @throws \FireHub\Core\Exception\Runtime\System\Invariant\InvalidCodepointException If the codepoint is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
      */
-    public function codepoint ():int|false {
+    public function codepoint ():Codepoint {
 
-        return Runtime\Char\MB::ord($this->value);
+        $codepoint = Runtime\Char\MB::ord($this->value);
+
+        return $codepoint !== false
+            ? new Codepoint($codepoint)
+            : throw new InvalidCodepointException;
 
     }
 

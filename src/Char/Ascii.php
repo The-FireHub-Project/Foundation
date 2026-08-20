@@ -62,7 +62,7 @@ readonly class Ascii extends Char {
         parent::__construct($value, $encoding);
 
         $this->guard(
-            fn() => $this->codepoint() <= 0x7F,
+            fn() => $this->codepoint()->value() <= 0x7F,
             fn() => new InvalidCharacterException(
                 'Character must be a valid ASCII character.'
             )
