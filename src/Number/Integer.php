@@ -251,6 +251,8 @@ readonly class Integer extends BaseInteger {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Runtime\Math::pow() To raise the current value to the given exponent.
+     *
      * @param int|self<int> $exponent <p>
      * The exponent to raise the current value to.
      * </p>
@@ -259,9 +261,10 @@ readonly class Integer extends BaseInteger {
      */
     public function power (int|self $exponent):static {
 
-        return new static(
-            $this->value ** ($exponent instanceof self ? $exponent->value() : $exponent)
-        );
+        /** @var int $value */
+        $value = Runtime\Math::pow($this->value, $exponent instanceof self ? $exponent->value() : $exponent);
+
+        return new static($value);
 
     }
 

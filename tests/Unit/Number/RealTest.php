@@ -18,6 +18,7 @@ use FireHub\Core\Type\Number;
 use FireHub\Core\Meta\Enum\Number\Format;
 use FireHub\Foundation\Number\Real;
 use FireHub\Foundation\Number\Exception\InvalidConversionException;
+use FireHub\Runtime\Math\RoundMode;
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
 };
@@ -299,12 +300,12 @@ final class RealTest extends FireHubTestCase {
      *
      * @param float $expected
      * @param float $value
-     * @param float|int|\FireHub\Core\Type\Number $exponent
+     * @param float|int|\FireHub\Foundation\Number\Real $exponent
      *
      * @return void
      */
     #[TestWith([6.25, 2.5, 2])]
-    public function testPower (float $expected, float $value, float|int|Number $exponent):void {
+    public function testPower (float $expected, float $value, float|int|Real $exponent):void {
 
         self::assertSame($expected, new Real($value)->power($exponent)->value());
 
@@ -338,6 +339,24 @@ final class RealTest extends FireHubTestCase {
     public function testAbsolute (float $expected, float $value):void {
 
         self::assertSame($expected, new Real($value)->absolute()->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param float $expected
+     * @param float $value
+     * @param int $precision
+     * @param \FireHub\Runtime\Math\RoundMode $mode
+     *
+     * @return void
+     */
+    #[TestWith([10.57, 10.567, 2])]
+    #[TestWith([10.56, 10.567, 2, RoundMode::TOWARDS_ZERO])]
+    public function testRound (float $expected, float $value, int $precision = 0, RoundMode $mode = RoundMode::HALF_AWAY_FROM_ZERO):void {
+
+        self::assertSame($expected, new Real($value)->round($precision, $mode)->value());
 
     }
 

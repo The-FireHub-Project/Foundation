@@ -21,6 +21,7 @@ use FireHub\Core\Meta\Enum\Number\Format;
 use FireHub\Foundation\Conversion\Policy\Strict;
 use FireHub\Foundation\Number\Operation\NumericFormat;
 use FireHub\Foundation\Number\Exception\InvalidConversionException;
+use FireHub\Runtime\Math\RoundMode;
 use FireHub\Runtime;
 
 /**
@@ -536,16 +537,18 @@ readonly class Real extends BaseReal {
      *
      * @since 1.0.0
      *
-     * @param float|int|\FireHub\Core\Type\Number<numeric|numeric-string> $exponent <p>
+     * @uses \FireHub\Runtime\Math::pow() To raise the current value to the given exponent.
+     *
+     * @param float|int|self<float> $exponent <p>
      * The exponent to raise the current value to.
      * </p>
      *
      * @return static<float> Returns a new Real instance with the result.
      */
-    public function power (float|int|Number $exponent):static {
+    public function power (float|int|self $exponent):static {
 
         return new static(
-            $this->value ** ($exponent instanceof Number ? $exponent->value() : $exponent)
+            Runtime\Math::pow($this->value, $exponent instanceof self ? $exponent->value() : $exponent)
         );
 
     }
@@ -604,6 +607,44 @@ readonly class Real extends BaseReal {
 
         return new static(
             Runtime\Math::abs($this->value)
+        );
+
+    }
+
+    /**
+     * ### Rounds the real value
+     *
+     * Returns a new Real instance containing the rounded value.
+     *
+     * <code>
+     * use FireHub\Foundation\Number\Real;
+     * use FireHub\Runtime\Math\RoundMode;
+     *
+     * $real = new Real(10.567)->round(2);
+     *
+     * // 10.57
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math::round() To round the value.
+     *
+     * @param int $precision [optional] <p>
+     * The number of decimal digits to round to.
+     * </p>
+     * @param \FireHub\Runtime\Math\RoundMode $mode [optional]
+     * The rounding mode.
+     *
+     * @return static<float> Returns a new Real instance containing the rounded value.
+     */
+    public function round (int $precision = 0, RoundMode $mode = RoundMode::HALF_AWAY_FROM_ZERO):static {
+
+        return new static(
+            (float)Runtime\Math::round(
+                $this->value,
+                $precision,
+                $mode
+            )
         );
 
     }
