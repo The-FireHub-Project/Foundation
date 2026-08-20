@@ -61,36 +61,6 @@ final class BooleanTest extends FireHubTestCase {
      * @return void
      */
     #[TestWith([true, true])]
-    public function testIsTrue (bool $expected, bool $value):void {
-
-        self::assertSame($expected, new Boolean($value)->isTrue());
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
-     * @param bool $expected
-     * @param bool $value
-     *
-     * @return void
-     */
-    #[TestWith([true, false])]
-    public function testIsFalse (bool $expected, bool $value):void {
-
-        self::assertSame($expected, new Boolean($value)->isFalse());
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
-     * @param bool $expected
-     * @param bool $value
-     *
-     * @return void
-     */
-    #[TestWith([true, true])]
     public function testValue (bool $expected, bool $value):void {
 
         self::assertSame($expected, new Boolean($value)->value());

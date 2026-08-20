@@ -92,43 +92,6 @@ readonly class Boolean extends BaseBoolean {
      * <code>
      * use FireHub\Foundation\Boolean;
      *
-     * $boolean = new Boolean(true)->isTrue();
-     *
-     * // true
-     * </code>
-     *
-     * @since 1.0.0
-     */
-    public function isTrue ():bool {
-
-        return $this->value === true;
-
-    }
-    /**
-     * {@inheritDoc}
-     *
-     * <code>
-     * use FireHub\Foundation\Boolean;
-     *
-     * $boolean = new Boolean(false)->isFalse();
-     *
-     * // true
-     * </code>
-     *
-     * @since 1.0.0
-     */
-    public function isFalse ():bool {
-
-        return $this->value === false;
-
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <code>
-     * use FireHub\Foundation\Boolean;
-     *
      * $boolean = new Boolean(true)->value();
      *
      * // true
