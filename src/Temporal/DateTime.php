@@ -13,7 +13,7 @@
 
 namespace FireHub\Foundation\Temporal;
 
-use FireHub\Core\Meta\Enum\Temporal\Format;
+use FireHub\Core\Meta\Enum\Date\Format;
 use FireHub\Core\Type\Temporal\DateTime as BaseDateTime;
 use FireHub\Foundation\Temporal\Exception\InvalidDateTimeException;
 use DateTimeImmutable;
@@ -75,7 +75,7 @@ readonly class DateTime extends BaseDateTime {
      * The datetime value to parse.
      * </p>
      *
-     * @param non-empty-string|\FireHub\Core\Meta\Enum\Temporal\Format $format [optional] <p>
+     * @param non-empty-string|\FireHub\Core\Meta\Enum\Date\Format $format [optional] <p>
      * The format used to parse the datetime value.
      * </p>
      *
@@ -114,7 +114,7 @@ readonly class DateTime extends BaseDateTime {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Core\Meta\Enum\Temporal\Format::ISO_DATE_TIME_MICROSECONDS As the temporal format.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format::ISO_DATE_TIME_MICROSECONDS As the temporal format.
      *
      * @return non-empty-string Raw VO value.
      */

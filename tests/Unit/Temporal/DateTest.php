@@ -14,6 +14,7 @@
 namespace FireHub\Tests\Foundation\Unit\Temporal;
 
 use FireHub\Testing\FireHubTestCase;
+use FireHub\Core\Meta\Enum\Date\Format;
 use FireHub\Foundation\Temporal\Date;
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
@@ -33,7 +34,7 @@ final class DateTest extends FireHubTestCase {
      *
      * @param non-empty-string $expected
      * @param non-empty-string $value
-     * @param non-empty-string $format
+     * @param non-empty-string|\FireHub\Core\Meta\Enum\Date\Format $format
      *
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateException
      *
@@ -41,7 +42,7 @@ final class DateTest extends FireHubTestCase {
      */
     #[TestWith(['2000-01-01', '2000-01-01'])]
     #[TestWith(['2000-01-01', '01.01.2000', 'd.m.Y'])]
-    public function testFrom (string $expected, string $value, string $format = 'Y-m-d'):void {
+    public function testFrom (string $expected, string $value, string|Format $format = Format::ISO_DATE):void {
 
         self::assertSame($expected, Date::from($value, $format)->value());
 
