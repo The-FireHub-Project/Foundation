@@ -87,16 +87,16 @@ final class DateTimeTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
-     * @param \FireHub\Core\Type\Date\Zone $value
+     * @param \FireHub\Core\Type\Date\Zone $zone
      *
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
      *
      * @return void
      */
     #[TestWith([Zone::ARCTIC_LONGYEARBYEN])]
-    public function testWithZone (Zone $value = Zone::UTC):void {
+    public function testWithZone (Zone $zone = Zone::UTC):void {
 
-        self::assertSame($value, DateTime::from('2000-01-01 12:00:00')->withZone($value)->zone());
+        self::assertSame($zone, DateTime::from('2000-01-01 12:00:00')->withZone($zone)->zone());
 
     }
 

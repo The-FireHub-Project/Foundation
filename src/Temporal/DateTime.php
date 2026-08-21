@@ -191,10 +191,10 @@ readonly class DateTime extends BaseDateTime {
      *
      * @since 1.0.0
      */
-    public function withZone (Zone $encoding):static {
+    public function withZone (Zone $zone):static {
 
         /** @var static<TValue> */
-        return new static($this->value->setTimezone(new DateTimeZone($encoding->value)));
+        return new static($this->value->setTimezone(new DateTimeZone($zone->value)));
 
     }
 
