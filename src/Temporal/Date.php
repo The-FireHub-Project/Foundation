@@ -74,7 +74,6 @@ readonly class Date extends BaseDate {
      * @param non-empty-string $value <p>
      * The date value to parse.
      * </p>
-     *
      * @param non-empty-string|\FireHub\Core\Meta\Enum\Date\Format $format [optional] <p>
      * The format used to parse the date value.
      * </p>

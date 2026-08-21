@@ -74,7 +74,6 @@ readonly class Time extends BaseTime {
      * @param non-empty-string $value <p>
      * The time value to parse.
      * </p>
-     *
      * @param non-empty-string|\FireHub\Core\Meta\Enum\Date\Format $format [optional] <p>
      * The format used to parse the time value.
      * </p>

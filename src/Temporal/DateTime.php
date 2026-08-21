@@ -7,16 +7,17 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.2
+ * @php-version >=8.4
  * @package Foundation
  */
 
 namespace FireHub\Foundation\Temporal;
 
+use FireHub\Core\Type\Date\Zone;
 use FireHub\Core\Meta\Enum\Date\Format;
 use FireHub\Core\Type\Temporal\DateTime as BaseDateTime;
 use FireHub\Foundation\Temporal\Exception\InvalidDateTimeException;
-use DateTimeImmutable;
+use DateTimeImmutable, DateTimeZone;
 
 /**
  * ### Provides an immutable date and time value object with a high-level developer API
@@ -74,9 +75,11 @@ readonly class DateTime extends BaseDateTime {
      * @param non-empty-string $value <p>
      * The datetime value to parse.
      * </p>
-     *
      * @param non-empty-string|\FireHub\Core\Meta\Enum\Date\Format $format [optional] <p>
      * The format used to parse the datetime value.
+     * </p>
+     * @param \FireHub\Core\Type\Date\Zone $zone [optional] <p>
+     * The timezone used to parse the datetime value.
      * </p>
      *
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime value cannot be parsed
@@ -84,11 +87,11 @@ readonly class DateTime extends BaseDateTime {
      *
      * @return static<non-empty-string> A new DateTime instance.
      */
-    public static function from (string $value, string|Format $format = Format::ISO_DATE_TIME):static {
+    public static function from (string $value, string|Format $format = Format::ISO_DATE_TIME, Zone $zone = Zone::UTC):static {
 
         $format = $format instanceof Format ? $format->value : $format;
 
-        $datetime = DateTimeImmutable::createFromFormat('!'.$format, $value);
+        $datetime = DateTimeImmutable::createFromFormat('!'.$format, $value, new DateTimeZone($zone->value));
 
         $errors = DateTimeImmutable::getLastErrors();
 
@@ -121,6 +124,44 @@ readonly class DateTime extends BaseDateTime {
     public function value ():string {
 
         return $this->value->format(Format::ISO_DATE_TIME_MICROSECONDS->value);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00')->zone();
+     *
+     * // Zone::UTC
+     * </code>
+     *
+     * @since 1.0.0
+     */
+    public function zone ():Zone {
+
+        return Zone::from($this->value->getTimezone()->getName());
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     * use FireHub\Core\Type\Date\Zone;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00')->withZone(Zone::ARCTIC_LONGYEARBYEN);
+     * </code>
+     *
+     * @since 1.0.0
+     */
+    public function withZone (Zone $encoding):static {
+
+        /** @var static<TValue> */
+        return new static($this->value->setTimezone(new DateTimeZone($encoding->value)));
 
     }
 
