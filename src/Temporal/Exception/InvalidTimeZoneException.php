@@ -19,7 +19,7 @@ use FireHub\Core\Exception\DomainException;
  * ### Represents an invalid timezone provided to an operation that requires a valid timezone
  * @since 1.0.0
  */
-final class InvalidZoneException extends DomainException {
+final class InvalidTimeZoneException extends DomainException {
 
     protected const string DEFAULT_MESSAGE = 'The timezone is not valid';
 
