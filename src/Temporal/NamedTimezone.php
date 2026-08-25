@@ -15,6 +15,8 @@ namespace FireHub\Foundation\Temporal;
 
 use FireHub\Core\Type\Temporal\Timezone;
 use FireHub\Core\Type\Date\Zone;
+use FireHub\Core\Type\Geo\Country;
+use DateTimeZone, DateTimeImmutable;
 
 /**
  *
@@ -54,6 +56,33 @@ readonly class NamedTimezone extends Timezone {
     ) {}
 
     /**
+     * ### Gets the country of the timezone
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\NamedTimezone;
+     * use FireHub\Core\Type\Date\Zone;
+     *
+     * $timezone = new NamedTimezone(Zone::ARCTIC_LONGYEARBYEN)->country();
+     *
+     * // Country::SVALBARD_AND_JAN_MAYEN
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @return null|\FireHub\Core\Type\Geo\Country The country associated with the timezone, or null if none is
+     * available.
+     */
+    public function country ():?Country {
+
+        $location = new DateTimeZone($this->value())->getLocation();
+
+        return $location === false
+            ? null
+            : Country::fromAlpha2($location['country_code']);
+
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <code>
@@ -72,6 +101,33 @@ readonly class NamedTimezone extends Timezone {
         /** @var TValue */
         return $this->zone->value;
 
+    }
+
+    /**
+     * ### Gets the timezone offset from UTC
+     *
+     * Returns the fixed timezone offset from UTC in seconds.
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\FixedTimezone;
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $timezone = new NamedTimezone(Zone::ARCTIC_LONGYEARBYEN)->offset(DateTime::from('2000-01-01));
+     *
+     * // 3600
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\Temporal\DateTime<non-empty-string> $at <p>
+     * The date/time to calculate the offset for.
+     * </p>
+     *
+     * @return int Offset from UTC in seconds.
+     */
+    public function offset (DateTime $at):int {
+
+        return new DateTimeZone($this->value())->getOffset(new DateTimeImmutable($at->value()));
     }
 
 }

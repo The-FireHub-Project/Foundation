@@ -105,4 +105,36 @@ readonly class FixedTimezone extends Timezone {
 
     }
 
+    /**
+     * ### Gets the timezone offset from UTC
+     *
+     * Returns the fixed timezone offset from UTC in seconds.
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\FixedTimezone;
+     *
+     * $timezone = FixedTimezone::from('-0100')->offset();
+     *
+     * // -3600
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Access::part() To get the timezone part.
+     *
+     * @return int Offset from UTC in seconds.
+     */
+    public function offset ():int {
+
+        $hours = (int) Runtime\Str\SB\Access::part($this->zone, 1, 2);
+        $minutes = (int) Runtime\Str\SB\Access::part($this->zone, 4, 2);
+
+        $offset = ($hours * 3600) + ($minutes * 60);
+
+        return $this->zone[0] === '+'
+            ? $offset
+            : -$offset;
+
+    }
+
 }

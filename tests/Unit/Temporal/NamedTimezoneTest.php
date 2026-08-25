@@ -14,8 +14,10 @@
 namespace FireHub\Tests\Foundation\Unit\Temporal;
 
 use FireHub\Testing\FireHubTestCase;
-use FireHub\Foundation\Temporal\NamedTimezone;
 use FireHub\Core\Type\Date\Zone;
+use FireHub\Core\Type\Geo\Country;
+use FireHub\Foundation\Temporal\NamedTimezone;
+use FireHub\Foundation\Temporal\DateTime;
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
 };
@@ -41,6 +43,39 @@ final class NamedTimezoneTest extends FireHubTestCase {
     public function testValue (string $expected, Zone $zone):void {
 
         self::assertSame($expected, new NamedTimezone($zone)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param \FireHub\Core\Type\Geo\Country $expected
+     * @param \FireHub\Core\Type\Date\Zone $zone
+     *
+     * @return void
+     */
+    #[TestWith([Country::SVALBARD_AND_JAN_MAYEN, Zone::ARCTIC_LONGYEARBYEN])]
+    public function test (Country $expected, Zone $zone):void {
+
+        self::assertSame($expected, new NamedTimezone($zone)->country());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int $expected
+     * @param \FireHub\Core\Type\Date\Zone $zone
+     *
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     *
+     * @return void
+     */
+    #[TestWith([3600, Zone::ARCTIC_LONGYEARBYEN])]
+    public function testOffset (int $expected, Zone $zone):void {
+
+        self::assertSame($expected, new NamedTimezone($zone)->offset(DateTime::from('2000-01-01')));
 
     }
 

@@ -49,4 +49,25 @@ final class FixedTimezoneTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @param int $expected
+     * @param non-empty-string $zone
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     * @throws \FireHub\Runtime\Exception\EmptySeparatorException
+     *
+     * @return void
+     */
+    #[TestWith([-3600, '-0100'])]
+    #[TestWith([3600, '+0100'])]
+    public function testOffset (int $expected, string $zone):void {
+
+        self::assertSame($expected, new FixedTimezone($zone)->offset());
+
+    }
+
 }
