@@ -106,6 +106,59 @@ readonly class DateTime extends BaseDateTime {
     }
 
     /**
+     * ### Creates a datetime value from a formatted string
+     *
+     * Parses the given time value using the specified format and creates a new immutable Time value object.
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::fromFormat('01.01.2000 12.00.00', 'd.m.Y H.i.s');
+     *
+     * // '2000-01-01 12:00:00.000000'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param non-empty-string $datetime <p>
+     * A date/time string.
+     * </p>
+     * @param non-empty-string|\FireHub\Core\Meta\Enum\Date\Format $format [optional] <p>
+     * The format used to parse the datetime value.
+     * </p>
+     * @param null|\FireHub\Core\Type\Temporal\Timezone<non-empty-string> $timezone [optional] <p>
+     * The timezone used to parse the datetime value.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime value cannot be parsed
+     * using the given format.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException If the timezone is invalid.
+     *
+     * @return static<non-empty-string> A new DateTime instance.
+     */
+    public static function fromFormat (string $datetime, string|Format $format = Format::ISO_DATE_TIME, ?Timezone $timezone = null):static {
+
+        $format = $format instanceof Format ? $format->value : $format;
+
+        try {
+
+            $datetime = DateTimeImmutable::createFromFormat(
+                $format,
+                $datetime,
+                new DateTimeZone($timezone?->value() ?? Zone::UTC->value)
+            ) ?: throw new InvalidDateTimeException('DateTime value could not be parsed using the format.');
+
+        } catch (DateInvalidTimeZoneException) {
+
+            throw new InvalidTimeZoneException;
+
+        }
+
+        return new static($datetime);
+
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <code>

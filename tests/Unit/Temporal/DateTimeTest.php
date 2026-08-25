@@ -15,6 +15,7 @@ namespace FireHub\Tests\Foundation\Unit\Temporal;
 
 use FireHub\Testing\FireHubTestCase;
 use FireHub\Core\Type\Temporal\Timezone;
+use FireHub\Core\Meta\Enum\Date\Format;
 use FireHub\Foundation\Temporal\DateTime;
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
@@ -45,6 +46,26 @@ final class DateTimeTest extends FireHubTestCase {
     public function testFrom (string $expected, string $value, ?Timezone $timezone = null):void {
 
         self::assertSame($expected, DateTime::from($value, $timezone)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param non-empty-string|\FireHub\Core\Meta\Enum\Date\Format $format
+     * @param null|\FireHub\Core\Type\Temporal\Timezone<non-empty-string> $timezone
+     *
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     *
+     * @return void
+     */
+    #[TestWith(['2000-01-01 12:00:00.000000', '01.01.2000 12.00.00', 'd.m.Y H.i.s'])]
+    public function testFromFormat (string $expected, string $value, string|Format $format = Format::ISO_DATE_TIME, ?Timezone $timezone = null):void {
+
+        self::assertSame($expected, DateTime::fromFormat($value, $format, $timezone)->value());
 
     }
 
