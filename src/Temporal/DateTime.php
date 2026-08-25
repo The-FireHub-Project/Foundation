@@ -47,6 +47,8 @@ readonly class DateTime extends BaseDateTime {
     /**
      * ### The timezone
      * @since 1.0.0
+     *
+     * @var \FireHub\Core\Type\Temporal\Timezone<non-empty-string>
      */
     protected Timezone $timezone;
 
@@ -68,7 +70,7 @@ readonly class DateTime extends BaseDateTime {
         ?Timezone $timezone = null
     ) {
 
-        $this->timezone = $timezone ?? new NamedTimezone(Zone::UTC);
+        $this->timezone = $timezone ?? new NamedTimezone(Zone::UTC); // @phpstan-ignore assign.propertyType
 
     }
 
@@ -188,6 +190,7 @@ readonly class DateTime extends BaseDateTime {
      */
     public function timezone ():Timezone {
 
+        /** @var Timezone<non-empty-string> */
         return $this->timezone;
 
     }
@@ -229,6 +232,7 @@ readonly class DateTime extends BaseDateTime {
      */
     public function withTimezone (Timezone $timezone):static {
 
+        /** @var static<TValue> */
         return new static($this->value, $timezone);
 
     }
