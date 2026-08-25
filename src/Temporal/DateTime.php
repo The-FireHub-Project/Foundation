@@ -18,6 +18,7 @@ use FireHub\Core\Type\Temporal\ {
 };
 use FireHub\Core\Type\Date\Zone;
 use FireHub\Core\Meta\Enum\Date\Format;
+use FireHub\Foundation\Temporal\NamedTimezone;
 use FireHub\Foundation\Temporal\Exception\ {
     InvalidDateTimeException, InvalidTimeZoneException
 };
@@ -44,18 +45,32 @@ use DateMalformedStringException, DateInvalidTimeZoneException, DateTimeImmutabl
 readonly class DateTime extends BaseDateTime {
 
     /**
+     * ### The timezone
+     * @since 1.0.0
+     */
+    protected Timezone $timezone;
+
+    /**
      * ### Constructor
      * @since 1.0.0
      *
      * @param DateTimeImmutable $value <p>
      * The date and time value in the normalized Y-m-d H:i:s.u format.
      * </p>
+     * @param null|\FireHub\Core\Type\Temporal\Timezone<non-empty-string> $timezone [optional] <p>
+     * The timezone used to parse the datetime value.
+     * </p>
      *
      * @return void
      */
     protected function __construct (
-        protected DateTimeImmutable $value
-    ) {}
+        protected DateTimeImmutable $value,
+        ?Timezone $timezone = null
+    ) {
+
+        $this->timezone = $timezone ?? new NamedTimezone(Zone::UTC);
+
+    }
 
     /**
      * ### Creates a new DateTime instance from a given string
@@ -101,7 +116,7 @@ readonly class DateTime extends BaseDateTime {
 
         }
 
-        return new static($datetime);
+        return new static($datetime, $timezone);
 
     }
 
@@ -154,7 +169,26 @@ readonly class DateTime extends BaseDateTime {
 
         }
 
-        return new static($datetime);
+        return new static($datetime, $timezone);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00')->timezone();
+     *
+     * // NamedTimezone::UTC
+     * </code>
+     *
+     * @since 1.0.0
+     */
+    public function timezone ():Timezone {
+
+        return $this->timezone;
 
     }
 
@@ -178,6 +212,24 @@ readonly class DateTime extends BaseDateTime {
     public function value ():string {
 
         return $this->value->format(Format::ISO_DATE_TIME_MICROSECONDS->value);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     * use FireHub\Foundation\Temporal\NamedTimezone
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00')->withTimezone(Zone::ARCTIC_LONGYEARBYEN);
+     * </code>
+     *
+     * @since 1.0.0
+     */
+    public function withTimezone (Timezone $timezone):static {
+
+        return new static($this->value, $timezone);
 
     }
 

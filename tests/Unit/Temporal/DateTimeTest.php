@@ -15,8 +15,11 @@ namespace FireHub\Tests\Foundation\Unit\Temporal;
 
 use FireHub\Testing\FireHubTestCase;
 use FireHub\Core\Type\Temporal\Timezone;
+use FireHub\Core\Type\Date\Zone;
 use FireHub\Core\Meta\Enum\Date\Format;
-use FireHub\Foundation\Temporal\DateTime;
+use FireHub\Foundation\Temporal\ {
+    DateTime, NamedTimezone, FixedTimezone
+};
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
 };
@@ -66,6 +69,51 @@ final class DateTimeTest extends FireHubTestCase {
     public function testFromFormat (string $expected, string $value, string|Format $format = Format::ISO_DATE_TIME, ?Timezone $timezone = null):void {
 
         self::assertSame($expected, DateTime::fromFormat($value, $format, $timezone)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     *
+     * @return void
+     */
+    public function testFromTimezone ():void {
+
+        self::assertEquals(
+            new NamedTimezone(Zone::UTC),
+            DateTime::from('2000-01-01 12:00:00')->timezone()
+        );
+
+        self::assertEquals(
+            new NamedTimezone(Zone::ARCTIC_LONGYEARBYEN),
+            DateTime::from('2000-01-01 12:00:00', new NamedTimezone(Zone::ARCTIC_LONGYEARBYEN))->timezone()
+        );
+
+        self::assertEquals(
+            new FixedTimezone('+0100'),
+            DateTime::from('2000-01-01 12:00:00', new FixedTimezone('+0100'))->timezone()
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $value
+     * @param \FireHub\Core\Type\Date\Zone $zone
+     *
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     *
+     * @return void
+     */
+    #[TestWith(['01.01.2000 12.00.00', Zone::ARCTIC_LONGYEARBYEN])]
+    public function testWithTimezone (string $value, Zone $zone):void {
+
+        self::assertEquals(new NamedTimezone($zone), DateTime::from($value)->withTimezone(new NamedTimezone($zone))->timezone());
 
     }
 
