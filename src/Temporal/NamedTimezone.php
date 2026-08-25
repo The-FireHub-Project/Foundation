@@ -30,7 +30,7 @@ use FireHub\Core\Type\Date\Zone;
  * timezone functionality remains delegated to the Runtime layer.
  * @since 1.0.0
  *
- * @template TValue of \FireHub\Core\Type\Date\Zone::*
+ * @template TValue of value-of<\FireHub\Core\Type\Date\Zone>
  *
  * @extends \FireHub\Core\Type\Temporal\Timezone<TValue>
  */
@@ -69,6 +69,7 @@ readonly class NamedTimezone extends Timezone {
      */
     public function value ():string {
 
+        /** @var TValue */
         return $this->zone->value;
 
     }
