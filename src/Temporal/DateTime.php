@@ -18,10 +18,10 @@ use FireHub\Core\Type\Temporal\ {
 };
 use FireHub\Core\Type\Date\Zone;
 use FireHub\Core\Meta\Enum\Date\Format;
-use FireHub\Foundation\Temporal\NamedTimezone;
 use FireHub\Foundation\Temporal\Exception\ {
     InvalidDateTimeException, InvalidTimeZoneException
 };
+use FireHub\Runtime;
 use DateMalformedStringException, DateInvalidTimeZoneException, DateTimeImmutable, DateTimeZone;
 
 /**
@@ -56,21 +56,31 @@ readonly class DateTime extends BaseDateTime {
      * ### Constructor
      * @since 1.0.0
      *
+     * @uses \FireHub\Runtime\Str\SB\Regex::match() To check if the timezone is valid.
+     *
      * @param DateTimeImmutable $value <p>
      * The date and time value in the normalized Y-m-d H:i:s.u format.
      * </p>
-     * @param null|\FireHub\Core\Type\Temporal\Timezone<non-empty-string> $timezone [optional] <p>
-     * The timezone used to parse the datetime value.
-     * </p>
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException If the timezone is invalid.
      *
      * @return void
      */
     protected function __construct (
-        protected DateTimeImmutable $value,
-        ?Timezone $timezone = null
+        protected DateTimeImmutable $value
     ) {
 
-        $this->timezone = $timezone ?? new NamedTimezone(Zone::UTC); // @phpstan-ignore assign.propertyType
+        /** @var non-empty-string $name */
+        $name = $value->getTimezone()->getName();
+
+        /** @var \FireHub\Core\Type\Temporal\Timezone<non-empty-string> $timezone */
+        $timezone = Runtime\Str\SB\Regex::match('/^[+-]\d{2}:?\d{2}$/', $name) // @phpstan-ignore varTag.nativeType
+            ? new FixedTimezone($name)
+            : new NamedTimezone(Zone::from($name));
+
+        $this->timezone = $timezone;
 
     }
 
@@ -94,8 +104,10 @@ readonly class DateTime extends BaseDateTime {
      * The timezone used to parse the datetime value.
      * </p>
      *
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException If the timezone is invalid.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
      *
      * @return static<non-empty-string> Returns a new DateTime instance.
      */
@@ -118,7 +130,7 @@ readonly class DateTime extends BaseDateTime {
 
         }
 
-        return new static($datetime, $timezone);
+        return new static($datetime);
 
     }
 
@@ -147,9 +159,11 @@ readonly class DateTime extends BaseDateTime {
      * The timezone used to parse the datetime value.
      * </p>
      *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException If the timezone is invalid.
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime value cannot be parsed
      * using the given format.
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException If the timezone is invalid.
      *
      * @return static<non-empty-string> A new DateTime instance.
      */
@@ -171,7 +185,7 @@ readonly class DateTime extends BaseDateTime {
 
         }
 
-        return new static($datetime, $timezone);
+        return new static($datetime);
 
     }
 
@@ -229,11 +243,19 @@ readonly class DateTime extends BaseDateTime {
      * </code>
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::from() To create a new DateTime instance with the specified timezone.
+     * @uses \FireHub\Foundation\Temporal\DateTime::value() To get the raw value of the DateTime instance.
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException If the timezone is invalid.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
      */
     public function withTimezone (Timezone $timezone):static {
 
         /** @var static<TValue> */
-        return new static($this->value, $timezone);
+        return self::from($this->value(), $timezone);
 
     }
 

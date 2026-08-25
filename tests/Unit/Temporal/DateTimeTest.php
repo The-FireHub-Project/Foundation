@@ -40,8 +40,10 @@ final class DateTimeTest extends FireHubTestCase {
      * @param non-empty-string $value
      * @param null|\FireHub\Core\Type\Temporal\Timezone $timezone
      *
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
      *
      * @return void
      */
@@ -60,8 +62,10 @@ final class DateTimeTest extends FireHubTestCase {
      * @param non-empty-string|\FireHub\Core\Meta\Enum\Date\Format $format
      * @param null|\FireHub\Core\Type\Temporal\Timezone<non-empty-string> $timezone
      *
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
      *
      * @return void
      */
@@ -75,8 +79,10 @@ final class DateTimeTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
      *
      * @return void
      */
@@ -105,8 +111,10 @@ final class DateTimeTest extends FireHubTestCase {
      * @param non-empty-string $value
      * @param \FireHub\Core\Type\Date\Zone $zone
      *
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
      *
      * @return void
      */
