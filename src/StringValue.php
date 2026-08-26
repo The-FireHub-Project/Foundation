@@ -101,7 +101,7 @@ trait StringValue {
     }
 
     /**
-     * {@inheritDoc}
+     * ### Returns a new instance with the specified encoding
      *
      * <code>
      * use FireHub\Foundation\Str;
@@ -115,6 +115,12 @@ trait StringValue {
      * </code>
      *
      * @since 1.0.0
+     *
+     * @param \FireHub\Core\Type\Str\Encoding $encoding<p>
+     * The encoding to set.
+     * </p>
+     *
+     * @return static The new instance with provided encoding.
      */
     public function withEncoding (Encoding $encoding):static {
 
