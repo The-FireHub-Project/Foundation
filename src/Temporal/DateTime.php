@@ -207,6 +207,33 @@ readonly class DateTime extends BaseDateTime {
      * <code>
      * use FireHub\Foundation\Temporal\DateTime;
      *
+     * $datetime = DateTime::from('2000-01-01 12:00:00')->timestamp()->value();
+     *
+     * // '946728000.000000'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimestampException If the timestamp is invalid.
+     *
+     * @return \FireHub\Foundation\Temporal\UnixTimestamp<numeric-string> The timestamp of the date and time value.
+     *
+     * @phpstan-ignore method.childReturnType
+     */
+    public function timestamp ():UnixTimestamp {
+
+        return new UnixTimestamp($this->value->getTimestamp());
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
      * $datetime = DateTime::from('2000-01-01 12:00:00')->value();
      *
      * // '2000-01-01 12:00:00.000000'

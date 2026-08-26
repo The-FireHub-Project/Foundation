@@ -83,7 +83,7 @@ final class DateTimeTest extends FireHubTestCase {
      *
      * @return void
      */
-    public function testFromTimezone ():void {
+    public function testTimezone ():void {
 
         self::assertEquals(
             new NamedTimezone(Zone::UTC),
@@ -99,6 +99,25 @@ final class DateTimeTest extends FireHubTestCase {
             new FixedTimezone('+0100'),
             DateTime::from('2000-01-01 12:00:00', new FixedTimezone('+0100'))->timezone()
         );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param numeric-string $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimestampException
+     *
+     * @return void
+     */
+    #[TestWith(['946728000.000000', '2000-01-01 12:00:00'])]
+    public function testTimestamp (string $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->timestamp()->value());
 
     }
 
