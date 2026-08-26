@@ -14,9 +14,9 @@
 namespace FireHub\Tests\Foundation\Unit\Temporal;
 
 use FireHub\Testing\FireHubTestCase;
-use FireHub\Core\Type\Temporal\Timezone;
 use FireHub\Core\Type\Date\Zone;
 use FireHub\Core\Meta\Enum\Date\Format;
+use FireHub\Foundation\Temporal\UnixTimestamp;
 use FireHub\Foundation\Temporal\ {
     DateTime, NamedTimezone, FixedTimezone
 };
@@ -38,7 +38,7 @@ final class DateTimeTest extends FireHubTestCase {
      *
      * @param non-empty-string $expected
      * @param non-empty-string $value
-     * @param null|\FireHub\Core\Type\Temporal\Timezone $timezone
+     * @param null|NamedTimezone|FixedTimezone $timezone
      *
      * @throws \FireHub\Core\Exception\FireHubException
      * @throws \FireHub\Core\Type\Exception\ValueObjectException
@@ -47,7 +47,7 @@ final class DateTimeTest extends FireHubTestCase {
      * @return void
      */
     #[TestWith(['2000-01-01 12:00:00.000000', '2000-01-01 12:00:00'])]
-    public function testFrom (string $expected, string $value, ?Timezone $timezone = null):void {
+    public function testFrom (string $expected, string $value, null|NamedTimezone|FixedTimezone $timezone = null):void {
 
         self::assertSame($expected, DateTime::from($value, $timezone)->value());
 
@@ -59,7 +59,7 @@ final class DateTimeTest extends FireHubTestCase {
      * @param non-empty-string $expected
      * @param non-empty-string $value
      * @param non-empty-string|\FireHub\Core\Meta\Enum\Date\Format $format
-     * @param null|\FireHub\Core\Type\Temporal\Timezone<non-empty-string> $timezone
+     * @param null|NamedTimezone|FixedTimezone $timezone
      *
      * @throws \FireHub\Core\Exception\FireHubException
      * @throws \FireHub\Core\Type\Exception\ValueObjectException
@@ -68,9 +68,28 @@ final class DateTimeTest extends FireHubTestCase {
      * @return void
      */
     #[TestWith(['2000-01-01 12:00:00.000000', '01.01.2000 12.00.00', 'd.m.Y H.i.s'])]
-    public function testFromFormat (string $expected, string $value, string|Format $format = Format::ISO_DATE_TIME, ?Timezone $timezone = null):void {
+    public function testFromFormat (string $expected, string $value, string|Format $format = Format::ISO_DATE_TIME, null|NamedTimezone|FixedTimezone $timezone = null):void {
 
         self::assertSame($expected, DateTime::fromFormat($value, $format, $timezone)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param null|NamedTimezone|FixedTimezone $timezone
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['2000-01-01 12:00:00.000000'])]
+    public function testFromTimestamp (string $expected, null|NamedTimezone|FixedTimezone $timezone = null):void {
+
+        self::assertSame($expected, DateTime::fromTimestamp(DateTime::from($expected)->timestamp(), $timezone)->value());
 
     }
 

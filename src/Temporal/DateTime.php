@@ -179,6 +179,56 @@ readonly class DateTime extends BaseDateTime {
     }
 
     /**
+     * ### Creates a datetime value from a Unix timestamp
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $timestamp = DateTime::from('2000-01-01 12:00:00')->timestamp();
+     *
+     * $datetime = DateTime::fromTimestamp($timestamp);
+     *
+     * // '2000-01-01 12:00:00.000000'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\NamedTimezone::native() To get the native timezone.
+     * @uses \FireHub\Core\Type\Date\Zone::UTC To get the UTC timezone.
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::explode() To explode the timestamp string.
+     *
+     * @param \FireHub\Foundation\Temporal\UnixTimestamp<numeric-string> $timestamp <p>
+     * The timestamp value.
+     * </p>
+     * @param null|TimezoneType $timezone [optional] <p>
+     * The timezone used to parse the datetime value.
+     * </p>
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the timestamp value cannot be parsed
+     * using the given format.
+     *
+     * @return static<non-empty-string> A new DateTime instance.
+     */
+    public static function fromTimestamp (UnixTimestamp $timestamp, null|NamedTimezone|FixedTimezone $timezone = null):static {
+
+        [$seconds, $fraction] = Runtime\Str\SB\Delimiter::explode($timestamp->value(), '.', 2); // @phpstan-ignore-line
+
+        $datetime = DateTimeImmutable::createFromFormat(
+            'U.u',
+            $seconds.'.'.$fraction
+        ) ?: throw new InvalidDateTimeException('Timestamp value could not be converted to a datetime.');
+
+        $datetime = $datetime->setTimezone(
+            $timezone?->native() ?? new NamedTimezone(Zone::UTC)->native()
+        );
+
+        return new static($datetime);
+
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <code>
