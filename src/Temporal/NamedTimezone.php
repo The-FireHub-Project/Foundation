@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.2
+ * @php-version >=8.4
  * @package Foundation
  */
 
@@ -16,7 +16,8 @@ namespace FireHub\Foundation\Temporal;
 use FireHub\Core\Type\Temporal\Timezone;
 use FireHub\Core\Type\Date\Zone;
 use FireHub\Core\Type\Geo\Country;
-use DateTimeZone, DateTimeImmutable;
+use FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException;
+use DateInvalidTimeZoneException, DateTimeZone, DateTimeImmutable;
 
 /**
  *
@@ -39,21 +40,36 @@ use DateTimeZone, DateTimeImmutable;
 readonly class NamedTimezone extends Timezone {
 
     /**
+     * ### The native timezone
+     * @since 1.0.0
+     */
+    protected DateTimeZone $native;
+
+    /**
      * ### Constructor
      * @since 1.0.0
-     *
-     * @uses \FireHub\Core\Type\ValueObject::guard() As a guard.
-     * @uses \FireHub\Runtime\Str\SB\Regex::match() To check if the timezone is valid.
      *
      * @param \FireHub\Core\Type\Date\Zone $zone <p>
      * The timezone to set.
      * </p>
      *
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException If the timezone is invalid.
+     *
      * @return void
      */
-    public function __construct (
-        protected Zone $zone
-    ) {}
+    public function __construct (Zone $zone) {
+
+        try {
+
+            $this->native = new DateTimeZone($zone->value);
+
+        } catch (DateInvalidTimeZoneException) {
+
+            throw new InvalidTimeZoneException;
+
+        }
+
+    }
 
     /**
      * ### Gets the country of the timezone
@@ -69,12 +85,14 @@ readonly class NamedTimezone extends Timezone {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Core\Type\Geo\Country::fromAlpha2() To create a new Country instance from the alpha-2 code.
+     *
      * @return null|\FireHub\Core\Type\Geo\Country The country associated with the timezone, or null if none is
      * available.
      */
     public function country ():?Country {
 
-        $location = new DateTimeZone($this->value())->getLocation();
+        $location = $this->native->getLocation();
 
         return $location === false
             ? null
@@ -99,7 +117,7 @@ readonly class NamedTimezone extends Timezone {
     public function value ():string {
 
         /** @var TValue */
-        return $this->zone->value;
+        return $this->native->getName();
 
     }
 
@@ -127,7 +145,20 @@ readonly class NamedTimezone extends Timezone {
      */
     public function offset (DateTime $at):int {
 
-        return new DateTimeZone($this->value())->getOffset(new DateTimeImmutable($at->value()));
+        return $this->native->getOffset(new DateTimeImmutable($at->value()));
+
+    }
+
+    /**
+     * ### Gets the native timezone
+     * @since 1.0.0
+     *
+     * @return DateTimeZone The native timezone.
+     */
+    public function native ():DateTimeZone {
+
+        return $this->native;
+
     }
 
 }

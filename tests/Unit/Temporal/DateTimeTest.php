@@ -42,7 +42,6 @@ final class DateTimeTest extends FireHubTestCase {
      *
      * @throws \FireHub\Core\Exception\FireHubException
      * @throws \FireHub\Core\Type\Exception\ValueObjectException
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
      *
      * @return void
@@ -64,7 +63,6 @@ final class DateTimeTest extends FireHubTestCase {
      *
      * @throws \FireHub\Core\Exception\FireHubException
      * @throws \FireHub\Core\Type\Exception\ValueObjectException
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
      *
      * @return void
@@ -81,7 +79,6 @@ final class DateTimeTest extends FireHubTestCase {
      *
      * @throws \FireHub\Core\Exception\FireHubException
      * @throws \FireHub\Core\Type\Exception\ValueObjectException
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
      *
      * @return void

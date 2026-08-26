@@ -37,6 +37,8 @@ final class NamedTimezoneTest extends FireHubTestCase {
      * @param non-empty-string $expected
      * @param \FireHub\Core\Type\Date\Zone $zone
      *
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     *
      * @return void
      */
     #[TestWith(['Arctic/Longyearbyen', Zone::ARCTIC_LONGYEARBYEN])]
@@ -51,6 +53,8 @@ final class NamedTimezoneTest extends FireHubTestCase {
      *
      * @param \FireHub\Core\Type\Geo\Country $expected
      * @param \FireHub\Core\Type\Date\Zone $zone
+     *
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
      *
      * @return void
      */
@@ -67,8 +71,10 @@ final class NamedTimezoneTest extends FireHubTestCase {
      * @param int $expected
      * @param \FireHub\Core\Type\Date\Zone $zone
      *
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
      *
      * @return void
      */

@@ -13,16 +13,12 @@
 
 namespace FireHub\Foundation\Temporal;
 
-use FireHub\Core\Type\Temporal\ {
-    DateTime as BaseDateTime, Timezone
-};
+use FireHub\Core\Type\Temporal\DateTime as BaseDateTime;
 use FireHub\Core\Type\Date\Zone;
 use FireHub\Core\Meta\Enum\Date\Format;
-use FireHub\Foundation\Temporal\Exception\ {
-    InvalidDateTimeException, InvalidTimeZoneException
-};
+use FireHub\Foundation\Temporal\Exception\InvalidDateTimeException;
 use FireHub\Runtime;
-use DateMalformedStringException, DateInvalidTimeZoneException, DateTimeImmutable, DateTimeZone;
+use DateMalformedStringException, DateTimeImmutable;
 
 /**
  * ### Provides an immutable date and time value object with a high-level developer API
@@ -40,6 +36,8 @@ use DateMalformedStringException, DateInvalidTimeZoneException, DateTimeImmutabl
  *
  * @extends \FireHub\Core\Type\Temporal\DateTime<TValue>
  *
+ * @phpstan-type TimezoneType \FireHub\Foundation\Temporal\NamedTimezone<value-of<\FireHub\Core\Type\Date\Zone>>|\FireHub\Foundation\Temporal\FixedTimezone<non-empty-string>
+ *
  * @phpstan-consistent-constructor
  */
 readonly class DateTime extends BaseDateTime {
@@ -48,9 +46,9 @@ readonly class DateTime extends BaseDateTime {
      * ### The timezone
      * @since 1.0.0
      *
-     * @var \FireHub\Core\Type\Temporal\Timezone<non-empty-string>
+     * @var TimezoneType
      */
-    protected Timezone $timezone;
+    protected NamedTimezone|FixedTimezone $timezone;
 
     /**
      * ### Constructor
@@ -75,7 +73,6 @@ readonly class DateTime extends BaseDateTime {
         /** @var non-empty-string $name */
         $name = $value->getTimezone()->getName();
 
-        /** @var \FireHub\Core\Type\Temporal\Timezone<non-empty-string> $timezone */
         $timezone = Runtime\Str\SB\Regex::match('/^[+-]\d{2}:?\d{2}$/', $name) // @phpstan-ignore varTag.nativeType
             ? new FixedTimezone($name)
             : new NamedTimezone(Zone::from($name));
@@ -97,36 +94,34 @@ readonly class DateTime extends BaseDateTime {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\Temporal\NamedTimezone::native() To get the native timezone.
+     * @uses \FireHub\Core\Type\Date\Zone::UTC To get the UTC timezone.
+     *
      * @param non-empty-string $datetime <p>
      * A date/time string.
      * </p>
-     * @param null|\FireHub\Core\Type\Temporal\Timezone<non-empty-string> $timezone [optional] <p>
+     * @param null|TimezoneType $timezone [optional] <p>
      * The timezone used to parse the datetime value.
      * </p>
      *
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
-     * @throws \FireHub\Core\Type\Exception\ValueObjectException
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException If the timezone is invalid.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
      *
      * @return static<non-empty-string> Returns a new DateTime instance.
      */
-    public static function from (string $datetime, ?Timezone $timezone = null):static {
+    public static function from (string $datetime, null|NamedTimezone|FixedTimezone $timezone = null):static {
 
         try {
 
             $datetime = new DateTimeImmutable(
                 $datetime,
-                new DateTimeZone($timezone?->value() ?? Zone::UTC->value)
+                $timezone?->native() ?? new NamedTimezone(Zone::UTC)->native()
             );
 
         } catch (DateMalformedStringException) {
 
             throw new InvalidDateTimeException;
-
-        } catch (DateInvalidTimeZoneException) {
-
-            throw new InvalidTimeZoneException;
 
         }
 
@@ -149,41 +144,35 @@ readonly class DateTime extends BaseDateTime {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\Temporal\NamedTimezone::native() To get the native timezone.
+     * @uses \FireHub\Core\Type\Date\Zone::UTC To get the UTC timezone.
+     *
      * @param non-empty-string $datetime <p>
      * A date/time string.
      * </p>
      * @param non-empty-string|\FireHub\Core\Meta\Enum\Date\Format $format [optional] <p>
      * The format used to parse the datetime value.
      * </p>
-     * @param null|\FireHub\Core\Type\Temporal\Timezone<non-empty-string> $timezone [optional] <p>
+     * @param null|TimezoneType $timezone [optional] <p>
      * The timezone used to parse the datetime value.
      * </p>
      *
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
-     * @throws \FireHub\Core\Type\Exception\ValueObjectException
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException If the timezone is invalid.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime value cannot be parsed
      * using the given format.
      *
      * @return static<non-empty-string> A new DateTime instance.
      */
-    public static function fromFormat (string $datetime, string|Format $format = Format::ISO_DATE_TIME, ?Timezone $timezone = null):static {
+    public static function fromFormat (string $datetime, string|Format $format = Format::ISO_DATE_TIME, null|NamedTimezone|FixedTimezone $timezone = null):static {
 
         $format = $format instanceof Format ? $format->value : $format;
 
-        try {
-
-            $datetime = DateTimeImmutable::createFromFormat(
-                $format,
-                $datetime,
-                new DateTimeZone($timezone?->value() ?? Zone::UTC->value)
-            ) ?: throw new InvalidDateTimeException('DateTime value could not be parsed using the format.');
-
-        } catch (DateInvalidTimeZoneException) {
-
-            throw new InvalidTimeZoneException;
-
-        }
+        $datetime = DateTimeImmutable::createFromFormat(
+            $format,
+            $datetime,
+            $timezone?->native() ?? new NamedTimezone(Zone::UTC)->native()
+        ) ?: throw new InvalidDateTimeException('DateTime value could not be parsed using the format.');
 
         return new static($datetime);
 
@@ -201,10 +190,13 @@ readonly class DateTime extends BaseDateTime {
      * </code>
      *
      * @since 1.0.0
+     *
+     * @return TimezoneType The timezone of the date and time value.
+     *
+     * @phpstan-ignore method.childReturnType
      */
-    public function timezone ():Timezone {
+    public function timezone ():NamedTimezone|FixedTimezone {
 
-        /** @var Timezone<non-empty-string> */
         return $this->timezone;
 
     }
@@ -233,7 +225,7 @@ readonly class DateTime extends BaseDateTime {
     }
 
     /**
-     * {@inheritDoc}
+     * ### Returns a new instance with the specified timezone
      *
      * <code>
      * use FireHub\Foundation\Temporal\DateTime;
@@ -247,12 +239,18 @@ readonly class DateTime extends BaseDateTime {
      * @uses \FireHub\Foundation\Temporal\DateTime::from() To create a new DateTime instance with the specified timezone.
      * @uses \FireHub\Foundation\Temporal\DateTime::value() To get the raw value of the DateTime instance.
      *
+     * @param TimezoneType $timezone <p>
+     * The timezone to set.
+     * </p>
+     *
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
      * @throws \FireHub\Core\Type\Exception\ValueObjectException
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException If the timezone is invalid.
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
+     *
+     * @return static The new instance with provided timezone.
      */
-    public function withTimezone (Timezone $timezone):static {
+    public function withTimezone (NamedTimezone|FixedTimezone $timezone):static {
 
         /** @var static<TValue> */
         return self::from($this->value(), $timezone);

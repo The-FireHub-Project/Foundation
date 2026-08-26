@@ -58,7 +58,6 @@ final class FixedTimezoneTest extends FireHubTestCase {
      * @throws \FireHub\Core\Exception\FireHubException
      * @throws \FireHub\Core\Type\Exception\ValueObjectException
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
-     * @throws \FireHub\Runtime\Exception\EmptySeparatorException
      *
      * @return void
      */

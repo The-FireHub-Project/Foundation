@@ -16,6 +16,7 @@ namespace FireHub\Foundation\Temporal;
 use FireHub\Core\Type\Temporal\Timezone;
 use FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException;
 use FireHub\Runtime;
+use DateInvalidTimeZoneException, DateTimeZone;
 
 /**
  * ### Provides an immutable fixed-offset timezone value object with a high-level developer API
@@ -36,12 +37,10 @@ use FireHub\Runtime;
 readonly class FixedTimezone extends Timezone {
 
     /**
-     * ### The timezone
+     * ### The native timezone
      * @since 1.0.0
-     *
-     * @var TValue
      */
-    protected string $zone;
+    protected DateTimeZone $native;
 
     /**
      * ### Constructor
@@ -57,7 +56,7 @@ readonly class FixedTimezone extends Timezone {
      * </p>
      *
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
-     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException If the timezone is invalid.
      *
      * @return void
@@ -76,9 +75,17 @@ readonly class FixedTimezone extends Timezone {
                 .':'
                 .Runtime\Str\SB\Access::part($zone, 3);
 
-            $this->zone = $zone;
+        }
 
-        } else $this->zone = $zone;
+        try {
+
+            $this->native = new DateTimeZone($zone);
+
+        } catch (DateInvalidTimeZoneException) {
+
+            throw new InvalidTimeZoneException;
+
+        }
 
     }
 
@@ -101,7 +108,8 @@ readonly class FixedTimezone extends Timezone {
      */
     public function value ():string {
 
-        return $this->zone;
+        /** @var TValue */
+        return $this->native->getName();
 
     }
 
@@ -126,14 +134,26 @@ readonly class FixedTimezone extends Timezone {
      */
     public function offset ():int {
 
-        $hours = (int) Runtime\Str\SB\Access::part($this->zone, 1, 2);
-        $minutes = (int) Runtime\Str\SB\Access::part($this->zone, 4, 2);
+        $hours = (int) Runtime\Str\SB\Access::part($this->native->getName(), 1, 2);
+        $minutes = (int) Runtime\Str\SB\Access::part($this->native->getName(), 4, 2);
 
         $offset = ($hours * 3600) + ($minutes * 60);
 
-        return $this->zone[0] === '+'
+        return $this->native->getName()[0] === '+'
             ? $offset
             : -$offset;
+
+    }
+
+    /**
+     * ### Gets the native timezone
+     * @since 1.0.0
+     *
+     * @return DateTimeZone The native timezone.
+     */
+    public function native ():DateTimeZone {
+
+        return $this->native;
 
     }
 
