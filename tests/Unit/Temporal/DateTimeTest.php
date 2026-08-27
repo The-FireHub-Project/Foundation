@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=7.4
+ * @php-version >=8.0
  * @package Foundation\Tests
  */
 
@@ -783,6 +783,191 @@ final class DateTimeTest extends FireHubTestCase {
     public function testSwatchBeat (int $expected, string $value):void {
 
         self::assertSame($expected, DateTime::from($value)->swatchBeat());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param int<-9999,9999> $year
+     * @param int<1,12> $month
+     * @param int<1,31> $day
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['2026-01-01 12:00:00.123456', '2000-01-01 12:00:00.123456', 2026, 1, 1])]
+    public function testWithDate (string $expected, string $value, int $year, int $month, int $day):void {
+
+        self::assertSame($expected, DateTime::from($value)->withDate($year, $month, $day)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param int<0,23> $hour
+     * @param int<0,59> $minute
+     * @param int<0,59> $second
+     * @param int<0,999999> $microsecond
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['2000-01-01 13:01:01.111111', '2000-01-01 12:00:00.123456', 13, 1, 1, 111111])]
+    public function testWithTime (string $expected, string $value, int $hour, int $minute, int $second, int $microsecond):void {
+
+        self::assertSame($expected, DateTime::from($value)->withTime($hour, $minute, $second, $microsecond)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param int<-9999,9999> $year
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['2026-01-01 12:00:00.123456', '2000-01-01 12:00:00.123456', 2026])]
+    public function testWithYear (string $expected, string $value, int $year):void {
+
+        self::assertSame($expected, DateTime::from($value)->withYear($year)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param int<1,12> $month
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['2000-06-01 12:00:00.123456', '2000-01-01 12:00:00.123456', 6])]
+    public function testWithMonth (string $expected, string $value, int $month):void {
+
+        self::assertSame($expected, DateTime::from($value)->withMonth($month)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param int<1,31> $day
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['2000-01-15 12:00:00.123456', '2000-01-01 12:00:00.123456', 15])]
+    public function testWithDay (string $expected, string $value, int $day):void {
+
+        self::assertSame($expected, DateTime::from($value)->withDay($day)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param int<0,23> $hour
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['2000-01-01 13:00:00.123456', '2000-01-01 12:00:00.123456', 13])]
+    public function testWithHour (string $expected, string $value, int $hour):void {
+
+        self::assertSame($expected, DateTime::from($value)->withHour($hour)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param int<0,59> $minute
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['2000-01-01 12:30:00.123456', '2000-01-01 12:00:00.123456', 30])]
+    public function testWithMinute (string $expected, string $value, int $minute):void {
+
+        self::assertSame($expected, DateTime::from($value)->withMinute($minute)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param int<0,59> $second
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['2000-01-01 12:00:30.123456', '2000-01-01 12:00:00.123456', 30])]
+    public function testWithSecond (string $expected, string $value, int $second):void {
+
+        self::assertSame($expected, DateTime::from($value)->withSecond($second)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param int<0,999999> $microsecond
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['2000-01-01 12:00:00.654321', '2000-01-01 12:00:00.123456', 654321])]
+    public function testWithMicrosecond (string $expected, string $value, int $microsecond):void {
+
+        self::assertSame($expected, DateTime::from($value)->withMicrosecond($microsecond)->value());
 
     }
 
