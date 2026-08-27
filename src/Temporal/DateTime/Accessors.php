@@ -14,11 +14,12 @@
 namespace FireHub\Foundation\Temporal\DateTime;
 
 use FireHub\Core\Meta\Enum\Date\ {
-    Month, WeekDay
+    Month, Unit, WeekDay
 };
 use FireHub\Core\Meta\Enum\Date\Format\ {
     Day, Month as MonthFormat, Time, Week, Year
 };
+use FireHub\Runtime;
 
 /**
  * ### Provides date and time value accessors
@@ -30,6 +31,196 @@ use FireHub\Core\Meta\Enum\Date\Format\ {
  * @since 1.0.0
  */
 trait Accessors {
+
+    /**
+     * ### Get the zero-based millennium index of the date and time value
+     *
+     * Returns the zero-based millennium index containing the year of the date and time value.
+     *
+     * The index is calculated using astronomical year numbering, where year 0 belongs to index 0, positive years
+     * advance through later indexes, and negative years occupy preceding indexes.
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00');
+     *
+     * $datetime->millenniumIndex();
+     *
+     * // 2
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Meta\Enum\Date\Unit::MILLENNIUM To define the millennium unit.
+     * @uses \FireHub\Core\Meta\Enum\Date\Unit::factor() To get the number of years in a millennium.
+     * @uses \FireHub\Runtime\Math::floor() To calculate the floor of a number.
+     *
+     * @return int The zero-based millennium index.
+     */
+    public function millenniumIndex ():int {
+
+        return Runtime\Math::floor(($this->year()) / Unit::MILLENNIUM->factor());
+
+    }
+
+    /**
+     * ### Get the millennium of the date and time value
+     *
+     * Returns the ordinal number of the millennium containing the year of the date and time value.
+     *
+     * The millennium is calculated using astronomical year numbering, where year 0 represents 1 BCE, year -1
+     * represents 2 BCE, and year 1 represents 1 CE.
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00');
+     *
+     * $datetime->millennium();
+     *
+     * // 3
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime\Accessors::millenniumIndex() To get the zero-based millennium index.
+     *
+     * @return int The ordinal number of the millennium.
+     */
+    public function millennium ():int {
+
+        return $this->millenniumIndex() + 1;
+
+    }
+
+    /**
+     * ### Get the zero-based century index of the date and time value
+     *
+     * Returns the zero-based century index containing the year of the date and time value.
+     *
+     * The index is calculated using astronomical year numbering, where year 0 belongs to index 0, positive years
+     * advance through later indexes, and negative years occupy preceding indexes.
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00');
+     *
+     * $datetime->centuryIndex();
+     *
+     * // 20
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Meta\Enum\Date\Unit::CENTURY To define the century unit.
+     * @uses \FireHub\Core\Meta\Enum\Date\Unit::factor() To get the number of years in a century.
+     * @uses \FireHub\Runtime\Math::floor() To calculate the floor of a number.
+     *
+     * @return int The zero-based century index.
+     */
+    public function centuryIndex ():int {
+
+        return Runtime\Math::floor(
+            $this->year() / Unit::CENTURY->factor()
+        );
+
+    }
+
+    /**
+     * ### Get the century of the date and time value
+     *
+     * Returns the ordinal number of the century containing the year of the date and time value.
+     *
+     * The century is calculated using astronomical year numbering, where year 0 represents 1 BCE, year -1
+     * represents 2 BCE, and year 1 represents 1 CE.
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00');
+     *
+     * $datetime->century();
+     *
+     * // 21
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime\Accessors::centuryIndex() To get the zero-based century index.
+     *
+     * @return int The ordinal number of the century.
+     */
+    public function century ():int {
+
+        return $this->centuryIndex() + 1;
+
+    }
+
+    /**
+     * ### Get the zero-based decade index of the date and time value
+     *
+     * Returns the zero-based decade index containing the year of the date and time value.
+     *
+     * The index is calculated using astronomical year numbering, where year 0 belongs to index 0, positive years
+     * advance through later indexes, and negative years occupy preceding indexes.
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00');
+     *
+     * $datetime->decadeIndex();
+     *
+     * // 200
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Meta\Enum\Date\Unit::DECADE To define the decade unit.
+     * @uses \FireHub\Core\Meta\Enum\Date\Unit::factor() To get the number of years in a decade.
+     * @uses \FireHub\Runtime\Math::floor() To calculate the floor of a number.
+     *
+     * @return int The zero-based decade index.
+     */
+    public function decadeIndex ():int {
+
+        return Runtime\Math::floor(
+            $this->year() / Unit::DECADE->factor()
+        );
+
+    }
+
+    /**
+     * ### Get the decade of the date and time value
+     *
+     * Returns the ordinal number of the decade containing the year of the date and time value.
+     *
+     * The decade is calculated using astronomical year numbering, where year 0 represents 1 BCE, year -1
+     * represents 2 BCE, and year 1 represents 1 CE.
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00');
+     *
+     * $datetime->decade();
+     *
+     * // 201
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime\Accessors::decadeIndex() To get the zero-based decade index.
+     *
+     * @return int The ordinal number of the decade.
+     */
+    public function decade ():int {
+
+        return $this->decadeIndex() + 1;
+
+    }
 
     /**
      * ### Get the year of the date and time value
@@ -78,6 +269,36 @@ trait Accessors {
 
         /** @var int<-99,99> */
         return (int)$this->format(Year::NUMBER_SHORT);
+
+    }
+
+    /**
+     * ### Get the quarter of the date and time value
+     *
+     * Returns the ordinal number of the calendar quarter containing the date and time value.
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00');
+     *
+     * $datetime->quarter();
+     *
+     * // 1
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::month() To get the calendar month.
+     * @uses \FireHub\Core\Meta\Enum\Date\Unit::QUARTER To define the quarter unit.
+     * @uses \FireHub\Core\Meta\Enum\Date\Unit::factor() To get the number of months in a quarter.
+     *
+     * @return int<1,4> The ordinal number of the calendar quarter.
+     */
+    public function quarter ():int {
+
+        /** @var int<1,4> */
+        return Runtime\Math::floor(($this->month()->value - 1) / Unit::QUARTER->factor()) + 1;
 
     }
 
@@ -146,12 +367,46 @@ trait Accessors {
      * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the month as a string.
      * @uses \FireHub\Core\Meta\Enum\Date\Format\Month::DAYS_IN_MONTH To get the number of days in the month.
      *
-     * @return int<0,31> The number of days in the month of the date and time value.
+     * @return int<28,31> The number of days in the month of the date and time value.
      */
     public function daysInMonth ():int {
 
-        /** @var int<0,31> */
+        /** @var int<28,31> */
         return (int)$this->format(MonthFormat::DAYS_IN_MONTH);
+
+    }
+
+    /**
+     * ### Get the fortnight of the date and time value
+     *
+     * Returns the ordinal number of the fortnight containing the date and time value.
+     *
+     * The fortnight is calculated from the beginning of the calendar year, with each fortnight representing a period of
+     * 14 consecutive calendar days.
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00');
+     *
+     * $datetime->fortnight();
+     *
+     * // 1
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     *  @uses \FireHub\Foundation\Temporal\DateTime::dayOfYear() To get the zero-based day of the year.
+     * @uses \FireHub\Core\Meta\Enum\Date\Unit::FORTNIGHT To define the fortnight unit.
+     * @uses \FireHub\Core\Meta\Enum\Date\Unit::factor() To get the number of days in a fortnight.
+     * @uses \FireHub\Runtime\Math::floor() To calculate the floor of a number.
+     *
+     * @return int<1,27> The ordinal number of the fortnight.
+     */
+    public function fortnight ():int {
+
+        /** @var int<1,27> */
+        return Runtime\Math::floor(($this->dayOfYear() - 1) / Unit::FORTNIGHT->factor()) + 1;
 
     }
 
@@ -188,7 +443,7 @@ trait Accessors {
      *
      * $datetime = DateTime::from('2000-01-01 12:00:00')->dayOfYear();
      *
-     * // 0
+     * // 1
      * </code>
      *
      * @since 1.0.0
@@ -202,6 +457,31 @@ trait Accessors {
 
         /** @var int<1, 366> */
         return (int)$this->format(Day::DAY_OF_YEAR) + 1;
+
+    }
+
+    /**
+     * ### Get the day of the month of the date and time value
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00')->dayOfMonth();
+     *
+     * // 1
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the day of the month.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Day::NUMBER To get the day of the month.
+     *
+     * @return int<1,31> The day of the month of the date and time value.
+     */
+    public function dayOfMonth ():int {
+
+        /** @var int<1,31> */
+        return(int)$this->format(Day::NUMBER);
 
     }
 
@@ -226,31 +506,6 @@ trait Accessors {
     public function weekDay ():WeekDay {
 
         return WeekDay::from((int)$this->format(Day::DAY_OF_WEEK));
-
-    }
-
-    /**
-     * ### Get the day of the month of the date and time value
-     *
-     * <code>
-     * use FireHub\Foundation\Temporal\DateTime;
-     *
-     * $datetime = DateTime::from('2000-01-01 12:00:00')->day();
-     *
-     * // 1
-     * </code>
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the day of the month.
-     * @uses \FireHub\Core\Meta\Enum\Date\Format\Day::NUMBER To get the day of the month.
-     *
-     * @return int<1,31> The day of the month of the date and time value.
-     */
-    public function day ():int {
-
-        /** @var int<1,31> */
-        return(int)$this->format(Day::NUMBER);
 
     }
 
