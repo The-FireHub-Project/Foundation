@@ -15,7 +15,12 @@ namespace FireHub\Foundation\Temporal;
 
 use FireHub\Core\Type\Temporal\DateTime as BaseDateTime;
 use FireHub\Core\Type\Date\Zone;
-use FireHub\Core\Meta\Enum\Date\Format;
+use FireHub\Core\Meta\Enum\Date\ {
+    Format\Token, Format
+};
+use FireHub\Foundation\Temporal\DateTime\ {
+    Accessors, Inspection, Mutators
+};
 use FireHub\Foundation\Temporal\Exception\InvalidDateTimeException;
 use FireHub\Runtime;
 use DateMalformedStringException, DateTimeImmutable;
@@ -41,6 +46,12 @@ use DateMalformedStringException, DateTimeImmutable;
  * @phpstan-consistent-constructor
  */
 readonly class DateTime extends BaseDateTime {
+
+    /**
+     * ### Provides access to the DateTime value object's properties
+     * @since 1.0.0
+     */
+    use Accessors, Inspection, Mutators;
 
     /**
      * ### The timezone
@@ -298,6 +309,43 @@ readonly class DateTime extends BaseDateTime {
     public function value ():string {
 
         return $this->value->format(Format::ISO_DATE_TIME_MICROSECONDS->value);
+
+    }
+
+    /**
+     * ### Formats the date and time value using the specified format
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     * use FireHub\Core\Meta\Enum\Date\Format;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00')->parse(Format::ATOM_EXTENDED);
+     *
+     * // '2000-01-01T12:00:00.000+00:00'
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00')->parse('H:i:s');
+     *
+     * // '12:00:00'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Token::value() To get the format token value.
+     *
+     * @param string|\FireHub\Core\Meta\Enum\Date\Format\Token $format <p>
+     * The format to use for formatting the value.
+     * </p>
+     *
+     * @return non-empty-string The formatted value.
+     */
+    public function format (string|Token $format):string {
+
+        $format = $format instanceof Token
+            ? $format->value()
+            : $format;
+
+        /** @var non-empty-string */
+        return $this->value->format($format);
 
     }
 
