@@ -17,7 +17,7 @@ use FireHub\Core\Meta\Enum\Date\ {
     Month, WeekDay
 };
 use FireHub\Core\Meta\Enum\Date\Format\ {
-    Day, Month as MonthFormat, Week, Year
+    Day, Month as MonthFormat, Time, Week, Year
 };
 
 /**
@@ -301,6 +301,279 @@ trait Accessors {
 
         /** @var 'st'|'nd'|'rd'|'th' */
         return$this->format(Day::ORDINAL_SUFFIX);
+
+    }
+
+    /**
+     * ### Get the hour of the date and time value
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 18:00:00')->hour();
+     *
+     * // 18
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the hour of the date and time value.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Time::HOUR_24 To get the hour of the date and time value.
+     *
+     * @return int<0,23> The hour of the date and time value.
+     */
+    public function hour ():int {
+
+        /** @var int<0,23> */
+        return (int)$this->format(Time::HOUR_24);
+
+    }
+
+    /**
+     * ### Get the padded hour of the date and time value
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 18:00:00')->hourPadded();
+     *
+     * // '18'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the padded hour of the date and time value.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Time::HOUR_24_PADDED To get the padded hour of the date and time value.
+     *
+     * @return non-empty-string The padded hour of the date and time value.
+     */
+    public function hourPadded ():string {
+
+        return $this->format(Time::HOUR_24_PADDED);
+
+    }
+
+    /**
+     * ### Get the hour of the date and time value in 12-hour format
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 18:00:00')->hour12();
+     *
+     * // 6
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the hour of the date and time value.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Time::HOUR_12 To get the hour of the date and time value.
+     *
+     * @return int<1,12> The hour of the date and time value in 12-hour format.
+     */
+    public function hour12 ():int {
+
+        /** @var int<1,12> */
+        return (int)$this->format(Time::HOUR_12);
+
+    }
+
+    /**
+     * ### Get the padded hour of the date and time value in 12-hour format
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 18:00:00')->hour12Padded();
+     *
+     * // '06'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the padded hour of the date and time value.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Time::HOUR_12 To get the padded hour of the date and time value.
+     *
+     * @return non-empty-string The padded hour of the date and time value in 12-hour format.
+     */
+    public function hour12Padded ():string {
+
+        return $this->format(Time::HOUR_12_PADDED);
+
+    }
+
+    /**
+     * ### Get the meridiem of the date and time value
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 18:00:00')->meridiem();
+     *
+     * // 'PM'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the meridiem of the date and time value.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Time::MERIDIEM_UPPER To get the meridiem of the date and time value.
+     *
+     * @return 'AM'|'PM' The meridiem of the date and time value.
+     */
+    public function meridiem ():string {
+
+        /** @var 'AM'|'PM' */
+        return $this->format(Time::MERIDIEM_UPPER);
+
+    }
+
+    /**
+     * ### Get the lowercased meridiem of the date and time value
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 18:00:00')->meridiemLower();
+     *
+     * // 'pm'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the lowercased meridiem of the date and time value.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Time::MERIDIEM_LOWER To get the lowercased meridiem of the date and time value.
+     *
+     * @return 'am'|'pm' The lowercased meridiem of the date and time value.
+     */
+    public function meridiemLower ():string {
+
+        /** @var 'am'|'pm' */
+        return $this->format(Time::MERIDIEM_LOWER);
+
+    }
+
+    /**
+     * ### Get the minute of the date and time value
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:13:14.123888')->minute();
+     *
+     * // 13
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the minute of the date and time value.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Time::MINUTE To get the minute of the date and time value.
+     *
+     * @return int<0,59> The minute of the date and time value.
+     */
+    public function minute ():int {
+
+        /** @var int<0,59> */
+        return (int)$this->format(Time::MINUTE);
+
+    }
+
+    /**
+     * ### Get the second of the date and time value
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:13:14.123888')->second();
+     *
+     * // 14
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the second of the date and time value.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Time::SECOND To get the second of the date and time value.
+     *
+     * @return int<0,59> The second of the date and time value.
+     */
+    public function second ():int {
+
+        /** @var int<0,59> */
+        return (int)$this->format(Time::SECOND);
+
+    }
+
+    /**
+     * ### Get the millisecond of the date and time value
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:13:14.123888')->millisecond();
+     *
+     * // 123
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the millisecond of the date and time value.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Time::MILLISECOND To get the millisecond of the date and time value.
+     *
+     * @return int<0,999> The millisecond of the date and time value.
+     */
+    public function millisecond ():int {
+
+        /** @var int<0,999> */
+        return (int)$this->format(Time::MILLISECOND);
+
+    }
+
+    /**
+     * ### Get the microsecond of the date and time value
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:13:14.123888')->microsecond();
+     *
+     * // 123888
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the microsecond of the date and time value.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Time::MICROSECOND To get the microsecond of the date and time value.
+     *
+     * @return int<0,999999> The microsecond of the date and time value.
+     */
+    public function microsecond ():int {
+
+        /** @var int<0,999999> */
+        return (int)$this->format(Time::MICROSECOND);
+
+    }
+
+    /**
+     * ### Get the Swatch Internet Time of the date and time value
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:13:14.123888')->swatchBeat();
+     *
+     * // 550
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::format() To get the Swatch Internet Time of the date and time value.
+     * @uses \FireHub\Core\Meta\Enum\Date\Format\Time::SWATCH_BEAT To get the Swatch Internet Time of the date and time value.
+     *
+     * @return int<0,999> The Swatch Internet Time of the date and time value.
+     */
+    public function swatchBeat ():int {
+
+        /** @var int<0,999> */
+        return (int)$this->format(Time::SWATCH_BEAT);
 
     }
 

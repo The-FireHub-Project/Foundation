@@ -413,4 +413,213 @@ final class DateTimeTest extends FireHubTestCase {
 
     }
 
+    /**
+     * @since 1.0.0
+     *
+     * @param int<0,24> $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([18, '2000-01-01 18:00:00'])]
+    public function testHour (int $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->hour());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['18', '2000-01-01 18:00:00'])]
+    public function testHourPadded (string $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->hourPadded());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int<1,12> $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([6, '2000-01-01 18:00:00'])]
+    public function testHour12 (int $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->hour12());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['06', '2000-01-01 18:00:00'])]
+    public function testHour12Padded (string $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->hour12Padded());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['PM', '2000-01-01 18:00:00'])]
+    public function testMeridiem (string $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->meridiem());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith(['pm', '2000-01-01 18:00:00'])]
+    public function testMeridiemLower (string $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->meridiemLower());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int<0,59> $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([13, '2000-01-01 12:13:14.123888'])]
+    public function testMinute (int $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->minute());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int<0,59> $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([14, '2000-01-01 12:13:14.123888'])]
+    public function testSecond (int $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->second());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int<0,999> $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([123, '2000-01-01 12:13:14.123888'])]
+    public function testMillisecond (int $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->millisecond());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int<0,999999> $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([123888, '2000-01-01 12:13:14.123888'])]
+    public function testMicrosecond (int $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->microsecond());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param int<0,999> $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([550, '2000-01-01 12:13:14.123888'])]
+    public function testSwatchBeat (int $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->swatchBeat());
+
+    }
+
 }
