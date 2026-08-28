@@ -207,6 +207,196 @@ final class DateTimeTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
+     * @param bool $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([false, '2000-01-01 12:00:00'])]
+    public function testIsDTS (bool $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->isDST());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([false, '2000-01-01 12:00:00'])]
+    public function testIsToday (bool $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->isToday());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([false, '2000-01-01 12:00:00'])]
+    public function testIsYesterday (bool $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->isYesterday());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([false, '2000-01-01 12:00:00'])]
+    public function testIsTomorrow (bool $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->isTomorrow());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([true, '2000-01-01 12:00:00'])]
+    public function testIsFirstDayOfMonth (bool $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->isFirstDayOfMonth());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([false, '2000-01-01 12:00:00'])]
+    public function testIsLastDayOfMonth (bool $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->isLastDayOfMonth());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([true, '2000-01-01 12:00:00'])]
+    public function testIsFirstDayOfYear (bool $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->isFirstDayOfYear());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([false, '2000-01-01 12:00:00'])]
+    public function testIsLastDayOfYear (bool $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->isLastDayOfYear());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([true, '2000-01-01 12:00:00'])]
+    public function testIsWeekend (bool $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->isWeekend());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $value
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([false, '2000-01-01 12:00:00'])]
+    public function testIsWeekday (bool $expected, string $value):void {
+
+        self::assertSame($expected, DateTime::from($value)->isWeekday());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
      * @param int $expected
      * @param non-empty-string $value
      *
