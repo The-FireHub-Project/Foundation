@@ -18,7 +18,7 @@ use FireHub\Core\Meta\Enum\Date\Expression\ {
     DateKeyword, Keyword, Ordinal, Relative, TimeKeyword,
 };
 use FireHub\Core\Meta\Enum\Date\ {
-    Format, Month, Unit, WeekDay
+    ExtendedUnit, Format, Month, Unit, WeekDay
 };
 use FireHub\Foundation\Temporal\ {
     NamedTimezone, FixedTimezone, UnixTimestamp
@@ -346,9 +346,61 @@ trait Factories {
      *
      * @uses static::from() To create a new DateTime instance.
      * @uses \FireHub\Core\Meta\Enum\Date\Expression\Keyword::NOW To get the current date and time.
+     * @uses \FireHub\Core\Meta\Enum\Date\ExtendedUnit::factor() To get the factor of the unit.
+     * @uses \FireHub\Core\Meta\Enum\Date\ExtendedUnit::base() To get the base unit of the unit.
      *
      * @param int $number <p>
      * The number of units to add to the current date and time.
+     * </p>
+     * @param \FireHub\Core\Meta\Enum\Date\Unit|\FireHub\Core\Meta\Enum\Date\ExtendedUnit $unit <p>
+     * The unit of time to add to the current date and time.
+     * </p>
+     * @param null|TimezoneType $timezone [optional] <p>
+     * The timezone used to parse the datetime value.
+     * </p>
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
+     *
+     * @return static<non-empty-string> Returns a new DateTime instance.
+     */
+    public static function relative (int $number, Unit|ExtendedUnit $unit, null|NamedTimezone|FixedTimezone $timezone = null):static {
+
+        if ($unit instanceof ExtendedUnit) {
+
+            $number *= $unit->factor();
+            $unit = $unit->base();
+
+        }
+
+        /** @var \FireHub\Core\Meta\Enum\Date\Unit $unit */
+        return static::from(
+            Keyword::NOW->value.' '.$number.' '.$unit->name,
+            $timezone
+        );
+
+    }
+
+    /**
+     * ### Creates a new DateTime instance at a specified temporal position
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     * use FireHub\Core\Meta\Enum\Date\Expression\Ordinal;
+     * use FireHub\Core\Meta\Enum\Date\Unit;
+     *
+     * $datetime = DateTime::at(Ordinal::SECOND, Unit::MINUTE)->value();
+     *
+     * // current date with 2 seconds set
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses static::from() To create a new DateTime instance.
+     *
+     * @param \FireHub\Core\Meta\Enum\Date\Expression\Relative|\FireHub\Core\Meta\Enum\Date\Expression\Ordinal $position <p>
+     * The position of the date and time relative to the current date and time.
      * </p>
      * @param \FireHub\Core\Meta\Enum\Date\Unit $unit <p>
      * The unit of time to add to the current date and time.
@@ -363,17 +415,10 @@ trait Factories {
      *
      * @return static<non-empty-string> Returns a new DateTime instance.
      */
-    public static function relative (int $number, Unit $unit, null|NamedTimezone|FixedTimezone $timezone = null):static {
-
-        if ($unit->base() !== null) {
-
-            $number *= $unit->factor();
-            $unit = $unit->base();
-
-        }
+    public static function at (Relative|Ordinal $position, Unit $unit, null|NamedTimezone|FixedTimezone $timezone = null):static {
 
         return static::from(
-            Keyword::NOW->value.' '.$number.' '.$unit->name,
+            $position->value.' '.$unit->name.' 00:00:00',
             $timezone
         );
 
@@ -472,7 +517,7 @@ trait Factories {
      * use FireHub\Foundation\Temporal\DateTime;
      * use FireHub\Core\Meta\Enum\Date\Expression\Relative;
      *
-     * $datetime = DateTime::firstDayOf(Relative::NEXT)->value();
+     * $datetime = DateTime::firstDayOfRelativeMonth(Relative::NEXT)->value();
      *
      * // first day of the current year
      * </code>
@@ -496,7 +541,7 @@ trait Factories {
      *
      * @return static<non-empty-string> Returns a new DateTime instance.
      */
-    public static function firstDayOf (Relative $month, null|NamedTimezone|FixedTimezone $timezone = null):static {
+    public static function firstDayOfRelativeMonth (Relative $month, null|NamedTimezone|FixedTimezone $timezone = null):static {
 
         return static::from(
             Ordinal::FIRST->value.' day of '.$month->value.' month 00:00:00',
@@ -512,7 +557,7 @@ trait Factories {
      * use FireHub\Foundation\Temporal\DateTime;
      * use FireHub\Core\Meta\Enum\Date\Expression\Relative;
      *
-     * $datetime = DateTime::lastDayOf(Relative::NEXT)->value();
+     * $datetime = DateTime::lastDayOfRelativeMonth(Relative::NEXT)->value();
      *
      * // last day of the current year
      * </code>
@@ -536,7 +581,7 @@ trait Factories {
      *
      * @return static<non-empty-string> Returns a new DateTime instance.
      */
-    public static function lastDayOf (Relative $month, null|NamedTimezone|FixedTimezone $timezone = null):static {
+    public static function lastDayOfRelativeMonth (Relative $month, null|NamedTimezone|FixedTimezone $timezone = null):static {
 
         return static::from(
             Relative::LAST->value.' day of '.$month->value.' month 00:00:00',
@@ -555,11 +600,11 @@ trait Factories {
      * use FireHub\Core\Meta\Enum\Date\Month;
      * use FireHub\Core\Meta\Enum\Date\WeekDay;
      *
-     * $datetime = DateTime::WeekDayOfMonth(Ordinal::FIRST, WeekDay::SATURDAY, Month::JULY, 2000)->value();
+     * $datetime = DateTime::weekDayOfMonth(Ordinal::FIRST, WeekDay::SATURDAY, Month::JULY, 2000)->value();
      *
      * // first saturday of July 2000
      *
-     * $datetime = DateTime::WeekDayOfMonth(Relative::NEXT, WeekDay::SATURDAY, Month::JULY, 2000)->value();
+     * $datetime = DateTime::weekDayOfMonth(Relative::NEXT, WeekDay::SATURDAY, Month::JULY, 2000)->value();
      *
      * // next saturday of July 2000
      * </code>
@@ -571,6 +616,12 @@ trait Factories {
      * @uses \FireHub\Core\Meta\Enum\Date\WeekDay::shortName() To get the short name of the weekday.
      * @uses \FireHub\Core\Meta\Enum\Date\Month::longName() To get the long name of the month.
      *
+     * @param \FireHub\Core\Meta\Enum\Date\Expression\Relative|\FireHub\Core\Meta\Enum\Date\Expression\Ordinal $position <p>
+     * The position of the weekday in the month.
+     * </p>
+     * @param \FireHub\Core\Meta\Enum\Date\WeekDay $weekday <p>
+     * The weekday of the month.
+     * </p>
      * @param \FireHub\Core\Meta\Enum\Date\Month $month <p>
      * The month of the year.
      * </p>
@@ -587,10 +638,10 @@ trait Factories {
      *
      * @return static<non-empty-string> Returns a new DateTime instance.
      */
-    public static function WeekDayOfMonth (Relative|Ordinal $ordinal, WeekDay $weekday, Month $month, ?int $year = null, null|NamedTimezone|FixedTimezone $timezone = null):static {
+    public static function weekDayOfMonth (Relative|Ordinal $position, WeekDay $weekday, Month $month, ?int $year = null, null|NamedTimezone|FixedTimezone $timezone = null):static {
 
         return static::from(
-            $ordinal->value.' '.$weekday->shortName().' of '.$month->longName().' '.$year.' 00:00:00',
+            $position->value.' '.$weekday->shortName().' of '.$month->longName().' '.$year.' 00:00:00',
             $timezone
         );
 
@@ -605,7 +656,7 @@ trait Factories {
      * use FireHub\Core\Meta\Enum\Date\Expression\Relative;
      * use FireHub\Core\Meta\Enum\Date\WeekDay;
      *
-     * $datetime = DateTime::WeekDayOf(Ordinal::FIRST, WeekDay::SATURDAY, Relative::NEXT)->value();
+     * $datetime = DateTime::weekdayOfRelativeMonth(Ordinal::FIRST, WeekDay::SATURDAY, Relative::NEXT)->value();
      *
      * // first saturday of July 2000
      * </code>
@@ -636,7 +687,7 @@ trait Factories {
      *
      * @return static<non-empty-string> Returns a new DateTime instance.
      */
-    public static function WeekDayOf (Ordinal $ordinal, WeekDay $weekday, Relative $month, null|NamedTimezone|FixedTimezone $timezone = null):static {
+    public static function weekdayOfRelativeMonth (Ordinal $ordinal, WeekDay $weekday, Relative $month, null|NamedTimezone|FixedTimezone $timezone = null):static {
 
         return static::from(
             $ordinal->value.' '.$weekday->shortName().' of '.$month->value.' month 00:00:00',

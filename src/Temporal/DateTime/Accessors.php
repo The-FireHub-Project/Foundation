@@ -14,7 +14,7 @@
 namespace FireHub\Foundation\Temporal\DateTime;
 
 use FireHub\Core\Meta\Enum\Date\ {
-    Month, Unit, WeekDay
+    ExtendedUnit, Month, Unit, WeekDay
 };
 use FireHub\Core\Meta\Enum\Date\Format\ {
     Day, Month as MonthFormat, Time, Week, Year
@@ -52,15 +52,15 @@ trait Accessors {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Core\Meta\Enum\Date\Unit::MILLENNIUM To define the millennium unit.
-     * @uses \FireHub\Core\Meta\Enum\Date\Unit::factor() To get the number of years in a millennium.
+     * @uses \FireHub\Core\Meta\Enum\Date\ExtendedUnit::MILLENNIUM To define the millennium unit.
+     * @uses \FireHub\Core\Meta\Enum\Date\ExtendedUnit::factor() To get the number of years in a millennium.
      * @uses \FireHub\Runtime\Math::floor() To calculate the floor of a number.
      *
      * @return int The zero-based millennium index.
      */
     public function millenniumIndex ():int {
 
-        return Runtime\Math::floor(($this->year()) / Unit::MILLENNIUM->factor());
+        return Runtime\Math::floor(($this->year()) / ExtendedUnit::MILLENNIUM->factor());
 
     }
 
@@ -114,8 +114,8 @@ trait Accessors {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Core\Meta\Enum\Date\Unit::CENTURY To define the century unit.
-     * @uses \FireHub\Core\Meta\Enum\Date\Unit::factor() To get the number of years in a century.
+     * @uses \FireHub\Core\Meta\Enum\Date\ExtendedUnit::CENTURY To define the century unit.
+     * @uses \FireHub\Core\Meta\Enum\Date\ExtendedUnit::factor() To get the number of years in a century.
      * @uses \FireHub\Runtime\Math::floor() To calculate the floor of a number.
      *
      * @return int The zero-based century index.
@@ -123,7 +123,7 @@ trait Accessors {
     public function centuryIndex ():int {
 
         return Runtime\Math::floor(
-            $this->year() / Unit::CENTURY->factor()
+            $this->year() / ExtendedUnit::CENTURY->factor()
         );
 
     }
@@ -178,8 +178,8 @@ trait Accessors {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Core\Meta\Enum\Date\Unit::DECADE To define the decade unit.
-     * @uses \FireHub\Core\Meta\Enum\Date\Unit::factor() To get the number of years in a decade.
+     * @uses \FireHub\Core\Meta\Enum\Date\ExtendedUnit::DECADE To define the decade unit.
+     * @uses \FireHub\Core\Meta\Enum\Date\ExtendedUnit::factor() To get the number of years in a decade.
      * @uses \FireHub\Runtime\Math::floor() To calculate the floor of a number.
      *
      * @return int The zero-based decade index.
@@ -187,7 +187,7 @@ trait Accessors {
     public function decadeIndex ():int {
 
         return Runtime\Math::floor(
-            $this->year() / Unit::DECADE->factor()
+            $this->year() / ExtendedUnit::DECADE->factor()
         );
 
     }
@@ -290,15 +290,15 @@ trait Accessors {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\Temporal\DateTime::month() To get the calendar month.
-     * @uses \FireHub\Core\Meta\Enum\Date\Unit::QUARTER To define the quarter unit.
-     * @uses \FireHub\Core\Meta\Enum\Date\Unit::factor() To get the number of months in a quarter.
+     * @uses \FireHub\Core\Meta\Enum\Date\ExtendedUnit::QUARTER To define the quarter unit.
+     * @uses \FireHub\Core\Meta\Enum\Date\ExtendedUnit::factor() To get the number of months in a quarter.
      *
      * @return int<1,4> The ordinal number of the calendar quarter.
      */
     public function quarter ():int {
 
         /** @var int<1,4> */
-        return Runtime\Math::floor(($this->month()->value - 1) / Unit::QUARTER->factor()) + 1;
+        return Runtime\Math::floor(($this->month()->value - 1) / ExtendedUnit::QUARTER->factor()) + 1;
 
     }
 
@@ -396,9 +396,7 @@ trait Accessors {
      *
      * @since 1.0.0
      *
-     *  @uses \FireHub\Foundation\Temporal\DateTime::dayOfYear() To get the zero-based day of the year.
-     * @uses \FireHub\Core\Meta\Enum\Date\Unit::FORTNIGHT To define the fortnight unit.
-     * @uses \FireHub\Core\Meta\Enum\Date\Unit::factor() To get the number of days in a fortnight.
+     * @uses \FireHub\Foundation\Temporal\DateTime::dayOfYear() To get the zero-based day of the year.
      * @uses \FireHub\Runtime\Math::floor() To calculate the floor of a number.
      *
      * @return int<1,27> The ordinal number of the fortnight.
@@ -406,7 +404,7 @@ trait Accessors {
     public function fortnight ():int {
 
         /** @var int<1,27> */
-        return Runtime\Math::floor(($this->dayOfYear() - 1) / Unit::FORTNIGHT->factor()) + 1;
+        return Runtime\Math::floor(($this->dayOfYear() - 1) / 14) + 1;
 
     }
 
