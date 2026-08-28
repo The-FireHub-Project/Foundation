@@ -374,7 +374,6 @@ trait Factories {
 
         }
 
-        /** @var \FireHub\Core\Meta\Enum\Date\Unit $unit */
         return static::from(
             Keyword::NOW->value.' '.$number.' '.$unit->name,
             $timezone
