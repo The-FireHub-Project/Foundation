@@ -546,14 +546,66 @@ trait Factories {
     }
 
     /**
-     * ### Creates a new DateTime instance with the first weekday of the month
+     * ### Creates a new DateTime instance with the weekday of the month
      *
      * <code>
      * use FireHub\Foundation\Temporal\DateTime;
+     * use FireHub\Core\Meta\Enum\Date\Expression\Ordinal;
+     * use FireHub\Core\Meta\Enum\Date\Expression\Relative;
      * use FireHub\Core\Meta\Enum\Date\Month;
      * use FireHub\Core\Meta\Enum\Date\WeekDay;
      *
-     * $datetime = DateTime::firstWeekDayOfMonth(WeekDay::SATURDAY, Month::JULY, 2020)->value();
+     * $datetime = DateTime::WeekDayOfMonth(Ordinal::FIRST, WeekDay::SATURDAY, Month::JULY, 2000)->value();
+     *
+     * // first saturday of July 2000
+     *
+     * $datetime = DateTime::WeekDayOfMonth(Relative::NEXT, WeekDay::SATURDAY, Month::JULY, 2000)->value();
+     *
+     * // next saturday of July 2000
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses static::from() To create a new DateTime instance.
+     * @uses \FireHub\Core\Meta\Enum\Date\Expression\Ordinal::FIRST To get the first weekday of the month.
+     * @uses \FireHub\Core\Meta\Enum\Date\WeekDay::shortName() To get the short name of the weekday.
+     * @uses \FireHub\Core\Meta\Enum\Date\Month::longName() To get the long name of the month.
+     *
+     * @param \FireHub\Core\Meta\Enum\Date\Month $month <p>
+     * The month of the year.
+     * </p>
+     * @param null|int<-9999,9999> $year [optional] <p>
+     * The year of the month.
+     * </p>
+     * @param null|TimezoneType $timezone [optional] <p>
+     * The timezone used to parse the datetime value.
+     * </p>
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
+     *
+     * @return static<non-empty-string> Returns a new DateTime instance.
+     */
+    public static function WeekDayOfMonth (Relative|Ordinal $ordinal, WeekDay $weekday, Month $month, ?int $year = null, null|NamedTimezone|FixedTimezone $timezone = null):static {
+
+        return static::from(
+            $ordinal->value.' '.$weekday->shortName().' of '.$month->longName().' '.$year.' 00:00:00',
+            $timezone
+        );
+
+    }
+
+    /**
+     * ### Creates a new DateTime instance with the weekday of the relative month
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     * use FireHub\Core\Meta\Enum\Date\Expression\Ordinal;
+     * use FireHub\Core\Meta\Enum\Date\Expression\Relative;
+     * use FireHub\Core\Meta\Enum\Date\WeekDay;
+     *
+     * $datetime = DateTime::WeekDayOf(Ordinal::FIRST, WeekDay::SATURDAY, Relative::NEXT)->value();
      *
      * // first saturday of July 2000
      * </code>
@@ -562,13 +614,17 @@ trait Factories {
      *
      * @uses static::from() To create a new DateTime instance.
      * @uses \FireHub\Core\Meta\Enum\Date\Expression\Ordinal::FIRST To get the first weekday of the month.
+     * @uses \FireHub\Core\Meta\Enum\Date\WeekDay::shortName() To get the short name of the weekday.
      * @uses \FireHub\Core\Meta\Enum\Date\Month::longName() To get the long name of the month.
      *
-     * @param \FireHub\Core\Meta\Enum\Date\Month $month <p>
-     * The month of the year.
+     * @param \FireHub\Core\Meta\Enum\Date\Expression\Ordinal $ordinal <p>
+     * The ordinal of the weekday.
      * </p>
-     * @param null|int<-9999,9999> $year [optional] <p>
-     * The year of the month.
+     * @param \FireHub\Core\Meta\Enum\Date\WeekDay $weekday <p>
+     * The weekday of the month.
+     * </p>
+     * @param \FireHub\Core\Meta\Enum\Date\Expression\Relative $month <p>
+     * The relative month.
      * </p>
      * @param null|TimezoneType $timezone [optional] <p>
      * The timezone used to parse the datetime value.
@@ -580,54 +636,10 @@ trait Factories {
      *
      * @return static<non-empty-string> Returns a new DateTime instance.
      */
-    public static function firstWeekDayOfMonth (WeekDay $weekday, Month $month, ?int $year = null, null|NamedTimezone|FixedTimezone $timezone = null):static {
+    public static function WeekDayOf (Ordinal $ordinal, WeekDay $weekday, Relative $month, null|NamedTimezone|FixedTimezone $timezone = null):static {
 
         return static::from(
-            Ordinal::FIRST->value.' '.$weekday->shortName().' of '.$month->longName().' '.$year.' 00:00:00',
-            $timezone
-        );
-
-    }
-
-    /**
-     * ### Creates a new DateTime instance with the last weekday of the month
-     *
-     * <code>
-     * use FireHub\Foundation\Temporal\DateTime;
-     * use FireHub\Core\Meta\Enum\Date\Month;
-     * use FireHub\Core\Meta\Enum\Date\WeekDay;
-     *
-     * $datetime = DateTime::lastWeekDayOfMonth(WeekDay::SATURDAY, Month::JULY, 2020)->value();
-     *
-     * // last saturday of July 2000
-     * </code>
-     *
-     * @since 1.0.0
-     *
-     * @uses static::from() To create a new DateTime instance.
-     * @uses \FireHub\Core\Meta\Enum\Date\Expression\Relative::LAST To get the last weekday of the month.
-     * @uses \FireHub\Core\Meta\Enum\Date\Month::longName() To get the long name of the month.
-     *
-     * @param \FireHub\Core\Meta\Enum\Date\Month $month <p>
-     * The month of the year.
-     * </p>
-     * @param null|int<-9999,9999> $year [optional] <p>
-     * The year of the month.
-     * </p>
-     * @param null|TimezoneType $timezone [optional] <p>
-     * The timezone used to parse the datetime value.
-     * </p>
-     *
-     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
-     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
-     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
-     *
-     * @return static<non-empty-string> Returns a new DateTime instance.
-     */
-    public static function lastWeekDayOfMonth (WeekDay $weekday, Month $month, ?int $year = null, null|NamedTimezone|FixedTimezone $timezone = null):static {
-
-        return static::from(
-            Relative::LAST->value.' '.$weekday->shortName().' of '.$month->longName().' '.$year.' 00:00:00',
+            $ordinal->value.' '.$weekday->shortName().' of '.$month->value.' month 00:00:00',
             $timezone
         );
 
