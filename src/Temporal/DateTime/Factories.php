@@ -696,4 +696,82 @@ trait Factories {
 
     }
 
+    /**
+     * ### Creates a new DateTime instance with next weekday
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     * use FireHub\Core\Meta\Enum\Date\WeekDay;
+     *
+     * $datetime = DateTime::nextWeekDay(WeekDay::SATURDAY)->value();
+     *
+     * // next saturday
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses static::from() To create a new DateTime instance.
+     * @uses \FireHub\Core\Meta\Enum\Date\Month::longName() To get the long name of the month.
+     *
+     * @param \FireHub\Core\Meta\Enum\Date\WeekDay $weekday <p>
+     * The weekday of the month.
+     * </p>
+     * @param null|TimezoneType $timezone [optional] <p>
+     * The timezone used to parse the datetime value.
+     * </p>
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
+     *
+     * @return static<non-empty-string> Returns a new DateTime instance.
+     */
+    public static function nextWeekDay (WeekDay $weekday, null|NamedTimezone|FixedTimezone $timezone = null):static {
+
+        return static::from(
+            $weekday->longName(),
+            $timezone
+        );
+
+    }
+
+    /**
+     * ### Creates a DateTime instance at a relative weekday
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     * use FireHub\Core\Meta\Enum\Date\WeekDay;
+     *
+     * $datetime = DateTime::weekDayOf(WeekDay::FRIDAY, Relative::THIS)->value();
+     *
+     * // this friday
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses static::from() To create a new DateTime instance.
+     * @uses \FireHub\Core\Meta\Enum\Date\Month::longName() To get the long name of the month.
+     *
+     * @param \FireHub\Core\Meta\Enum\Date\WeekDay $weekday <p>
+     * The weekday of the month.
+     * </p>
+     * @param null|TimezoneType $timezone [optional] <p>
+     * The timezone used to parse the datetime value.
+     * </p>
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the datetime string is invalid.
+     *
+     * @return static<non-empty-string> Returns a new DateTime instance.
+     */
+    public static function weekDayOf (WeekDay $weekday, Relative $relative, null|NamedTimezone|FixedTimezone $timezone = null):static {
+
+        return static::from(
+            $weekday->longName().' '.$relative->value.' week',
+            $timezone
+        );
+
+    }
+
 }
