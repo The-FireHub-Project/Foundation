@@ -14,7 +14,9 @@
 namespace FireHub\Tests\Foundation\Unit\Temporal;
 
 use FireHub\Testing\FireHubTestCase;
-use FireHub\Foundation\Temporal\Timespan;
+use FireHub\Foundation\Temporal\ {
+    Timespan\Components, Timespan
+};
 use FireHub\Foundation\Temporal\Exception\InvalidTimespanTicks;
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
@@ -45,6 +47,22 @@ final class TimespanTest extends FireHubTestCase {
         $this->expectException(InvalidTimespanTicks::class);
 
         new Timespan($value);
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimespanComponents
+     *
+     * @return void
+     */
+
+    public function testComponents ():void {
+
+        self::assertInstanceOf(Components::class, new Timespan('1')->components());
 
     }
 

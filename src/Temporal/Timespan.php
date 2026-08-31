@@ -13,7 +13,10 @@
 
 namespace FireHub\Foundation\Temporal;
 
-use FireHub\Core\Type\Temporal\Timespan as BaseTimespan;
+use FireHub\Core\Type\Temporal\ {
+    Timespan\Components as BaseComponents, Timespan as BaseTimespan
+};
+use FireHub\Foundation\Temporal\Timespan\Components;
 use FireHub\Foundation\Temporal\Exception\InvalidTimespanTicks;
 use FireHub\Runtime;
 
@@ -64,6 +67,61 @@ readonly class Timespan extends BaseTimespan {
         $this->guard(
             fn() => Runtime\Str\SB\Regex::match('/^(?:0|-?[1-9]\d*)$/', $this->ticks),
             fn() => new InvalidTimespanTicks
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\Timespan;
+     *
+     * $datetime = new Timespan('386400000000')->components();
+     *
+     * // ['days' => '4 'hours' => 11, 'minutes' => 20, 'seconds' => 0, 'microseconds' => 0] // Components oobject
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Math\DecimalEngine::divide() To convert ticks to days.
+     * @uses \FireHub\Runtime\Math\DecimalEngine::mod() To get the remainder after dividing by days.
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimespanComponents If the components are invalid.
+     */
+    public function components ():BaseComponents {
+
+        $ticks = $this->ticks;
+
+        $days = Runtime\Math\DecimalEngine::divide($ticks, '86400000000', 0);
+        $ticks = Runtime\Math\DecimalEngine::mod($ticks, '86400000000');
+
+        $hours = Runtime\Math\DecimalEngine::divide($ticks, '3600000000');
+        /** @var int<0,23> $hours */
+        $hours = (int)$hours;
+        $ticks = Runtime\Math\DecimalEngine::mod($ticks, '3600000000');
+
+        $minutes = Runtime\Math\DecimalEngine::divide($ticks, '60000000');
+        /** @var int<0,59> $minutes */
+        $minutes = (int)$minutes;
+        $ticks = Runtime\Math\DecimalEngine::mod($ticks, '60000000');
+
+        $seconds = Runtime\Math\DecimalEngine::divide($ticks, '1000000');
+        /** @var int<0,59> $seconds */
+        $seconds = (int)$seconds;
+        $microseconds = Runtime\Math\DecimalEngine::mod($ticks, '1000000');
+        /** @var int<0,999999> $microseconds */
+        $microseconds = (int)$microseconds;
+
+
+        return new Components(
+            $days,
+            $hours,
+            $minutes,
+            $seconds,
+            $microseconds
         );
 
     }
