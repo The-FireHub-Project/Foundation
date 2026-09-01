@@ -100,6 +100,33 @@ final class PeriodTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
+     * @param array $expected
+     * @param non-empty-string $start
+     * @param non-empty-string $end
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimestampException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimespanTicks
+     *
+     * @return void
+     */
+    #[TestWith([['days' => '366', 'hours' => 0, 'minutes' => 0, 'seconds' => 0, 'microseconds' => 0], '2000-01-01 12:00:00.000000', '2001-01-01 12:00:00.000000'])]
+    public function testDuration (array $expected, string $start, string $end):void {
+
+        self::assertSame(
+            $expected,
+            new Period(
+                DateTime::from($start),
+                DateTime::from($end)
+            )->duration()->components()->value()
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
      * @param non-empty-string $expected
      * @param non-empty-string $start
      * @param non-empty-string $end

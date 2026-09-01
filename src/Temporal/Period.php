@@ -139,6 +139,38 @@ readonly class Period extends BasePeriod {
      * use FireHub\Foundation\Temporal\Period;
      * use FireHub\Foundation\Temporal\DateTime;
      *
+     * $datetime = new DateTime('2000-01-01 12:00:00.000000');
+     * $datetime2 = new DateTime('2001-01-01 12:00:00.000000');
+     *
+     * $datetime = new Period($datetime, $datetime2)->duration()->components()->value();
+     *
+     * // ['days' => '366', 'hours' => 0, 'minutes' => 0, 'seconds' => 0, 'microseconds' => 0]
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Type\Temporal\Timespan::diff() To get the duration of the period.
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimespanTicks If the ticks value is not numeric.
+     *
+     * @return \FireHub\Foundation\Temporal\Timespan<numeric-string> The duration of the period as a Timespan Value
+     * Object.
+     */
+    public function duration ():Timespan {
+
+        return $this->end->diff($this->start);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\Period;
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
      * $datetime = new DateTime('2000-01-01 12:00:00.111111');
      * $datetime2 = new DateTime('2021-05-01 18:30:00.123456');
      *
