@@ -13,7 +13,9 @@
 
 namespace FireHub\Foundation\Temporal;
 
-use FireHub\Core\Type\Temporal\DateTime as BaseDateTime;
+use FireHub\Core\Type\Temporal\ {
+    DateTime as BaseDateTime, Timespan as BaseTimespan
+};
 use FireHub\Core\Type\Date\Zone;
 use FireHub\Core\Meta\Enum\Date\ {
     Format\Token, Format
@@ -127,6 +129,8 @@ readonly class DateTime extends BaseDateTime {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\Temporal\DateTime::microsecond() To get the microsecond value of the DateTime instance.
+     *
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
      * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
      * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimestampException If the timestamp is invalid.
@@ -137,7 +141,7 @@ readonly class DateTime extends BaseDateTime {
      */
     public function timestamp ():UnixTimestamp {
 
-        return new UnixTimestamp($this->value->getTimestamp());
+        return new UnixTimestamp($this->value->getTimestamp(), $this->microsecond());
 
     }
 
@@ -231,6 +235,150 @@ readonly class DateTime extends BaseDateTime {
 
         /** @var static<TValue> */
         return self::from($this->value(), $timezone);
+
+    }
+
+    /**
+     * ### Modifies the DateTime value by adding the specified timespan
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     * use FireHub\Foundation\Temporal\Timespan;
+     *
+     * $datetime = DateTime::from('2000-01-01 00:00:00.000000')->add(new Timespan('386400000002'))->value();
+     *
+     * // 2000-01-05 11:20:00.000002
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Type\Temporal\Timespan::components() To get the components of the timespan.
+     * @uses \FireHub\Core\Type\Temporal\Timespan\Components::days() To get the days of the timespan.
+     * @uses \FireHub\Core\Type\Temporal\Timespan\Components::hours() To get the hours of the timespan.
+     * @uses \FireHub\Core\Type\Temporal\Timespan\Components::minutes() To get the minutes of the timespan.
+     * @uses \FireHub\Core\Type\Temporal\Timespan\Components::seconds() To get the seconds of the timespan.
+     * @uses \FireHub\Core\Type\Temporal\Timespan\Components::microseconds() To get the microseconds of the timespan.
+     *
+     * @param \FireHub\Core\Type\Temporal\Timespan<numeric-string> $timespan <p>
+     * The timespan to add.
+     * </p>
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimespanComponents If the components are invalid.
+     *
+     * @return static<non-empty-string> The modified DateTime instance.
+     */
+    public function add (BaseTimespan $timespan):static {
+
+        $components = $timespan->components();
+
+        return new static(
+            $this->value->modify(
+                '+'.$components->days().' days '
+                .$components->hours().' hours '
+                .$components->minutes().' minutes '
+                .$components->seconds().' seconds '
+                .$components->microseconds().' microseconds'
+            )
+        );
+
+    }
+
+    /**
+     * ### Modifies the DateTime value by subtracting the specified timespan
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     * use FireHub\Foundation\Temporal\Timespan;
+     *
+     * $datetime = DateTime::from('2000-01-01 00:00:00.000000')->sub(new Timespan('386400000002'))->value();
+     *
+     * // 1999-12-27 12:39:59.999998
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Type\Temporal\Timespan::components() To get the components of the timespan.
+     * @uses \FireHub\Core\Type\Temporal\Timespan\Components::days() To get the days of the timespan.
+     * @uses \FireHub\Core\Type\Temporal\Timespan\Components::hours() To get the hours of the timespan.
+     * @uses \FireHub\Core\Type\Temporal\Timespan\Components::minutes() To get the minutes of the timespan.
+     * @uses \FireHub\Core\Type\Temporal\Timespan\Components::seconds() To get the seconds of the timespan.
+     * @uses \FireHub\Core\Type\Temporal\Timespan\Components::microseconds() To get the microseconds of the timespan.
+     *
+     * @param \FireHub\Core\Type\Temporal\Timespan<numeric-string> $timespan <p>
+     * The timespan to subtracting.
+     * </p>
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimespanComponents If the components are invalid.
+     *
+     * @return static<non-empty-string> The modified DateTime instance.
+     */
+    public function sub (BaseTimespan $timespan):static {
+
+        $components = $timespan->components();
+
+        return new static(
+            $this->value->modify(
+                '-'.$components->days().' days '
+                .'-'.$components->hours().' hours '
+                .'-'.$components->minutes().' minutes '
+                .'-'.$components->seconds().' seconds '
+                .'-'.$components->microseconds().' microseconds'
+            )
+        );
+
+    }
+
+    /**
+     * ### Calculates the difference between two DateTime values
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     * use FireHub\Foundation\Temporal\Timespan;
+     *
+     * $datetime = DateTime::from('2000-01-01 00:00:00.000000');
+     * $datetime2 = DateTime::from('2000-01-02 12:00:00.123456');
+     *
+     * $diff = $datetime->diff($datetime2)->components()->value();
+     *
+     * // ['days' => '1', 'hours' => 12, 'minutes' => 0, 'seconds' => 0, 'microseconds' => 123456]
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Temporal\DateTime::timestamp() To get the timestamp of the DateTime instance.
+     * @uses \FireHub\Runtime\Math\DecimalEngine::subtract() To subtract the timestamps.
+     * @uses \FireHub\Runtime\Math\DecimalEngine::multiply() To multiply the seconds by 1,000,000 to convert to
+     * microseconds.
+     * @uses \FireHub\Runtime\Str\SB\Access::part() To get the absolute value of the ticks if negative.
+     *
+     * @param \FireHub\Foundation\Temporal\DateTime<non-empty-string> $datetime <p>
+     * The DateTime value to calculate the difference from.
+     * </p>
+     *
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimespanTicks If the ticks value is not numeric.
+     *
+     * @return \FireHub\Foundation\Temporal\Timespan<numeric-string> The timespan representing the difference.
+     */
+    public function diff (self $datetime):Timespan {
+
+        $ticks = Runtime\Math\DecimalEngine::subtract(
+            $this->timestamp()->value(),
+            $datetime->timestamp()->value()
+        );
+
+        if ($ticks !== '0' && $ticks[0] === '-')
+            /** @var numeric-string $ticks */
+            $ticks = Runtime\Str\SB\Access::part($ticks, 1);
+
+        return new Timespan(
+            Runtime\Math\DecimalEngine::multiply($ticks, '1000000')
+        );
 
     }
 

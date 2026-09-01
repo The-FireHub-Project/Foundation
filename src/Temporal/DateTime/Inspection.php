@@ -20,6 +20,7 @@ use FireHub\Core\Meta\Enum\Date\Format\ {
     Year, Timezone
 };
 use FireHub\Core\Meta\Enum\Date\Expression\Relative;
+use FireHub\Foundation\Temporal\DateTime;
 
 /**
  * ### Provides date and time state inspections
@@ -298,6 +299,90 @@ trait Inspection {
     public function isWeekday ():bool {
 
         return !$this->isWeekend();
+
+    }
+
+    /**
+     * ### Determines whether this date and time is equal to another
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00.000000');
+     * $datetime2 = DateTime::from('2000-01-01 12:00:00.000001');
+     *
+     * $comparison = $datetime->isEqual($datetime2);
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param self<non-empty-string> $datetime $datetime <p>
+     * The date and time to compare against.
+     * </p>
+     *
+     * @return bool True if both date and time values represent the same instant.
+     */
+    public function isEqual (self $datetime):bool {
+
+        return $this->comparisonValue() === $datetime->comparisonValue();
+
+    }
+
+    /**
+     * ### Determines whether this date and time is before another date and time
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00.000000');
+     * $datetime2 = DateTime::from('2000-01-01 12:00:00.000001');
+     *
+     * $comparison = $datetime->isBefore($datetime2);
+     *
+     * // true
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param self<non-empty-string> $datetime <p>
+     * The date and time to compare against.
+     * </p>
+     *
+     * @return bool Returns true if this date and time is before the given date and time.
+     */
+    public function isBefore (self $datetime):bool {
+
+        return $this->comparisonValue() < $datetime->comparisonValue();
+
+    }
+
+    /**
+     * ### Determines whether this date and time is after another date and time
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = DateTime::from('2000-01-01 12:00:00.000000');
+     * $datetime2 = DateTime::from('2000-01-01 12:00:00.000001');
+     *
+     * $comparison = $datetime->isAfter($datetime2);
+     *
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @param self<non-empty-string> $datetime <p>
+     * The date and time to compare against.
+     * </p>
+     *
+     * @return bool Returns true if this date and time is after the given date and time.
+     */
+    public function isAfter (self $datetime):bool {
+
+        return $this->comparisonValue() > $datetime->comparisonValue();
 
     }
 

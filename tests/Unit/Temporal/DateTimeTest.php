@@ -22,7 +22,7 @@ use FireHub\Core\Meta\Enum\Date\ {
     Format\Token, Format
 };
 use FireHub\Foundation\Temporal\ {
-    DateTime, NamedTimezone, FixedTimezone
+    DateTime, NamedTimezone, FixedTimezone, Timespan
 };
 use PHPUnit\Framework\Attributes\ {
     CoversClass, Group, Small, TestWith
@@ -391,6 +391,66 @@ final class DateTimeTest extends FireHubTestCase {
     public function testIsWeekday (bool $expected, string $value):void {
 
         self::assertSame($expected, DateTime::from($value)->isWeekday());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $datetime
+     * @param non-empty-string $datetime2
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([false, '2000-01-01 12:00:00.000000', '2000-01-01 12:00:00.000001'])]
+    public function testIsEqual (bool $expected, string $datetime, string $datetime2):void {
+
+        self::assertSame($expected, DateTime::from($datetime)->isEqual(DateTime::from($datetime2)));
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $datetime
+     * @param non-empty-string $datetime2
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([true, '2000-01-01 12:00:00.000000', '2000-01-01 12:00:00.000001'])]
+    public function testIsBefore (bool $expected, string $datetime, string $datetime2):void {
+
+        self::assertSame($expected, DateTime::from($datetime)->isBefore(DateTime::from($datetime2)));
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param bool $expected
+     * @param non-empty-string $datetime
+     * @param non-empty-string $datetime2
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     *
+     * @return void
+     */
+    #[TestWith([false, '2000-01-01 12:00:00.000000', '2000-01-01 12:00:00.000001'])]
+    public function testIsAfter (bool $expected, string $datetime, string $datetime2):void {
+
+        self::assertSame($expected, DateTime::from($datetime)->isAfter(DateTime::from($datetime2)));
 
     }
 
@@ -1158,6 +1218,77 @@ final class DateTimeTest extends FireHubTestCase {
     public function testWithMicrosecond (string $expected, string $value, int $microsecond):void {
 
         self::assertSame($expected, DateTime::from($value)->withMicrosecond($microsecond)->value());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param non-empty-string $ticks
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     *
+     * @return void
+     */
+    #[TestWith(['2000-01-05 11:20:00.000002', '2000-01-01 00:00:00.000000', '386400000002'])]
+    public function testAdd (string $expected, string $value, string $ticks):void {
+
+        self::assertSame(
+            $expected,
+            DateTime::from($value)->add(new Timespan($ticks))->value()
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $value
+     * @param non-empty-string $ticks
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimeZoneException
+     *
+     * @return void
+     */
+    #[TestWith(['1999-12-27 12:39:59.999998', '2000-01-01 00:00:00.000000', '386400000002'])]
+    public function testSub (string $expected, string $value, string $ticks):void {
+
+        self::assertSame(
+            $expected,
+            DateTime::from($value)->sub(new Timespan($ticks))->value()
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param array $expected
+     * @param non-empty-string $datetime
+     * @param non-empty-string $datetime2
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimespanTicks
+     *
+     * @return void
+     */
+    #[TestWith([['days' => '1', 'hours' => 12, 'minutes' => 0, 'seconds' => 0, 'microseconds' => 123456], '2000-01-01 00:00:00.000000', '2000-01-02 12:00:00.123456'])]
+    public function testDiff (array $expected, string $datetime, string $datetime2):void {
+
+        self::assertSame(
+            $expected,
+            DateTime::from($datetime)
+                ->diff(DateTime::from($datetime2))->components()->value()
+        );
 
     }
 
