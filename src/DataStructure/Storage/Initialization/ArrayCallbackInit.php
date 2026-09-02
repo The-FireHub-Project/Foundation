@@ -33,7 +33,7 @@ use Closure;
  *
  * @implements \FireHub\Foundation\DataStructure\Storage\Initializer<TKey, TValue>
  */
-final readonly class ArrCallbackInit implements Initializer {
+final readonly class ArrayCallbackInit implements Initializer {
 
     /**
      * ### Constructor
