@@ -66,10 +66,8 @@ final readonly class ArrRange implements Initializer {
      *
      * @throws \FireHub\Runtime\Exception\InvalidRangeStepException If the step is zero or range step must be greater
      * than zero when the start is greater than the end.
-     *
-     * @return array<int, TValue> The iterable of key-value pairs representing the initial contents of the storage.
      */
-    public function initialize ():array {
+    public function initialize ():iterable {
 
         /** @var array<int, TValue> */
         return Runtime\Arr\Structure::range($this->start, $this->end, $this->step);

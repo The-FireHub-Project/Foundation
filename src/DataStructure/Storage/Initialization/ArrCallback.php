@@ -53,10 +53,8 @@ final readonly class ArrCallback implements Initializer {
      * @inheritDoc
      *
      * @since 1.0.0
-     *
-     * @return array<TKey, TValue> The iterable of key-value pairs representing the initial contents of the storage.
      */
-    public function initialize ():array {
+    public function initialize ():iterable {
 
         return ($this->callback)();
 

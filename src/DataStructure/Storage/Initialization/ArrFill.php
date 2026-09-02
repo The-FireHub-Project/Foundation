@@ -63,10 +63,8 @@ final readonly class ArrFill implements Initializer {
      * @uses \FireHub\Runtime\Arr\Structure::fill() To generate the filled array.
      *
      * @throws \FireHub\Runtime\Exception\InvalidArrayLengthException If $length is invalid.
-     *
-     * @return array<int, TValue> The iterable of key-value pairs representing the initial contents of the storage.
      */
-    public function initialize ():array {
+    public function initialize ():iterable {
 
         return Runtime\Arr\Structure::fill($this->value, $this->start_index, $this->length);
 

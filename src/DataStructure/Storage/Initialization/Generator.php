@@ -52,10 +52,8 @@ final readonly class Generator implements Initializer {
      * @inheritDoc
      *
      * @since 1.0.0
-     *
-     * @return InternalGenerator<TKey, TValue> The generator yielding the initial contents of the storage.
      */
-    public function initialize ():InternalGenerator {
+    public function initialize ():iterable {
 
         return ($this->callback)();
 
