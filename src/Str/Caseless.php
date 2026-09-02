@@ -52,7 +52,7 @@ readonly class Caseless extends Base implements Patternable {
     /**
      * @inheritDoc
      *
-     * @since 1.0.0.
+     * @since 1.0.0
      */
     public function extract ():Extract {
 
@@ -170,7 +170,7 @@ readonly class Caseless extends Base implements Patternable {
      *
      * // 4
      *
-     * $string = Sstr::of('The FireHub Project')->indexOf('x');
+     * $string = Str::of('The FireHub Project')->indexOf('x');
      *
      * // false
      * </code>
