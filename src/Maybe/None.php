@@ -21,9 +21,7 @@ use FireHub\Core\Type\Maybe;
  * None represents a Maybe instance that does not contain a value.
  * @since 1.0.0
  *
- * @template TValue
- *
- * @extends \FireHub\Core\Type\Maybe<TValue>
+ * @extends \FireHub\Core\Type\Maybe<mixed>
  */
 final readonly class None extends Maybe {
 

@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=7.0
+ * @php-version >=7.4
  * @package Foundation
  */
 
@@ -34,10 +34,10 @@ interface Metrics {
     public function isEmpty ():bool;
 
     /**
-     * ### Gets the number of elements in the storage
+     * ### Gets the number of non-empty positions currently containing values
      * @since 1.0.0
      *
-     * @return non-negative-int The number of elements in the storage.
+     * @return non-negative-int The number of non-empty positions currently containing values.
      */
     public function size ():int;
 

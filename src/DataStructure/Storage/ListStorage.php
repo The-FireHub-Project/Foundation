@@ -13,8 +13,14 @@
 
 namespace FireHub\Foundation\DataStructure\Storage;
 
+use ArrayAccess;
 use FireHub\Foundation\DataStructure\Storage;
-use FireHub\Foundation\DataStructure\Storage\Capability\Metrics;
+use FireHub\Foundation\DataStructure\Storage\Capability\ {
+    LinearBoundaryAccess, Metrics
+};
+use FireHub\Foundation\Maybe\ {
+    None, Some
+};
 use FireHub\Runtime;
 
 /**
@@ -35,8 +41,9 @@ use FireHub\Runtime;
  * @template TValue
  *
  * @implements \FireHub\Foundation\DataStructure\Storage<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Capability\LinearBoundaryAccess<TValue>
  */
-final class ListStorage implements Storage, Metrics {
+final class ListStorage implements Storage, Metrics, LinearBoundaryAccess {
 
     /**
      * ### Underlying data storage
@@ -102,6 +109,54 @@ final class ListStorage implements Storage, Metrics {
     public function size ():int {
 
         return Runtime\Arr\Inspection::count($this->data);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::isEmpty() To check if the storage is empty.
+     * @uses \FireHub\Foundation\Maybe\Some As return value.
+     * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
+     * @uses \FireHub\Runtime\Arr\Access::first() To get the first value.
+     *
+     * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The first value, or an empty
+     * maybe if the storage contains no values.
+     */
+    public function first ():Some|None {
+
+        if ($this->isEmpty()) return new None();
+
+        /** @var TValue $first */
+        $first = Runtime\Arr\Access::first($this->data);
+
+        return new Some($first);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::isEmpty() To check if the storage is empty.
+     * @uses \FireHub\Foundation\Maybe\Some As return value.
+     * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
+     * @uses \FireHub\Runtime\Arr\Access::last() To get the last value.
+     *
+     * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The last value, or an empty
+     * maybe if the storage contains no values.
+     */
+    public function last ():Some|None {
+
+        if ($this->isEmpty()) return new None();
+
+        /** @var TValue $last */
+        $last = Runtime\Arr\Access::last($this->data);
+
+        return new Some($last);
 
     }
 

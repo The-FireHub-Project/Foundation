@@ -15,7 +15,10 @@ namespace FireHub\Foundation\DataStructure\Storage;
 
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Capability\ {
-    Metrics, Capacity
+    Capacity, Metrics, LinearBoundaryAccess
+};
+use FireHub\Foundation\Maybe\ {
+    None, Some
 };
 use FireHub\Foundation\DataStructure\Exception\OverflowException;
 use SplFixedArray;
@@ -34,14 +37,15 @@ use SplFixedArray;
  * @template TValue
  *
  * @implements \FireHub\Foundation\DataStructure\Storage<int, null|TValue>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Capability\LinearBoundaryAccess<null|TValue>
  */
-final class FixedStorage implements Storage, Metrics, Capacity {
+final class FixedStorage implements Storage, Metrics, Capacity, LinearBoundaryAccess {
 
     /**
      * ### Underlying fixed-size data storage
      * @since 1.0.0
      *
-     * @var SplFixedArray<TValue>
+     * @var SplFixedArray<null|TValue>
      */
     private SplFixedArray $data;
 
@@ -161,6 +165,47 @@ final class FixedStorage implements Storage, Metrics, Capacity {
 
         /** @var non-negative-int */
         return $this->capacity() - $this->size();
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::isEmpty() To check if the storage is empty.
+     * @uses \FireHub\Foundation\Maybe\Some As return value.
+     * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
+     *
+     * @return \FireHub\Foundation\Maybe\Some<null|TValue>|\FireHub\Foundation\Maybe\None The first value, or an empty
+     * maybe if the storage contains no values.
+     */
+    public function first ():Some|None {
+
+        return $this->isEmpty()
+            ? new None()
+            : new Some($this->data[0]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::isEmpty() To check if the storage is empty.
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::size() To get the size of the storage.
+     * @uses \FireHub\Foundation\Maybe\Some As return value.
+     * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
+     *
+     * @return \FireHub\Foundation\Maybe\Some<null|TValue>|\FireHub\Foundation\Maybe\None The last value, or an empty
+     * maybe if the storage contains no values.
+     */
+    public function last ():Some|None {
+
+        return $this->isEmpty()
+            ? new None()
+            : new Some($this->data[$this->size() - 1]);
 
     }
 
