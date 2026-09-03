@@ -42,7 +42,7 @@ interface IndexMutation {
      * </p>
      *
      * @return \FireHub\Core\Meta\Enum\MutationOutcome The outcome of the mutation: CREATED if a new entry was
-     * created, or UPDATED if an existing entry was updated.
+     * created, UPDATED if an existing entry was updated, or NOT_FOUND if the index does not exist.
      */
     public function set (int $index, mixed $value):MutationOutcome;
 

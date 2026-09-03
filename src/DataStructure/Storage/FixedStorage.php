@@ -13,9 +13,10 @@
 
 namespace FireHub\Foundation\DataStructure\Storage;
 
+use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Capability\ {
-    Capacity, Metrics, LinearBoundaryAccess
+    Capacity, IndexAccess, IndexMutation, LinearBoundaryAccess, Metrics
 };
 use FireHub\Foundation\Maybe\ {
     None, Some
@@ -26,20 +27,24 @@ use SplFixedArray;
 /**
  * ### Provides a storage implementation with a fixed size
  *
- * Fixed storage maintains values in a zero-based indexed sequence backed by a fixed-size array. The storage size
- * is established during initialization and cannot be changed after construction, making it suitable for data
- * structures that require a predetermined number of indexed positions.
+ * Fixed storage maintains values in a fixed number of indexed positions backed by a fixed-size array. The storage
+ * capacity is established during initialization and cannot be changed after construction, making it suitable for data
+ * structures that require a predetermined number of available positions.
+ *
+ * Fixed storage uses `null` to represent an unoccupied position. Consequently, `null` cannot be stored as a value.
  *
  * The implementation manages the fixed-size underlying representation while the consuming data structure defines
- * the public API and semantics exposed to its users.
+ * the public API, semantics, and structural invariants exposed to its users.
  * @since 1.0.0
  *
  * @template TValue
  *
  * @implements \FireHub\Foundation\DataStructure\Storage<int, null|TValue>
- * @implements \FireHub\Foundation\DataStructure\Storage\Capability\LinearBoundaryAccess<null|TValue>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Capability\LinearBoundaryAccess<TValue>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Capability\IndexAccess<TValue>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Capability\IndexMutation<TValue>
  */
-final class FixedStorage implements Storage, Metrics, Capacity, LinearBoundaryAccess {
+final class FixedStorage implements Storage, Metrics, Capacity, LinearBoundaryAccess, IndexAccess, IndexMutation {
 
     /**
      * ### Underlying fixed-size data storage
@@ -173,18 +178,16 @@ final class FixedStorage implements Storage, Metrics, Capacity, LinearBoundaryAc
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::isEmpty() To check if the storage is empty.
-     * @uses \FireHub\Foundation\Maybe\Some As return value.
-     * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
-     *
-     * @return \FireHub\Foundation\Maybe\Some<null|TValue>|\FireHub\Foundation\Maybe\None The first value, or an empty
+     * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The first value, or an empty
      * maybe if the storage contains no values.
      */
     public function first ():Some|None {
 
-        return $this->isEmpty()
-            ? new None()
-            : new Some($this->data[0]);
+        foreach ($this->data as $value)
+            if ($value !== null)
+                return new Some($value);
+
+        return new None();
 
     }
 
@@ -193,19 +196,92 @@ final class FixedStorage implements Storage, Metrics, Capacity, LinearBoundaryAc
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::isEmpty() To check if the storage is empty.
-     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::size() To get the size of the storage.
-     * @uses \FireHub\Foundation\Maybe\Some As return value.
-     * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::capacity() To get the capacity of the storage.
      *
-     * @return \FireHub\Foundation\Maybe\Some<null|TValue>|\FireHub\Foundation\Maybe\None The last value, or an empty
+     * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The last value, or an empty
      * maybe if the storage contains no values.
      */
     public function last ():Some|None {
 
-        return $this->isEmpty()
-            ? new None()
-            : new Some($this->data[$this->size() - 1]);
+        for ($index = $this->capacity() - 1; $index >= 0; $index--)
+            if ($this->data[$index] !== null)
+                return new Some($this->data[$index]);
+
+        return new None();
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::capacity() To get the capacity of the storage.
+     */
+    public function has (int $index):bool {
+
+        return $index >= 0
+            && $index < $this->capacity()
+            && $this->data[$index] !== null;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::has() To check if the storage has a value at
+     * the specified index.
+     *
+     * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The value at the specified
+     * index, or an empty Maybe if the index does not exist.
+     */
+    public function get (int $index):Some|None {
+
+        /** @var \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None */
+        return $this->has($index) // @phpstan-ignore varTag.type
+            ? new Some($this->data[$index])
+            : new None();
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     */
+    public function set (int $index, mixed $value):MutationOutcome {
+
+        if ($index < 0 || $index >= $this->capacity())
+            return MutationOutcome::NOT_FOUND;
+
+        $outcome = $this->data[$index] === null
+            ? MutationOutcome::CREATED
+            : MutationOutcome::UPDATED;
+
+        $this->data[$index] = $value;
+
+        return $outcome;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::has() To check if the storage has a value at
+     * the specified index.
+     */
+    public function remove (int $index):MutationOutcome {
+
+        if (!$this->has($index))
+            return MutationOutcome::NOT_FOUND;
+
+        unset($this->data[$index]);
+
+        return MutationOutcome::REMOVED;
 
     }
 
