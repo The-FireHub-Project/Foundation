@@ -13,10 +13,9 @@
 
 namespace FireHub\Foundation\DataStructure\Storage;
 
-use ArrayAccess;
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Capability\ {
-    LinearBoundaryAccess, Metrics
+    DequeMutation, LinearBoundaryAccess, Metrics
 };
 use FireHub\Foundation\Maybe\ {
     None, Some
@@ -42,8 +41,9 @@ use FireHub\Runtime;
  *
  * @implements \FireHub\Foundation\DataStructure\Storage<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Storage\Capability\LinearBoundaryAccess<TValue>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Capability\DequeMutation<TValue>
  */
-final class ListStorage implements Storage, Metrics, LinearBoundaryAccess {
+final class ListStorage implements Storage, Metrics, LinearBoundaryAccess, DequeMutation {
 
     /**
      * ### Underlying data storage
@@ -157,6 +157,70 @@ final class ListStorage implements Storage, Metrics, LinearBoundaryAccess {
         $last = Runtime\Arr\Access::last($this->data);
 
         return new Some($last);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Arr\Mutation::unshift() To insert values at the beginning of the storage.
+     */
+    public function insertFront (mixed ...$values):void {
+
+        Runtime\Arr\Mutation::unshift($this->data, ...$values);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Arr\Mutation::push() To insert values at the end of the storage.
+     */
+    public function insertBack (mixed ...$values):void {
+
+        Runtime\Arr\Mutation::push($this->data, ...$values);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The removed value, or an empty
+     * Maybe if the storage is empty.
+     */
+    public function removeFront ():Some|None {
+
+        if ($this->isEmpty()) return new None();
+
+        /** @var TValue $shift */
+        $shift = Runtime\Arr\Mutation::shift($this->data);
+
+        return new Some($shift);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The removed value, or an empty
+     * Maybe if the storage is empty.
+     */
+    public function removeBack ():Some|None {
+
+        if ($this->isEmpty()) return new None();
+
+        /** @var TValue $pop */
+        $pop = Runtime\Arr\Mutation::shift($this->data);
+
+        return new Some($pop);
 
     }
 
