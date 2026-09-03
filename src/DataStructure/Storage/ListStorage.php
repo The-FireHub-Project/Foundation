@@ -13,9 +13,10 @@
 
 namespace FireHub\Foundation\DataStructure\Storage;
 
+use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Capability\ {
-    DequeMutation, LinearBoundaryAccess, Metrics
+    DequeMutation, IndexAccess, IndexMutation, LinearBoundaryAccess, Metrics
 };
 use FireHub\Foundation\Maybe\ {
     None, Some
@@ -25,16 +26,16 @@ use FireHub\Runtime;
 /**
  * ### Provides a mutable storage implementation for sequentially organized values
  *
- * List storage maintains values in a zero-based indexed sequence and provides the fundamental storage operations
- * required by data structures that organize their values linearly. Values retain their relative order and can be
- * accessed and modified according to their position within the sequence.
+ * List storage maintains values using integer indexes and preserves the relative order of its entries. It provides
+ * fundamental storage operations for data structures that organize their values linearly, including indexed access
+ * and mutation.
  *
  * The implementation is designed as a general-purpose linear storage mechanism and does not impose the public
- * semantics of a particular data structure. Higher-level structures such as vectors, stacks, queues, and deque
- * may use list storage according to the capabilities they require.
+ * semantics or structural invariants of a particular data structure. Higher-level structures such as vectors,
+ * stacks, queues, and deque may use list storage according to the capabilities and invariants they require.
  *
  * List storage manages the underlying representation and storage behavior while the consuming data structure
- * defines the public API and semantics exposed to its users.
+ * defines the public API, semantics, and structural invariants exposed to its users.
  * @since 1.0.0
  *
  * @template TValue
@@ -42,8 +43,10 @@ use FireHub\Runtime;
  * @implements \FireHub\Foundation\DataStructure\Storage<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Storage\Capability\LinearBoundaryAccess<TValue>
  * @implements \FireHub\Foundation\DataStructure\Storage\Capability\DequeMutation<TValue>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Capability\IndexAccess<TValue>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Capability\IndexMutation<TValue>
  */
-final class ListStorage implements Storage, Metrics, LinearBoundaryAccess, DequeMutation {
+final class ListStorage implements Storage, Metrics, LinearBoundaryAccess, DequeMutation, IndexAccess, IndexMutation {
 
     /**
      * ### Underlying data storage
@@ -142,8 +145,6 @@ final class ListStorage implements Storage, Metrics, LinearBoundaryAccess, Deque
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::isEmpty() To check if the storage is empty.
-     * @uses \FireHub\Foundation\Maybe\Some As return value.
-     * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
      * @uses \FireHub\Runtime\Arr\Access::last() To get the last value.
      *
      * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The last value, or an empty
@@ -191,6 +192,9 @@ final class ListStorage implements Storage, Metrics, LinearBoundaryAccess, Deque
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::isEmpty() To check if the storage is empty.
+     * @uses \FireHub\Runtime\Arr\Mutation::shift() To remove the first value from the storage.
+     *
      * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The removed value, or an empty
      * Maybe if the storage is empty.
      */
@@ -210,6 +214,9 @@ final class ListStorage implements Storage, Metrics, LinearBoundaryAccess, Deque
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::isEmpty() To check if the storage is empty.
+     * @uses \FireHub\Runtime\Arr\Mutation::pop() To remove the last value from the storage.
+     *
      * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The removed value, or an empty
      * Maybe if the storage is empty.
      */
@@ -218,9 +225,81 @@ final class ListStorage implements Storage, Metrics, LinearBoundaryAccess, Deque
         if ($this->isEmpty()) return new None();
 
         /** @var TValue $pop */
-        $pop = Runtime\Arr\Mutation::shift($this->data);
+        $pop = Runtime\Arr\Mutation::pop($this->data);
 
         return new Some($pop);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Arr\Access::keyExists() To check if the storage has a value at the specified index.
+     */
+    public function has (int $index):bool {
+
+        return Runtime\Arr\Access::keyExists($this->data, $index);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::has() To check if the storage has a value at
+     * the specified index.
+     *
+     * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The value at the specified index,
+     * or an empty Maybe if the index does not exist.
+     */
+    public function get (int $index):Some|None {
+
+        if ($this->has($index))
+            return new Some($this->data[$index]); // @phpstan-ignore offsetAccess.notFound
+
+        return new None();
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::has() To check if the storage has a value at
+     * the specified index.
+     */
+    public function set (int $index, mixed $value):MutationOutcome {
+
+        $outcome = $this->has($index)
+            ? MutationOutcome::UPDATED
+            : MutationOutcome::CREATED;
+
+        $this->data[$index] = $value;
+
+        return $outcome;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::has() To check if the storage has a value at
+     * the specified index.
+     */
+    public function remove (int $index):MutationOutcome {
+
+        if (!$this->has($index))
+            return MutationOutcome::NOT_FOUND;
+
+        unset($this->data[$index]);
+
+        return MutationOutcome::REMOVED;
 
     }
 
