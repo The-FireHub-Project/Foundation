@@ -14,7 +14,9 @@
 namespace FireHub\Foundation\DataStructure\Storage;
 
 use FireHub\Foundation\DataStructure\Storage;
-use FireHub\Foundation\DataStructure\Storage\Capability\Metrics;
+use FireHub\Foundation\DataStructure\Storage\Capability\ {
+    Metrics, Capacity
+};
 use FireHub\Foundation\DataStructure\Exception\OverflowException;
 use SplFixedArray;
 
@@ -33,7 +35,7 @@ use SplFixedArray;
  *
  * @implements \FireHub\Foundation\DataStructure\Storage<int, null|TValue>
  */
-final class FixedStorage implements Storage, Metrics {
+final class FixedStorage implements Storage, Metrics, Capacity {
 
     /**
      * ### Underlying fixed-size data storage
@@ -108,11 +110,57 @@ final class FixedStorage implements Storage, Metrics {
      * @inheritDoc
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::remainingCapacity() To get the remaining
+     * capacity of the storage.
+     */
+    public function isFull ():bool {
+
+        return $this->remainingCapacity() === 0;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
      */
     public function size ():int {
 
+        $size = 0;
+
+        foreach ($this->data as $value)
+            if ($value !== null)
+                $size++;
+
+        return $size;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     */
+    public function capacity ():int {
+
         /** @var non-negative-int */
         return $this->data->getSize();
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::capacity() To get the capacity of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::size() To get the size of the storage.
+     */
+    public function remainingCapacity ():int {
+
+        /** @var non-negative-int */
+        return $this->capacity() - $this->size();
 
     }
 
