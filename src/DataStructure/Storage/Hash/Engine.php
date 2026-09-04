@@ -13,6 +13,9 @@
 
 namespace FireHub\Foundation\DataStructure\Storage\Hash;
 
+use FireHub\Core\Type\Maybe;
+use FireHub\Core\Meta\Enum\MutationOutcome;
+
 /**
  * ### Defines the fundamental contract for a hash storage engine
  *
@@ -47,5 +50,65 @@ interface Engine {
      * @return non-negative-int The number of elements stored in the hash engine.
      */
     public function size ():int;
+
+    /**
+     * ### Determines whether the storage contains a value for the specified key
+     * @since 1.0.0
+     *
+     * @param TKey $key <p>
+     * The key to check.
+     * </p>
+     *
+     * @return bool True if a value exists for the specified key, false otherwise.
+     */
+    public function has (mixed $key):bool;
+
+    /**
+     * ### Returns the value associated with the specified key
+     * @since 1.0.0
+     *
+     * @param TKey $key <p>
+     * The key whose value should be returned.
+     * </p>
+     *
+     * @return \FireHub\Core\Type\Maybe<TValue|mixed> The associated value, or an empty Maybe if the key does not exist.
+     */
+    public function get (mixed $key):Maybe;
+
+    /**
+     * ### Sets the value for the specified key
+     *
+     * Stores the specified value at the specified key. If the key does not exist, a new entry is created. If the
+     * key already exists, its value is replaced.
+     * @since 1.0.0
+     *
+     * @param TKey $key <p>
+     * The key at which to store the value.
+     * </p>
+     *
+     * @param TValue $value <p>
+     * The value to store.
+     * </p>
+     *
+     * @return \FireHub\Core\Meta\Enum\MutationOutcome The outcome of the mutation: CREATED if a new entry was
+     * created or UPDATED if an existing entry was updated.
+     */
+    public function set (mixed $key, mixed $value):MutationOutcome;
+
+    /**
+     * ### Removes the value for the specified key
+     *
+     * Removes the value currently stored for the specified key. If the key does not exist, no mutation is
+     * performed.
+     * @since 1.0.0
+     *
+     * @param TKey $key <p>
+     * The key of the value to remove.
+     * </p>
+     *
+     * @return \FireHub\Core\Meta\Enum\MutationOutcome The outcome of the mutation: REMOVED if an entry was removed,
+     * or NOT_FOUND if the index does not exist.
+     */
+    public function remove (mixed $key):MutationOutcome;
 
 }

@@ -13,9 +13,13 @@
 
 namespace FireHub\Foundation\DataStructure\Storage;
 
+use FireHub\Core\Type\Maybe;
+use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
-use FireHub\Foundation\DataStructure\Storage\Capability\Metrics;
+use FireHub\Foundation\DataStructure\Storage\Capability\ {
+    KeyAccess, KeyMutation, Metrics
+};
 
 /**
  * ### Provides a storage implementation for hash-based key-value pairs
@@ -36,8 +40,10 @@ use FireHub\Foundation\DataStructure\Storage\Capability\Metrics;
  * @template TValue
  *
  * @implements \FireHub\Foundation\DataStructure\Storage<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Capability\KeyAccess<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Capability\KeyMutation<TKey, TValue>
  */
-final class HashStorage implements Storage, Metrics {
+final class HashStorage implements Storage, Metrics, KeyAccess, KeyMutation {
 
     /**
      * ### Underlying hash engine
@@ -89,6 +95,62 @@ final class HashStorage implements Storage, Metrics {
     public function size ():int {
 
         return $this->engine->size();
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::has() To check if the hash engine has a value for
+     * the specified key.
+     */
+    public function has (mixed $key):bool {
+
+        return $this->engine->has($key);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::get() To get the value associated with the
+     * specified key.
+     */
+    public function get (mixed $key):Maybe {
+
+        return $this->engine->get($key);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::set() To set the value associated with the
+     * specified key.
+     */
+    public function set (mixed $key, mixed $value):MutationOutcome {
+
+        return $this->engine->set($key, $value);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::remove() To remove the value associated with the
+     * specified key.
+     */
+    public function remove (mixed $key):MutationOutcome {
+
+        return $this->engine->remove($key);
 
     }
 

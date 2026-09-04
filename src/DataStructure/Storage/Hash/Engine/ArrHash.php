@@ -13,8 +13,13 @@
 
 namespace FireHub\Foundation\DataStructure\Storage\Hash\Engine;
 
+use FireHub\Core\Type\Maybe;
+use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage\Initializer;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
+use FireHub\Foundation\Maybe\ {
+    None, Some
+};
 use FireHub\Runtime;
 
 /**
@@ -83,6 +88,68 @@ final class ArrHash implements Engine {
     public function size ():int {
 
         return Runtime\Arr\Inspection::count($this->data);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Arr\Access::keyExists() To check if the hash has a key.
+     */
+    public function has (mixed $key):bool {
+
+        return Runtime\Arr\Access::keyExists($this->data, $key);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::has() To check if the hash has a key.
+     */
+    public function get (mixed $key):Maybe {
+
+        if ($this->has($key))
+            return new Some($this->data[$key]); // @phpstan-ignore offsetAccess.notFound
+
+        return new None();
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     */
+    public function set (mixed $key, mixed $value):MutationOutcome {
+
+        $outcome = $this->has($key)
+            ? MutationOutcome::UPDATED
+            : MutationOutcome::CREATED;
+
+        $this->data[$key] = $value;
+
+        return $outcome;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     */
+    public function remove (mixed $key):MutationOutcome {
+
+        if (!$this->has($key))
+            return MutationOutcome::NOT_FOUND;
+
+        unset($this->data[$key]);
+
+        return MutationOutcome::REMOVED;
 
     }
 

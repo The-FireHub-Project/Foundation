@@ -13,6 +13,7 @@
 
 namespace FireHub\Foundation\DataStructure\Storage;
 
+use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Capability\ {
@@ -178,10 +179,10 @@ final class FixedStorage implements Storage, Metrics, Capacity, LinearBoundaryAc
      *
      * @since 1.0.0
      *
-     * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The first value, or an empty
-     * maybe if the storage contains no values.
+     * @uses \FireHub\Foundation\Maybe\Some As the first value is always present.
+     * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
      */
-    public function first ():Some|None {
+    public function first ():Maybe {
 
         foreach ($this->data as $value)
             if ($value !== null)
@@ -197,11 +198,10 @@ final class FixedStorage implements Storage, Metrics, Capacity, LinearBoundaryAc
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::capacity() To get the capacity of the storage.
-     *
-     * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The last value, or an empty
-     * maybe if the storage contains no values.
+     * @uses \FireHub\Foundation\Maybe\Some As return value.
+     * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
      */
-    public function last ():Some|None {
+    public function last ():Maybe {
 
         for ($index = $this->capacity() - 1; $index >= 0; $index--)
             if ($this->data[$index] !== null)
@@ -233,11 +233,10 @@ final class FixedStorage implements Storage, Metrics, Capacity, LinearBoundaryAc
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::has() To check if the storage has a value at
      * the specified index.
-     *
-     * @return \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None The value at the specified
-     * index, or an empty Maybe if the index does not exist.
+     * @uses \FireHub\Foundation\Maybe\Some As return value.
+     * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
      */
-    public function get (int $index):Some|None {
+    public function get (int $index):Maybe {
 
         /** @var \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None */
         return $this->has($index) // @phpstan-ignore varTag.type
