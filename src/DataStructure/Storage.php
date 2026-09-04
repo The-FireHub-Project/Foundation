@@ -13,6 +13,8 @@
 
 namespace FireHub\Foundation\DataStructure;
 
+use FireHub\Core\Boundary\Capability\Iteration;
+
 /**
  * ### Defines the fundamental contract for a data structure storage
  *
@@ -30,18 +32,7 @@ namespace FireHub\Foundation\DataStructure;
  *
  * @template TKey
  * @template TValue
+ *
+ * @extends \FireHub\Core\Boundary\Capability\Iteration<TKey, TValue>
  */
-interface Storage {
-
-    /**
-     * ### Returns iterable for traversing the values contained in this storage
-     *
-     * The returned iterable provides access to each stored value together with its associated key without exposing
-     * the underlying representation or storage mechanism.
-     * @since 1.0.0
-     *
-     * @return iterable<TKey, TValue>
-     */
-    public function iterate ():iterable;
-
-}
+interface Storage extends Iteration {}
