@@ -61,7 +61,7 @@ final class FixedStorage implements Storage, Metrics, Capacity, LinearBoundaryAc
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\Initializer::initialize() To initialize the storage.
      *
-     * @param int $size <p>
+     * @param non-negative-int $size <p>
      * The fixed number of positions in the storage.
      * </p>
      * @param Initializer<int, TValue> $initializer <p>
