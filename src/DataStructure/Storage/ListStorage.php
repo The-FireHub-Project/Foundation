@@ -76,7 +76,7 @@ final class ListStorage implements Storage, Metrics, BoundaryAccess, IndexAccess
     public function __construct (Initializer $initializer) {
 
         $this->data = Runtime\Arr\Access::values(
-            Runtime\Iterator::toArray($initializer->initialize(), false)
+            Runtime\Iterator::toArray($initializer->initialize())
         );
 
     }
@@ -270,13 +270,12 @@ final class ListStorage implements Storage, Metrics, BoundaryAccess, IndexAccess
      */
     public function set (int $index, mixed $value):MutationOutcome {
 
-        $outcome = $this->has($index)
-            ? MutationOutcome::UPDATED
-            : MutationOutcome::CREATED;
+        if (!$this->has($index))
+            return MutationOutcome::NOT_FOUND;
 
         $this->data[$index] = $value;
 
-        return $outcome;
+        return MutationOutcome::UPDATED;
 
     }
 
@@ -287,6 +286,7 @@ final class ListStorage implements Storage, Metrics, BoundaryAccess, IndexAccess
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::has() To check if the storage has a value at
      * the specified index.
+     * @uses \FireHub\Runtime\Arr\Access::values() To reindex the array.
      */
     public function remove (int $index):MutationOutcome {
 
@@ -294,6 +294,8 @@ final class ListStorage implements Storage, Metrics, BoundaryAccess, IndexAccess
             return MutationOutcome::NOT_FOUND;
 
         unset($this->data[$index]);
+
+        $this->data = Runtime\Arr\Access::values($this->data);
 
         return MutationOutcome::REMOVED;
 
