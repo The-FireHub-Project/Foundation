@@ -99,7 +99,7 @@ final class FixedStorage implements Storage, Metrics, Capacity, LinearBoundaryAc
      */
     public function iterate ():iterable {
 
-        return $this->data;
+        yield from $this->data;
 
     }
 

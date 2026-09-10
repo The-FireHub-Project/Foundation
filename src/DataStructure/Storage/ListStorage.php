@@ -74,7 +74,7 @@ final class ListStorage implements Storage, Metrics, LinearBoundaryAccess, Deque
     public function __construct (Initializer $initializer) {
 
         $this->data = Runtime\Arr\Access::values(
-            Runtime\Iterator::toArray($initializer->initialize())
+            Runtime\Iterator::toArray($initializer->initialize(), false)
         );
 
     }

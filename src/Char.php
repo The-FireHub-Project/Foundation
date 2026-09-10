@@ -184,7 +184,7 @@ readonly class Char extends BaseChar implements Caseable, Patternable {
      */
     public function codepoint ():Codepoint {
 
-        $codepoint = Runtime\Char\MB::ord($this->value);
+        $codepoint = Runtime\Char\MB::ord($this->value, $this->encoding);
 
         return $codepoint !== false
             ? new Codepoint($codepoint)

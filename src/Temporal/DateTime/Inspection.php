@@ -241,15 +241,14 @@ trait Inspection {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Temporal\DateTime::dayOfYear() To get the day of the year.
-     * @uses \FireHub\Foundation\Temporal\DateTime\Factories::lastDayOfMonth() To get the last day of the year.
+     * @uses \FireHub\Foundation\Temporal\DateTime::dayOfMonth() To get the day of the month.
      * @uses \FireHub\Core\Meta\Enum\Date\Month::DECEMBER As month of the year.
      *
      * @return bool Returns true if the date and time value is last day of the year, false otherwise.
      */
     public function isLastDayOfYear ():bool {
 
-        return $this->dayOfYear() === static::lastDayOfMonth(Month::DECEMBER, timezone: $this->timezone)->dayOfYear();
+        return $this->month() === Month::DECEMBER && $this->dayOfMonth() === 31;
 
     }
 
