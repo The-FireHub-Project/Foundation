@@ -7,13 +7,14 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.2
+ * @php-version >=8.4
  * @package Foundation
  */
 
 namespace FireHub\Foundation\Maybe;
 
 use FireHub\Core\Type\Maybe;
+use FireHub\Core\Type\Exception\NoValueException;
 
 /**
  * ### Represents the absence of a value
@@ -44,6 +45,19 @@ final readonly class None extends Maybe {
     public function isNone ():bool {
 
         return true;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Core\Type\Exception\NoValueException If the Maybe instance is None.
+     */
+    public function value ():never {
+
+        throw new NoValueException;
 
     }
 

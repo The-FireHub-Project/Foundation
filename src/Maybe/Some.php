@@ -18,7 +18,7 @@ use FireHub\Core\Type\Maybe;
 /**
  * ### Represents an existing value
  *
- * Some represent a Maybe instance containing a value.
+ * Some represents a Maybe instance containing a value.
  * @since 1.0.0
  *
  * @template TValue
@@ -64,9 +64,9 @@ final readonly class Some extends Maybe {
     }
 
     /**
-     * ### Returns the contained value
+     * @inheritDoc
      *
-     * @return TValue The contained value.
+     * @since 1.0.0
      */
     public function value ():mixed {
 
