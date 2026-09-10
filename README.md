@@ -22,46 +22,25 @@
   /></a>
 </h1>
 
+[![PHPStan](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPStan.yml/badge.svg?branch=feature%2Fphpunit-integration-and-initial-tests)](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPStan.yml)
+[![PHPUnit](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPUnit.yml/badge.svg?branch=feature%2Fphpunit-integration-and-initial-tests)](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPUnit.yml)
+[![Codecov](https://codecov.io/gh/The-FireHub-Project/Foundation/branch/feature%2Fphpunit-integration-and-initial-tests/graph/badge.svg?token=XW2YEONF51)](https://app.codecov.io/gh/The-FireHub-Project/Foundation/tree/feature%2Fphpunit-integration-and-initial-tests)
+
 <p>
-  <a href="https://github.com/The-FireHub-Project/Foundation">
+  <a href="https://github.com/The-FireHub-Project/Foundation/commits/feature/phpunit-integration-and-initial-tests/">
     <img
-      src="https://img.shields.io/github/created-at/The-FireHub-Project/Foundation?style=flat&logo=github&logoColor=959da5&label=created%20at&labelColor=31373e"
-      alt="GitHub created at"
-  /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/commits/master/">
-    <img
-      src="https://img.shields.io/github/last-commit/The-FireHub-Project/Foundation/master?style=flat&logo=github&logoColor=959da5&label=last%20commit%20(branch)&labelColor=31373e"
+      src="https://img.shields.io/github/last-commit/The-FireHub-Project/Foundation/feature/phpunit-integration-and-initial-tests?style=flat&logo=github&logoColor=959da5&label=last%20commit%20(branch)&labelColor=31373e"
       alt="GitHub last commit (branch)"
   /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/commits/master/">
+  <a href="https://github.com/The-FireHub-Project/Foundation/commits/feature/phpunit-integration-and-initial-tests/">
     <img
-      src="https://img.shields.io/github/commit-activity/m/The-FireHub-Project/Foundation/master?style=flat&logo=github&logoColor=959da5&label=commit%20activity%20(branch)&labelColor=31373e"
+      src="https://img.shields.io/github/commit-activity/m/The-FireHub-Project/Foundation/feature/phpunit-integration-and-initial-tests?style=flat&logo=github&logoColor=959da5&label=commit%20activity%20(branch)&labelColor=31373e"
       alt="GitHub activity (branch)"
   /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/graphs/contributors/">
+  <a href="https://github.com/The-FireHub-Project/Foundation/compare/develop...feature/phpunit-integration-and-initial-tests/">
     <img
-      src="https://img.shields.io/github/contributors/The-FireHub-Project/Foundation?style=flat&logo=github&logoColor=959da5&label=contributors&labelColor=31373e"
-      alt="GitHub contributors"
-  /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/">
-    <img
-      src="https://img.shields.io/github/languages/count/The-FireHub-Project/Foundation?style=flat&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAtOTYwIDk2MCA5NjAiIHdpZHRoPSIyNHB4IiBmaWxsPSIjOTU5ZGE1Ij48cGF0aCBkPSJNMzIwLTI0MCA4MC00ODBsMjQwLTI0MCA1NyA1Ny0xODQgMTg0IDE4MyAxODMtNTYgNTZabTMyMCAwLTU3LTU3IDE4NC0xODQtMTgzLTE4MyA1Ni01NiAyNDAgMjQwLTI0MCAyNDBaIi8+PC9zdmc+&logoColor=959da5&label=language%20count&labelColor=31373e"
-      alt="GitHub language count"
-  /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/">
-    <img
-      src="https://img.shields.io/github/languages/top/The-FireHub-Project/Foundation?style=flat&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAtOTYwIDk2MCA5NjAiIHdpZHRoPSIyNHB4IiBmaWxsPSIjOTU5ZGE1Ij48cGF0aCBkPSJNMzIwLTI0MCA4MC00ODBsMjQwLTI0MCA1NyA1Ny0xODQgMTg0IDE4MyAxODMtNTYgNTZabTMyMCAwLTU3LTU3IDE4NC0xODQtMTgzLTE4MyA1Ni01NiAyNDAgMjQwLTI0MCAyNDBaIi8+PC9zdmc+&logoColor=959da5&label=top%20language&labelColor=31373e"
-      alt="GitHub top language"
-  /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/">
-    <img
-      src="https://img.shields.io/github/repo-size/The-FireHub-Project/Foundation?style=flat&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAtOTYwIDk2MCA5NjAiIHdpZHRoPSIyNHB4IiBmaWxsPSIjOTU5ZGE1Ij48cGF0aCBkPSJNMzIwLTI0MCA4MC00ODBsMjQwLTI0MCA1NyA1Ny0xODQgMTg0IDE4MyAxODMtNTYgNTZabTMyMCAwLTU3LTU3IDE4NC0xODQtMTgzLTE4MyA1Ni01NiAyNDAgMjQwLTI0MCAyNDBaIi8+PC9zdmc+&logoColor=959da5&label=repo%20size&labelColor=31373e"
-      alt="GitHub repo size"
-  /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/">
-    <img
-      src="https://img.shields.io/github/languages/code-size/The-FireHub-Project/Foundation?style=flat&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjRweCIgdmlld0JveD0iMCAtOTYwIDk2MCA5NjAiIHdpZHRoPSIyNHB4IiBmaWxsPSIjOTU5ZGE1Ij48cGF0aCBkPSJNMzIwLTI0MCA4MC00ODBsMjQwLTI0MCA1NyA1Ny0xODQgMTg0IDE4MyAxODMtNTYgNTZabTMyMCAwLTU3LTU3IDE4NC0xODQtMTgzLTE4MyA1Ni01NiAyNDAgMjQwLTI0MCAyNDBaIi8+PC9zdmc+&logoColor=959da5&label=code%20size&labelColor=31373e"
-      alt="GitHub code size"
+      src="https://img.shields.io/github/commits-difference/The-FireHub-Project/Foundation?base=develop&head=feature/phpunit-integration-and-initial-tests&style=flat&logo=github&logoColor=959da5&label=ahead%20develop&labelColor=31373e"
+      alt="GitHub commit difference between two branches"
   /></a>
 </p>
 
@@ -73,63 +52,57 @@ This repository represents the developer-facing layer between the FireHub Runtim
 
 ---
 
-## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Repository Purpose
+## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Testcase Base – Development Branch
 
-FireHub Foundation is the high-level developer API layer of the FireHub ecosystem.
+⚠️ **This is the `development` branch**
 
-Built on top of FireHub Runtime, it provides expressive, object-oriented abstractions for common programming tasks. The purpose of this layer is to expose simple, consistent, and powerful APIs while hiding low-level implementation details.
+- Unstable
+- APIs may change without notice
+- Not intended for production use
 
-Foundation contains reusable building blocks such as:
+### Related
 
-- String manipulation APIs
-- Date and time handling
-- Mathematical utilities
-- Common application-level abstractions
-- Developer-oriented helper objects
+- Target Release: **v0.0.0**
+- Repository: FireHub Foundation
 
-The Foundation layer follows the FireHub architectural principles by separating responsibilities between definition, execution, and usage:
-
-## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Security
-
-For security reporting and guidelines, please refer to our [SECURITY.md](https://github.com/The-FireHub-Project/.github/blob/master/.github/SECURITY.md) file.
-
-## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Community
-
-![GitHub watchers](https://img.shields.io/github/watchers/The-FireHub-Project/Foundation?style=social)
-![GitHub Repo stars](https://img.shields.io/github/stars/The-FireHub-Project/Foundation?style=social)
-![GitHub forks](https://img.shields.io/github/forks/The-FireHub-Project/Foundation?style=social)
-
-- Be sure to review the [Code of Conduct](https://github.com/The-FireHub-Project/.github/blob/master/.github/CODE_OF_CONDUCT.md).
-- Read a [Contributing](https://github.com/The-FireHub-Project/.github/blob/master/.github/CONTRIBUTING.md) file to see how you can contribute to this project.
-- Read our [Security policy](https://github.com/The-FireHub-Project/.github/blob/master/.github/SECURITY.md) file to see how you can report a vulnerability.
-- Review the project [Governance model](https://github.com/The-FireHub-Project/.github/blob/master/.github/GOVERNANCE.md), including roles, decision-making, RFC process, and releases.
-
-## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Support
+### Pull request
 
 <p>
-  <a href="https://github.com/The-FireHub-Project/Foundation/issues?q=is%3Aissue%20state%3Aopen">
+  <a href="https://github.com/The-FireHub-Project/Foundation/pull/2/">
     <img
-      src="https://img.shields.io/github/issues/The-FireHub-Project/Foundation?style=flat&logo=github&logoColor=959da5&label=in%20progress%20issues&labelColor=31373e"
-      alt="GitHub in-progress issues"
+      src="https://img.shields.io/github/pulls/detail/title/The-FireHub-Project/Foundation/2?style=flat&logo=github&logoColor=959da5&label=title&labelColor=31373e"
+      alt="GitHub pull request title"
   /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/issues?q=is%3Aissue">
+  <a href="https://github.com/The-FireHub-Project/Foundation/pull/2/">
     <img
-      src="https://img.shields.io/github/issues-search?query=repo%3AThe-FireHub-Project%Foundaton&style=flat&logo=github&logoColor=959da5&label=total%20issues&labelColor=31373e"
-      alt="GitHub total issues"
+      src="https://img.shields.io/github/pulls/detail/author/The-FireHub-Project/Foundation/2?style=flat&logo=github&logoColor=959da5&labelColor=31373e"
+      alt="GitHub pull request author"
   /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/issues?q=is%3Apr%20is%3Aopen">
+  <a href="https://github.com/The-FireHub-Project/Foundation/pull/2/">
     <img
-      src="https://img.shields.io/github/issues-pr/The-FireHub-Project/Foundation?style=flat&logo=github&logoColor=959da5&labelColor=31373e"
-      alt="GitHub opened pull requests"
+      src="https://img.shields.io/github/pulls/detail/age/The-FireHub-Project/Foundation/2?style=flat&logo=github&logoColor=959da5&labelColor=31373e"
+      alt="GitHub pull request created"
+  /></a>
+  <a href="https://github.com/The-FireHub-Project/Foundation/pull/2/">
+    <img
+      src="https://img.shields.io/github/pulls/detail/comments/The-FireHub-Project/Foundation/2?style=flat&logo=github&logoColor=959da5&labelColor=31373e"
+      alt="GitHub pull request comments"
   /></a>
 </p>
 
-For help with FireHub products, please refer to the following resources:
+## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Branch Purpose
 
-- **General questions & discussions**: [GitHub Discussions](https://github.com/orgs/The-FireHub-Project/discussions)
-- **Bug reports & issues**: [Support](https://github.com/The-FireHub-Project/Foundation/issues)
-- **Documentation & guides**: [FireHub Docs](https://the-firehub-project.github.io)
-- **Commercial support** (Pro/Enterprise): contact your account manager
+Introduce the first high-level string API in the FireHub Foundation layer, providing an expressive and object-oriented interface for string manipulation while abstracting away low-level Runtime string operations.
+
+## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Architectural Goal
+
+Establish the Foundation layer pattern by transforming Runtime primitives into developer-facing APIs. The Str component should demonstrate how high-level objects are built on top of stable Runtime functionality while preserving type safety, consistency, and separation of concerns across the FireHub architecture.
+
+## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Core Concept
+
+The Str API represents an immutable, object-oriented string abstraction designed for readable and fluent string operations.
+
+Instead of exposing procedural string functions directly, Foundation provides a domain-friendly object that encapsulates string behavior, validation, transformation, and common operations while delegating low-level execution to the Runtime layer.
 
 ## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Authors and Contributors
 
