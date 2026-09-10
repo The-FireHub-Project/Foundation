@@ -13,12 +13,14 @@
 
 namespace FireHub\Foundation\DataStructure\Storage;
 
+use FireHub\Core\Boundary\Capability\ {
+    Access\BoundaryAccess, Access\IndexAccess,
+    Measurement\Metrics,
+    Mutation\DequeMutation, Mutation\IndexMutation
+};
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
-use FireHub\Foundation\DataStructure\Storage\Capability\ {
-    DequeMutation, IndexAccess, IndexMutation, LinearBoundaryAccess, Metrics
-};
 use FireHub\Foundation\Maybe\ {
     None, Some
 };
@@ -42,12 +44,12 @@ use FireHub\Runtime;
  * @template TValue
  *
  * @implements \FireHub\Foundation\DataStructure\Storage<int, TValue>
- * @implements \FireHub\Foundation\DataStructure\Storage\Capability\LinearBoundaryAccess<TValue>
- * @implements \FireHub\Foundation\DataStructure\Storage\Capability\DequeMutation<TValue>
- * @implements \FireHub\Foundation\DataStructure\Storage\Capability\IndexAccess<TValue>
- * @implements \FireHub\Foundation\DataStructure\Storage\Capability\IndexMutation<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Access\BoundaryAccess<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Access\IndexAccess<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  */
-final class ListStorage implements Storage, Metrics, LinearBoundaryAccess, DequeMutation, IndexAccess, IndexMutation {
+final class ListStorage implements Storage, Metrics, BoundaryAccess, IndexAccess, DequeMutation, IndexMutation {
 
     /**
      * ### Underlying data storage

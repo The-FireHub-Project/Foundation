@@ -13,13 +13,15 @@
 
 namespace FireHub\Foundation\DataStructure\Storage;
 
+use FireHub\Core\Boundary\Capability\ {
+    Access\KeyAccess,
+    Measurement\Metrics,
+    Mutation\KeyMutation
+};
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
-use FireHub\Foundation\DataStructure\Storage\Capability\ {
-    KeyAccess, KeyMutation, Metrics
-};
 
 /**
  * ### Provides a storage implementation for hash-based key-value pairs
@@ -40,8 +42,8 @@ use FireHub\Foundation\DataStructure\Storage\Capability\ {
  * @template TValue
  *
  * @implements \FireHub\Foundation\DataStructure\Storage<TKey, TValue>
- * @implements \FireHub\Foundation\DataStructure\Storage\Capability\KeyAccess<TKey, TValue>
- * @implements \FireHub\Foundation\DataStructure\Storage\Capability\KeyMutation<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Access\KeyAccess<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
  */
 final class HashStorage implements Storage, Metrics, KeyAccess, KeyMutation {
 

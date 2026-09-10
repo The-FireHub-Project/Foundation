@@ -13,12 +13,14 @@
 
 namespace FireHub\Foundation\DataStructure\Storage;
 
+use FireHub\Core\Boundary\Capability\ {
+    Access\BoundaryAccess, Access\IndexAccess,
+    Measurement\Capacity, Measurement\Metrics,
+    Mutation\IndexMutation
+};
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
-use FireHub\Foundation\DataStructure\Storage\Capability\ {
-    Capacity, IndexAccess, IndexMutation, LinearBoundaryAccess, Metrics
-};
 use FireHub\Foundation\Maybe\ {
     None, Some
 };
@@ -41,11 +43,11 @@ use SplFixedArray;
  * @template TValue
  *
  * @implements \FireHub\Foundation\DataStructure\Storage<int, null|TValue>
- * @implements \FireHub\Foundation\DataStructure\Storage\Capability\LinearBoundaryAccess<TValue>
- * @implements \FireHub\Foundation\DataStructure\Storage\Capability\IndexAccess<TValue>
- * @implements \FireHub\Foundation\DataStructure\Storage\Capability\IndexMutation<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Access\BoundaryAccess<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Access\IndexAccess<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  */
-final class FixedStorage implements Storage, Metrics, Capacity, LinearBoundaryAccess, IndexAccess, IndexMutation {
+final class FixedStorage implements Storage, Metrics, Capacity, BoundaryAccess, IndexAccess, IndexMutation {
 
     /**
      * ### Underlying fixed-size data storage

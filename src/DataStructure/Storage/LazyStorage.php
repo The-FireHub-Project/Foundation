@@ -13,8 +13,8 @@
 
 namespace FireHub\Foundation\DataStructure\Storage;
 
+use FireHub\Core\Boundary\Capability\Measurement\Metrics;
 use FireHub\Foundation\DataStructure\Storage;
-use FireHub\Foundation\DataStructure\Storage\Capability\Metrics;
 use FireHub\Runtime;
 
 /**
