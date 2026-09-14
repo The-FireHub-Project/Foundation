@@ -55,6 +55,25 @@ final class VectorTest extends FireHubTestCase {
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
+    public function testCopy (ListStorage $storage):void {
+
+        $vector = new Vector($storage);
+
+        $copy = $vector->copy();
+        $copy->insertBack('x');
+
+        self::assertNotSame($storage, $copy);
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
+     *
+     * @return void
+     */
+    #[DataProviderExternal(StorageDataProvider::class, 'list')]
     public function testIsEmpty (ListStorage $storage):void {
 
         self::assertFalse(new Vector($storage)->isEmpty());

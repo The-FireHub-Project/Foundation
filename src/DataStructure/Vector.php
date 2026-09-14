@@ -88,16 +88,27 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, DequeMutation, Ind
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
+     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
+     *
+     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     *
+     * $vector->copy();
+     *
+     * // [1, 2, 3]
+     * </code>
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::copy() To create a copy of the storage.
      */
     public function copy ():static {
 
-        return new static(
-            $this->storage->copy()
-        );
-
+        return new static($this->storage->copy());
 
     }
 
