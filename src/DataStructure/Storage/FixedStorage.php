@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=7.4
+ * @php-version >=8.5
  * @package Foundation
  */
 
@@ -16,7 +16,8 @@ namespace FireHub\Foundation\DataStructure\Storage;
 use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Measurement\Capacity, Measurement\Metrics,
-    Mutation\IndexMutation
+    Mutation\IndexMutation,
+    Cloneable
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
@@ -25,6 +26,7 @@ use FireHub\Foundation\Maybe\ {
     None, Some
 };
 use FireHub\Foundation\DataStructure\Exception\OverflowException;
+use FireHub\Runtime;
 use SplFixedArray;
 
 /**
@@ -47,7 +49,7 @@ use SplFixedArray;
  * @implements \FireHub\Core\Boundary\Capability\Access\IndexAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  */
-final class FixedStorage implements Storage, Metrics, Capacity, BoundaryAccess, IndexAccess, IndexMutation {
+final class FixedStorage implements Storage, Cloneable, Metrics, Capacity, BoundaryAccess, IndexAccess, IndexMutation {
 
     /**
      * ### Underlying fixed-size data storage
@@ -91,6 +93,28 @@ final class FixedStorage implements Storage, Metrics, Capacity, BoundaryAccess, 
             $this->data[$key++] = $value;
 
         }
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Copy::deep() To deep copy the storage.
+     *
+     * @throws \FireHub\Runtime\Exception\CopyObjectException If the object's copying fails.
+     */
+    public function copy ():self {
+
+        $data = new SplFixedArray($this->data->getSize());
+
+        foreach ($this->data as $index => $value)
+            $data[$index] = Runtime\Copy::deep($value);
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'data' => $data
+        ]);
 
     }
 

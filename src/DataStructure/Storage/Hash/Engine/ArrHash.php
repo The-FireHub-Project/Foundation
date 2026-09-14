@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=7.0
+ * @php-version >=8.5
  * @package Foundation
  */
 
@@ -64,6 +64,23 @@ final class ArrHash implements Engine {
     public function __construct (Initializer $initializer) {
 
         $this->data = Runtime\Iterator::toArray($initializer->initialize());
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Copy::deep() To deep copy the storage.
+     *
+     * @throws \FireHub\Runtime\Exception\CopyObjectException If the object's copying fails.
+     */
+    public function copy ():self {
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'data' => Runtime\Copy::deep($this->data)
+        ]);
 
     }
 

@@ -7,12 +7,13 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=7.0
+ * @php-version >=7.4
  * @package Foundation
  */
 
 namespace FireHub\Foundation\DataStructure\Storage\Hash;
 
+use FireHub\Core\Boundary\Capability\Cloneable;
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 
@@ -33,7 +34,7 @@ use FireHub\Core\Meta\Enum\MutationOutcome;
  * @template TKey of int|string
  * @template TValue
  */
-interface Engine {
+interface Engine extends Cloneable {
 
     /**
      * ### Returns iterable for traversing the stored key-value pairs

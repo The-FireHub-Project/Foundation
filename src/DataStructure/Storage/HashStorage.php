@@ -16,7 +16,8 @@ namespace FireHub\Foundation\DataStructure\Storage;
 use FireHub\Core\Boundary\Capability\ {
     Access\KeyAccess,
     Measurement\Metrics,
-    Mutation\KeyMutation
+    Mutation\KeyMutation,
+    Cloneable
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
@@ -45,7 +46,7 @@ use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
  * @implements \FireHub\Core\Boundary\Capability\Access\KeyAccess<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
  */
-final class HashStorage implements Storage, Metrics, KeyAccess, KeyMutation {
+final class HashStorage implements Storage, Cloneable, Metrics, KeyAccess, KeyMutation {
 
     /**
      * ### Underlying hash engine
@@ -60,6 +61,21 @@ final class HashStorage implements Storage, Metrics, KeyAccess, KeyMutation {
     public function __construct (
         private Engine $engine
     ) {}
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::copy() To copy the hash engine.
+     */
+    public function copy ():self {
+
+        return new self(
+            $this->engine->copy()
+        );
+
+    }
 
     /**
      * @inheritDoc
