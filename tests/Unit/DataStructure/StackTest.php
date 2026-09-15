@@ -56,9 +56,9 @@ final class StackTest extends FireHubTestCase {
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
     public function testCopy (ListStorage $storage):void {
 
-        $vector = new Stack($storage);
+        $stack = new Stack($storage);
 
-        $copy = $vector->copy();
+        $copy = $stack->copy();
         $copy->insertBack('x');
 
         self::assertNotSame($storage, $copy);
@@ -133,11 +133,11 @@ final class StackTest extends FireHubTestCase {
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
     public function testAppend (ListStorage $storage):void {
 
-        $vector = new Stack($storage);
+        $stack = new Stack($storage);
 
-        $vector->append('x', 'y', 'z');
+        $stack->append('x', 'y', 'z');
 
-        self::assertSame([1, 2, 3, 'x', 'y', 'z'], $vector->toArray());
+        self::assertSame([1, 2, 3, 'x', 'y', 'z'], $stack->toArray());
 
     }
 
@@ -151,11 +151,11 @@ final class StackTest extends FireHubTestCase {
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
     public function testPop (ListStorage $storage):void {
 
-        $vector = new Stack($storage);
+        $stack = new Stack($storage);
 
-        self::assertSame(3, $vector->pop()->value());
+        self::assertSame(3, $stack->pop()->value());
 
-        self::assertSame([1, 2], $vector->toArray());
+        self::assertSame([1, 2], $stack->toArray());
 
     }
 

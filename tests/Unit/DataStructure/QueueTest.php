@@ -14,8 +14,9 @@
 namespace FireHub\Tests\Foundation\Unit\DataStructure;
 
 use FireHub\Testing\FireHubTestCase;
+use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Core\Type\Exception\NoValueException;
-use FireHub\Foundation\DataStructure\Deque;
+use FireHub\Foundation\DataStructure\Queue;
 use FireHub\Foundation\DataStructure\Storage\ListStorage;
 use FireHub\Tests\Foundation\DataProviders\StorageDataProvider;
 use PHPUnit\Framework\Attributes\ {
@@ -23,14 +24,14 @@ use PHPUnit\Framework\Attributes\ {
 };
 
 /**
- * ### Test Deque data structure
+ * ### Test Queue data structure
  * @since 1.0.0
  */
 #[Small]
 #[Group('data-structure')]
-#[CoversClass(Deque::class)]
+#[CoversClass(Queue::class)]
 #[CoversClass(ListStorage::class)]
-final class DequeTest extends FireHubTestCase {
+final class QueueTest extends FireHubTestCase {
 
     /**
      * @since 1.0.0
@@ -42,7 +43,7 @@ final class DequeTest extends FireHubTestCase {
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
     public function testToArray (ListStorage $storage):void {
 
-        self::assertSame([1, 2, 3], new Deque($storage)->toArray());
+        self::assertSame([1, 2, 3], new Queue($storage)->toArray());
 
     }
 
@@ -56,9 +57,9 @@ final class DequeTest extends FireHubTestCase {
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
     public function testCopy (ListStorage $storage):void {
 
-        $deque = new Deque($storage);
+        $vector = new Queue($storage);
 
-        $copy = $deque->copy();
+        $copy = $vector->copy();
         $copy->insertBack('x');
 
         self::assertNotSame($storage, $copy);
@@ -75,7 +76,7 @@ final class DequeTest extends FireHubTestCase {
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
     public function testIsEmpty (ListStorage $storage):void {
 
-        self::assertFalse(new Deque($storage)->isEmpty());
+        self::assertFalse(new Queue($storage)->isEmpty());
 
     }
 
@@ -89,7 +90,7 @@ final class DequeTest extends FireHubTestCase {
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
     public function testSize (ListStorage $storage):void {
 
-        self::assertSame(3, new Deque($storage)->size());
+        self::assertSame(3, new Queue($storage)->size());
 
     }
 
@@ -101,9 +102,9 @@ final class DequeTest extends FireHubTestCase {
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
-    public function testFirst (ListStorage $storage):void {
+    public function testPeek (ListStorage $storage):void {
 
-        self::assertSame(1, new Deque($storage)->first()->value());
+        self::assertSame(1, new Queue($storage)->peek()->value());
 
     }
 
@@ -115,11 +116,11 @@ final class DequeTest extends FireHubTestCase {
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'emptyList')]
-    public function testFirstEmpty (ListStorage $storage):void {
+    public function testPeekEmpty (ListStorage $storage):void {
 
         $this->expectException(NoValueException::class);
 
-        new Deque($storage)->first()->value();
+        new Queue($storage)->peek()->value();
 
     }
 
@@ -131,25 +132,13 @@ final class DequeTest extends FireHubTestCase {
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
-    public function testLast (ListStorage $storage):void {
+    public function testEnqueue (ListStorage $storage):void {
 
-        self::assertSame(3, new Deque($storage)->last()->value());
+        $stack = new Queue($storage);
 
-    }
+        $stack->enqueue('x', 'y', 'z');
 
-    /**
-     * @since 1.0.0
-     *
-     * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
-     *
-     * @return void
-     */
-    #[DataProviderExternal(StorageDataProvider::class, 'emptyList')]
-    public function testLastEmpty (ListStorage $storage):void {
-
-        $this->expectException(NoValueException::class);
-
-        new Deque($storage)->last()->value();
+        self::assertSame([1, 2, 3, 'x', 'y', 'z'], $stack->toArray());
 
     }
 
@@ -161,67 +150,13 @@ final class DequeTest extends FireHubTestCase {
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
-    public function testPrepend (ListStorage $storage):void {
+    public function testDequeue (ListStorage $storage):void {
 
-        $deque = new Deque($storage);
+        $stack = new Queue($storage);
 
-        $deque->prepend('x', 'y', 'z');
+        $stack->dequeue();
 
-        self::assertSame(['x', 'y', 'z', 1, 2, 3], $deque->toArray());
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
-     * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
-     *
-     * @return void
-     */
-    #[DataProviderExternal(StorageDataProvider::class, 'list')]
-    public function testAppend (ListStorage $storage):void {
-
-        $deque = new Deque($storage);
-
-        $deque->append('x', 'y', 'z');
-
-        self::assertSame([1, 2, 3, 'x', 'y', 'z'], $deque->toArray());
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
-     * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
-     *
-     * @return void
-     */
-    #[DataProviderExternal(StorageDataProvider::class, 'list')]
-    public function testShift (ListStorage $storage):void {
-
-        $deque = new Deque($storage);
-
-        self::assertSame(1, $deque->shift()->value());
-
-        self::assertSame([2, 3], $deque->toArray());
-
-    }
-
-    /**
-     * @since 1.0.0
-     *
-     * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
-     *
-     * @return void
-     */
-    #[DataProviderExternal(StorageDataProvider::class, 'list')]
-    public function testPop (ListStorage $storage):void {
-
-        $deque = new Deque($storage);
-
-        self::assertSame(3, $deque->pop()->value());
-
-        self::assertSame([1, 2], $deque->toArray());
+        self::assertSame([2, 3], $stack->toArray());
 
     }
 
