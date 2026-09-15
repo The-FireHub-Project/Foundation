@@ -13,7 +13,9 @@
 
 namespace FireHub\Foundation\DataStructure\Storage\Hash;
 
-use FireHub\Core\Boundary\Capability\Cloneable;
+use FireHub\Core\Boundary\Capability\ {
+    Cloneable, Forkable
+};
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 
@@ -34,7 +36,7 @@ use FireHub\Core\Meta\Enum\MutationOutcome;
  * @template TKey of int|string
  * @template TValue
  */
-interface Engine extends Cloneable {
+interface Engine extends Cloneable, Forkable {
 
     /**
      * ### Returns iterable for traversing the stored key-value pairs

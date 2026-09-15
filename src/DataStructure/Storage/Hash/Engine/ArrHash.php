@@ -20,6 +20,9 @@ use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
 use FireHub\Foundation\Maybe\ {
     None, Some
 };
+use FireHub\Foundation\State\ {
+    HasCopyOnWriteState, SharedState
+};
 use FireHub\Runtime;
 
 /**
@@ -41,12 +44,12 @@ use FireHub\Runtime;
 final class ArrHash implements Engine {
 
     /**
-     * ### Underlying hash data
+     * ### Copy-on-write state
      * @since 1.0.0
      *
-     * @var array<TKey, TValue>
+     * @use \FireHub\Foundation\State\HasCopyOnWriteState<array<TKey, TValue>>
      */
-    private array $data;
+    use HasCopyOnWriteState;
 
     /**
      * ### Constructor
@@ -63,7 +66,9 @@ final class ArrHash implements Engine {
      */
     public function __construct (Initializer $initializer) {
 
-        $this->data = Runtime\Iterator::toArray($initializer->initialize());
+        $this->state = new SharedState( // @phpstan-ignore assign.propertyType
+            Runtime\Iterator::toArray($initializer->initialize())
+        );
 
     }
 
@@ -76,11 +81,10 @@ final class ArrHash implements Engine {
      *
      * @throws \FireHub\Runtime\Exception\CopyObjectException If the object's copying fails.
      */
-    public function copy ():self {
+    public function copyData (mixed $data):array {
 
-        return clone($this, [ // @phpstan-ignore assign.propertyType
-            'data' => Runtime\Copy::deep($this->data)
-        ]);
+        /** @var array<TKey, TValue> */
+        return Runtime\Copy::deep($data);
 
     }
 
@@ -88,10 +92,12 @@ final class ArrHash implements Engine {
      * @inheritDoc
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the underlying data.
      */
     public function iterate ():iterable {
 
-        return $this->data;
+        return $this->state->data();
 
     }
 
@@ -101,10 +107,11 @@ final class ArrHash implements Engine {
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Arr\Inspection::count() To get the size of the hash.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the underlying data.
      */
     public function size ():int {
 
-        return Runtime\Arr\Inspection::count($this->data);
+        return Runtime\Arr\Inspection::count($this->state->data());
 
     }
 
@@ -114,10 +121,11 @@ final class ArrHash implements Engine {
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Arr\Access::keyExists() To check if the hash has a key.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the underlying data.
      */
     public function has (mixed $key):bool {
 
-        return Runtime\Arr\Access::keyExists($this->data, $key);
+        return Runtime\Arr\Access::keyExists($this->state->data(), $key);
 
     }
 
@@ -127,11 +135,12 @@ final class ArrHash implements Engine {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::has() To check if the hash has a key.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the underlying data.
      */
     public function get (mixed $key):Maybe {
 
         if ($this->has($key))
-            return new Some($this->data[$key]); // @phpstan-ignore offsetAccess.notFound
+            return new Some($this->state->data()[$key]); // @phpstan-ignore offsetAccess.notFound
 
         return new None();
 
@@ -141,6 +150,9 @@ final class ArrHash implements Engine {
      * @inheritDoc
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::detach() To detach the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the underlying data.
      */
     public function set (mixed $key, mixed $value):MutationOutcome {
 
@@ -148,7 +160,9 @@ final class ArrHash implements Engine {
             ? MutationOutcome::UPDATED
             : MutationOutcome::CREATED;
 
-        $this->data[$key] = $value;
+        $this->detach();
+
+        $this->state->data()[$key] = $value;
 
         return $outcome;
 
@@ -158,13 +172,21 @@ final class ArrHash implements Engine {
      * @inheritDoc
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::has() To check if the hash has a key.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::detach() To detach the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the underlying data.
      */
     public function remove (mixed $key):MutationOutcome {
 
         if (!$this->has($key))
             return MutationOutcome::NOT_FOUND;
 
-        unset($this->data[$key]);
+        $this->detach();
+
+        $data = &$this->state->data();
+
+        unset($data[$key]);
 
         return MutationOutcome::REMOVED;
 

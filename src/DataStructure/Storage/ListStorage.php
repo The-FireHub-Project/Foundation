@@ -17,13 +17,16 @@ use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
-    Cloneable
+    Cloneable, Forkable
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\Maybe\ {
     None, Some
+};
+use FireHub\Foundation\State\ {
+    HasCopyOnWriteState, SharedState
 };
 use FireHub\Runtime;
 
@@ -50,15 +53,16 @@ use FireHub\Runtime;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  */
-final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, IndexAccess, DequeMutation, IndexMutation {
+final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
+    IndexMutation {
 
     /**
-     * ### Underlying data storage
+     * ### Copy-on-write state
      * @since 1.0.0
      *
-     * @var array<int, TValue>
+     * @use \FireHub\Foundation\State\HasCopyOnWriteState<list<TValue>>
      */
-    private array $data;
+    use HasCopyOnWriteState;
 
     /**
      * ### Constructor
@@ -76,8 +80,10 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      */
     public function __construct (Initializer $initializer) {
 
-        $this->data = Runtime\Arr\Access::values(
-            Runtime\Iterator::toArray($initializer->initialize())
+        $this->state = new SharedState(
+            Runtime\Arr\Access::values(
+                Runtime\Iterator::toArray($initializer->initialize())
+            )
         );
 
     }
@@ -91,11 +97,10 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      *
      * @throws \FireHub\Runtime\Exception\CopyObjectException If the object's copying fails.
      */
-    public function copy ():self {
+    protected function copyData (mixed $data):array {
 
-        return clone($this, [ // @phpstan-ignore assign.propertyType
-            'data' => Runtime\Copy::deep($this->data)
-        ]);
+        /** @var list<TValue> */
+        return Runtime\Copy::deep($data);
 
     }
 
@@ -103,10 +108,12 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      * @inheritDoc
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function iterate ():iterable {
 
-        return $this->data;
+        return $this->state->data();
 
     }
 
@@ -129,10 +136,11 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Arr\Inspection::count() To get the size of the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function size ():int {
 
-        return Runtime\Arr\Inspection::count($this->data);
+        return Runtime\Arr\Inspection::count($this->state->data());
 
     }
 
@@ -145,13 +153,14 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      * @uses \FireHub\Foundation\Maybe\Some As return value.
      * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
      * @uses \FireHub\Runtime\Arr\Access::first() To get the first value.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function first ():Maybe {
 
         if ($this->isEmpty()) return new None();
 
         /** @var TValue $first */
-        $first = Runtime\Arr\Access::first($this->data);
+        $first = Runtime\Arr\Access::first($this->state->data());
 
         return new Some($first);
 
@@ -166,13 +175,14 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      * @uses \FireHub\Foundation\Maybe\Some As return value.
      * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
      * @uses \FireHub\Runtime\Arr\Access::last() To get the last value.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function last ():Maybe {
 
         if ($this->isEmpty()) return new None();
 
         /** @var TValue $last */
-        $last = Runtime\Arr\Access::last($this->data);
+        $last = Runtime\Arr\Access::last($this->state->data());
 
         return new Some($last);
 
@@ -184,10 +194,16 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Arr\Mutation::unshift() To insert values at the beginning of the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::detach() To detach the storage.
      */
     public function insertFront (mixed ...$values):void {
 
-        Runtime\Arr\Mutation::unshift($this->data, ...$values);
+        if ($values === []) return;
+
+        $this->detach();
+
+        Runtime\Arr\Mutation::unshift($this->state->data(), ...$values);
 
     }
 
@@ -197,10 +213,16 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Arr\Mutation::push() To insert values at the end of the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::detach() To detach the storage.
      */
     public function insertBack (mixed ...$values):void {
 
-        Runtime\Arr\Mutation::push($this->data, ...$values);
+        if ($values === []) return;
+
+        $this->detach();
+
+        Runtime\Arr\Mutation::push($this->state->data(), ...$values);
 
     }
 
@@ -210,16 +232,20 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::isEmpty() To check if the storage is empty.
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::detach() To detach the storage.
      * @uses \FireHub\Runtime\Arr\Mutation::shift() To remove the first value from the storage.
      * @uses \FireHub\Foundation\Maybe\Some As return value.
      * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function removeFront ():Maybe {
 
         if ($this->isEmpty()) return new None();
 
+        $this->detach();
+
         /** @var TValue $shift */
-        $shift = Runtime\Arr\Mutation::shift($this->data);
+        $shift = Runtime\Arr\Mutation::shift($this->state->data());
 
         return new Some($shift);
 
@@ -231,16 +257,20 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::isEmpty() To check if the storage is empty.
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::detach() To detach the storage.
      * @uses \FireHub\Runtime\Arr\Mutation::pop() To remove the last value from the storage.
      * @uses \FireHub\Foundation\Maybe\Some As return value.
      * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function removeBack ():Maybe {
 
         if ($this->isEmpty()) return new None();
 
+        $this->detach();
+
         /** @var TValue $pop */
-        $pop = Runtime\Arr\Mutation::pop($this->data);
+        $pop = Runtime\Arr\Mutation::pop($this->state->data());
 
         return new Some($pop);
 
@@ -252,10 +282,11 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Arr\Access::keyExists() To check if the storage has a value at the specified index.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function has (int $index):bool {
 
-        return Runtime\Arr\Access::keyExists($this->data, $index);
+        return Runtime\Arr\Access::keyExists($this->state->data(), $index);
 
     }
 
@@ -268,11 +299,12 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      * the specified index.
      * @uses \FireHub\Foundation\Maybe\Some As return value.
      * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function get (int $index):Maybe {
 
         if ($this->has($index))
-            return new Some($this->data[$index]); // @phpstan-ignore offsetAccess.notFound
+            return new Some($this->state->data()[$index]); // @phpstan-ignore offsetAccess.notFound
 
         return new None();
 
@@ -285,13 +317,17 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::has() To check if the storage has a value at
      * the specified index.
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::detach() To detach the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function set (int $index, mixed $value):MutationOutcome {
 
         if (!$this->has($index))
             return MutationOutcome::NOT_FOUND;
 
-        $this->data[$index] = $value;
+        $this->detach();
+
+        $this->state->data()[$index] = $value;
 
         return MutationOutcome::UPDATED;
 
@@ -304,16 +340,22 @@ final class ListStorage implements Storage, Cloneable, Metrics, BoundaryAccess, 
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::has() To check if the storage has a value at
      * the specified index.
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::detach() To detach the storage.
      * @uses \FireHub\Runtime\Arr\Access::values() To reindex the array.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function remove (int $index):MutationOutcome {
 
         if (!$this->has($index))
             return MutationOutcome::NOT_FOUND;
 
-        unset($this->data[$index]);
+        $this->detach();
 
-        $this->data = Runtime\Arr\Access::values($this->data);
+        $data = &$this->state->data();
+
+        unset($data[$index]);
+
+        $data = Runtime\Arr\Access::values($data);
 
         return MutationOutcome::REMOVED;
 

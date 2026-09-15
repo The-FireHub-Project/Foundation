@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=7.4
+ * @php-version >=8.2
  * @package Foundation
  */
 
@@ -17,7 +17,7 @@ use FireHub\Core\Boundary\Capability\ {
     Access\KeyAccess,
     Measurement\Metrics,
     Mutation\KeyMutation,
-    Cloneable
+    Cloneable, Forkable
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
@@ -46,7 +46,7 @@ use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
  * @implements \FireHub\Core\Boundary\Capability\Access\KeyAccess<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
  */
-final class HashStorage implements Storage, Cloneable, Metrics, KeyAccess, KeyMutation {
+final readonly class HashStorage implements Storage, Cloneable, Forkable, Metrics, KeyAccess, KeyMutation {
 
     /**
      * ### Underlying hash engine
@@ -73,6 +73,21 @@ final class HashStorage implements Storage, Cloneable, Metrics, KeyAccess, KeyMu
 
         return new self(
             $this->engine->copy()
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::fork() To fork the hash engine.
+     */
+    public function fork ():self {
+
+        return new self(
+            $this->engine->fork()
         );
 
     }
