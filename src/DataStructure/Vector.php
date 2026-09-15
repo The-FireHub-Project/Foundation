@@ -18,7 +18,7 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
-    Cloneable
+    Cloneable, Forkable
 };
 use FireHub\Core\Boundary\Type\DataStructure\Collection\Vector as VectorBoundary;
 use FireHub\Core\Type\Maybe;
@@ -43,9 +43,9 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  *
- * @phpstan-type StorageType = (Storage<int, TValue>&Cloneable&Metrics&BoundaryAccess<TValue>&IndexAccess<TValue>&DequeMutation<TValue>&IndexMutation<TValue>)
+ * @phpstan-type StorageType = (Storage<int, TValue>&Cloneable&Forkable&Metrics&BoundaryAccess<TValue>&IndexAccess<TValue>&DequeMutation<TValue>&IndexMutation<TValue>)
  */
-class Vector implements VectorBoundary, Arrayable, Cloneable, DequeMutation, IndexMutation {
+class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMutation, IndexMutation {
 
     /**
      * ### Constructor
@@ -58,7 +58,7 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, DequeMutation, Ind
      * @return void
      */
     final public function __construct (
-        protected Storage&Cloneable&Metrics&BoundaryAccess&IndexAccess&DequeMutation&IndexMutation $storage
+        protected Storage&Cloneable&Forkable&Metrics&BoundaryAccess&IndexAccess&DequeMutation&IndexMutation $storage
     ) {}
 
     /**
@@ -109,6 +109,31 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, DequeMutation, Ind
     public function copy ():static {
 
         return new static($this->storage->copy());
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
+     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
+     *
+     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     *
+     * $vector->fork();
+     *
+     * // [1, 2, 3]
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::fork() To create a fork of the storage.
+     */
+    public function fork ():static {
+
+        return new static($this->storage->fork());
 
     }
 
@@ -290,6 +315,41 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, DequeMutation, Ind
     }
 
     /**
+     * ### Prepends values to the vector
+     *
+     * Inserts one or more values at the beginning of the vector while preserving their provided order.
+     *
+     * <code>
+     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
+     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
+     *
+     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     *
+     * $vector->prepend('x', 'y', 'z');
+     *
+     * // ['x', 'y', 'z', 1, 2, 3]
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Vector::insertFront() To insert values at the front of the vector.
+     *
+     * @param TValue ...$values <p>
+     * Values to prepend to the vector.
+     * </p>
+     *
+     * @return $this The current vector instance.
+     */
+    public function prepend (mixed ...$values):static {
+
+        $this->insertFront(...$values);
+
+        return $this;
+
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <code>
@@ -312,6 +372,41 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, DequeMutation, Ind
     public function insertBack (mixed ...$values):void {
 
         $this->storage->insertBack(...$values);
+
+    }
+
+    /**
+     * ### Appends values to the vector
+     *
+     * Inserts one or more values at the end of the vector while preserving their provided order.
+     *
+     * <code>
+     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
+     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
+     *
+     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     *
+     * $vector->append('x', 'y', 'z');
+     *
+     * // [1, 2, 3, 'x', 'y', 'z']
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Vector::insertBack() To insert values at the back of the vector.
+     *
+     * @param TValue ...$values <p>
+     * Values to append to the vector.
+     * </p>
+     *
+     * @return $this The current vector instance.
+     */
+    public function append (mixed ...$values):static {
+
+        $this->insertBack(...$values);
+
+        return $this;
 
     }
 
@@ -346,6 +441,39 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, DequeMutation, Ind
     }
 
     /**
+     * ### Removes the first value
+     *
+     * Removes and returns the first value from the vector.
+     *
+     * <code>
+     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
+     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
+     *
+     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     *
+     * $vector->shift();
+     *
+     * // Maybe(1))
+     *
+     * $vector->toArray();
+     *
+     * // [2, 3]
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Vector::removeFront() To remove the first value from the vector.
+     *
+     * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, or none if the vector is empty.
+     */
+    public function shift ():Maybe {
+
+        return $this->removeFront();
+
+    }
+
+    /**
      * {@inheritDoc}
      *
      * <code>
@@ -372,6 +500,39 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, DequeMutation, Ind
     public function removeBack ():Maybe {
 
         return $this->storage->removeBack();
+
+    }
+
+    /**
+     * ### Removes the last value
+     *
+     * Removes and returns the last value from the vector.
+     *
+     * <code>
+     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
+     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
+     *
+     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     *
+     * $vector->pop();
+     *
+     * // Maybe(3))
+     *
+     * $vector->toArray();
+     *
+     * // [1, 2]
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Vector::removeBack() To remove the last value from the vector.
+     *
+     * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, or none if the vector is empty.
+     */
+    public function pop ():Maybe {
+
+        return $this->removeBack();
 
     }
 

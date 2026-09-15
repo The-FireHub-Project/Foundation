@@ -74,6 +74,25 @@ final class VectorTest extends FireHubTestCase {
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
+    public function testFork (ListStorage $storage):void {
+
+        $vector = new Vector($storage);
+
+        $fork = $vector->fork();
+        $fork->insertBack('x');
+
+        self::assertNotSame($storage, $fork);
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
+     *
+     * @return void
+     */
+    #[DataProviderExternal(StorageDataProvider::class, 'list')]
     public function testIsEmpty (ListStorage $storage):void {
 
         self::assertFalse(new Vector($storage)->isEmpty());
@@ -197,11 +216,11 @@ final class VectorTest extends FireHubTestCase {
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
-    public function testInsertFront (ListStorage $storage):void {
+    public function testPrepend (ListStorage $storage):void {
 
         $vector = new Vector($storage);
 
-        $vector->insertFront('x', 'y', 'z');
+        $vector->prepend('x', 'y', 'z');
 
         self::assertSame(['x', 'y', 'z', 1, 2, 3], $vector->toArray());
 
@@ -215,11 +234,11 @@ final class VectorTest extends FireHubTestCase {
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
-    public function testInsertBack (ListStorage $storage):void {
+    public function testAppend (ListStorage $storage):void {
 
         $vector = new Vector($storage);
 
-        $vector->insertBack('x', 'y', 'z');
+        $vector->append('x', 'y', 'z');
 
         self::assertSame([1, 2, 3, 'x', 'y', 'z'], $vector->toArray());
 
@@ -233,11 +252,11 @@ final class VectorTest extends FireHubTestCase {
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
-    public function testRemoveFront (ListStorage $storage):void {
+    public function testShift (ListStorage $storage):void {
 
         $vector = new Vector($storage);
 
-        self::assertSame(1, $vector->removeFront()->value());
+        self::assertSame(1, $vector->shift()->value());
 
         self::assertSame([2, 3], $vector->toArray());
 
@@ -251,11 +270,11 @@ final class VectorTest extends FireHubTestCase {
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
-    public function testRemoveBack (ListStorage $storage):void {
+    public function testPop (ListStorage $storage):void {
 
         $vector = new Vector($storage);
 
-        self::assertSame(3, $vector->removeBack()->value());
+        self::assertSame(3, $vector->pop()->value());
 
         self::assertSame([1, 2], $vector->toArray());
 
