@@ -428,7 +428,7 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
     /**
      * ### Removes the last value
      *
-     * Removes and returns the last value from the dwque.
+     * Removes and returns the last value from the deque.
      *
      * <code>
      * use FireHub\Foundation\DataStructure\Deque;
