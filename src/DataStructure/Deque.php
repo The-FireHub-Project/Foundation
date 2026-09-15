@@ -13,39 +13,37 @@
 
 namespace FireHub\Foundation\DataStructure;
 
-use FireHub\Core\Boundary\Type\DataStructure\Collection\Vector as VectorBoundary;
+use FireHub\Core\Boundary\Type\DataStructure\Collection\Deque as DequeBoundary;
 use FireHub\Core\Boundary\Capability\ {
-    Access\BoundaryAccess, Access\IndexAccess,
+    Access\BoundaryAccess,
     Conversion\Arrayable,
     Measurement\Metrics,
-    Mutation\DequeMutation, Mutation\IndexMutation,
-    Cloneable, Forkable
+    Mutation\DequeMutation,
+    Cloneable
 };
 use FireHub\Core\Type\Maybe;
-use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Runtime;
 use Traversable;
 
 /**
- * ### Vector data structure
+ * ### Deque data structure
  *
- * Represents a linear, index-addressable collection of values with deterministic ordering and direct access to
- * individual values by their logical position.
+ * Represents a linear, double-ended collection of values with deterministic ordering and efficient insertion and
+ * removal at both the front and back of the collection.
  *
- * Vector provides the Foundation implementation of the Core vector contract and serves as a general-purpose
- * contiguous-style sequence abstraction within the FireHub data structure ecosystem.
+ * Deque provides the Foundation implementation of the Core deque contract and serves as a general-purpose
+ * double-ended sequence abstraction within the FireHub data structure ecosystem.
  * @since 1.0.0
  *
  * @template TValue
  *
- * @implements \FireHub\Core\Boundary\Type\DataStructure\Collection\Vector<TValue>
+ * @implements \FireHub\Core\Boundary\Type\DataStructure\Collection\Deque<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
- * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  *
- * @phpstan-type StorageType = (Storage<int, TValue>&Cloneable&Forkable&Metrics&BoundaryAccess<TValue>&IndexAccess<TValue>&DequeMutation<TValue>&IndexMutation<TValue>)
+ * @phpstan-type StorageType = (Storage<int, TValue>&Cloneable&Metrics&BoundaryAccess<TValue>&DequeMutation<TValue>)
  */
-class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMutation, IndexMutation {
+class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
 
     /**
      * ### Constructor
@@ -58,20 +56,20 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * @return void
      */
     final public function __construct (
-        protected Storage&Cloneable&Forkable&Metrics&BoundaryAccess&IndexAccess&DequeMutation&IndexMutation $storage
+        protected Storage&Cloneable&Metrics&BoundaryAccess&DequeMutation $storage
     ) {}
 
     /**
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->toArray();
+     * $deque->toArray();
      *
      * // [1, 2, 3]
      * </code>
@@ -91,13 +89,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->copy();
+     * $deque->copy();
      *
      * // [1, 2, 3]
      * </code>
@@ -116,38 +114,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->fork();
-     *
-     * // [1, 2, 3]
-     * </code>
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Storage::fork() To create a fork of the storage.
-     */
-    public function fork ():static {
-
-        return new static($this->storage->fork());
-
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
-     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
-     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
-     *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
-     *
-     * $vector->isEmpty();
+     * $deque->isEmpty();
      *
      * // false
      * </code>
@@ -166,13 +139,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->size();
+     * $deque->size();
      *
      * // 3
      * </code>
@@ -191,13 +164,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->first();
+     * $deque->first();
      *
      * // Maybe(1)
      * </code>
@@ -216,13 +189,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->last();
+     * $deque->last();
      *
      * // Maybe(3)
      * </code>
@@ -241,64 +214,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->has(0);
-     *
-     * // true
-     * </code>
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Storage::has() To check if the storage has a value at the specified
-     * index.
-     */
-    public function has (int $index):bool {
-
-        return $this->storage->has($index);
-
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
-     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
-     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
-     *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
-     *
-     * $vector->get(0);
-     *
-     * // Maybe(1)
-     * </code>
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Storage::get() To get the value at the specified index.
-     */
-    public function get (int $index):Maybe {
-
-        return $this->storage->get($index);
-
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
-     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
-     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
-     *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
-     *
-     * $vector->insertFront('x', 'y', 'z');
+     * $deque->insertFront('x', 'y', 'z');
      *
      * // ['x', 'y', 'z', 1, 2, 3]
      * </code>
@@ -315,31 +237,31 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
     }
 
     /**
-     * ### Prepends values to the vector
+     * ### Prepends values to the deque
      *
-     * Inserts one or more values at the beginning of the vector while preserving their provided order.
+     * Inserts one or more values at the beginning of the deque while preserving their provided order.
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->prepend('x', 'y', 'z');
+     * $deque->prepend('x', 'y', 'z');
      *
      * // ['x', 'y', 'z', 1, 2, 3]
      * </code>
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Vector::insertFront() To insert values at the front of the vector.
+     * @uses \FireHub\Foundation\DataStructure\Deque::insertFront() To insert values at the front of the deque.
      *
      * @param TValue ...$values <p>
-     * Values to prepend to the vector.
+     * Values to prepend to the deque.
      * </p>
      *
-     * @return $this The current vector instance.
+     * @return $this The current deque instance.
      */
     public function prepend (mixed ...$values):static {
 
@@ -353,13 +275,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->insertBack('x', 'y', 'z');
+     * $deque->insertBack('x', 'y', 'z');
      *
      * // [1, 2, 3, 'x', 'y', 'z']
      * </code>
@@ -376,31 +298,31 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
     }
 
     /**
-     * ### Appends values to the vector
+     * ### Appends values to the deque
      *
-     * Inserts one or more values at the end of the vector while preserving their provided order.
+     * Inserts one or more values at the end of the deque while preserving their provided order.
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->append('x', 'y', 'z');
+     * $deque->append('x', 'y', 'z');
      *
      * // [1, 2, 3, 'x', 'y', 'z']
      * </code>
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Vector::insertBack() To insert values at the back of the vector.
+     * @uses \FireHub\Foundation\DataStructure\Deque::insertBack() To insert values at the back of the deque.
      *
      * @param TValue ...$values <p>
-     * Values to append to the vector.
+     * Values to append to the deque.
      * </p>
      *
-     * @return $this The current vector instance.
+     * @return $this The current deque instance.
      */
     public function append (mixed ...$values):static {
 
@@ -414,17 +336,17 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->removeFront();
+     * $deque->removeFront();
      *
      * // Maybe(1))
      *
-     * $vector->toArray();
+     * $deque->toArray();
      *
      * // [2, 3]
      * </code>
@@ -443,29 +365,29 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
     /**
      * ### Removes the first value
      *
-     * Removes and returns the first value from the vector.
+     * Removes and returns the first value from the deque.
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->shift();
+     * $deque->shift();
      *
      * // Maybe(1))
      *
-     * $vector->toArray();
+     * $deque->toArray();
      *
      * // [2, 3]
      * </code>
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Vector::removeFront() To remove the first value from the vector.
+     * @uses \FireHub\Foundation\DataStructure\Deque::removeFront() To remove the first value from the deque.
      *
-     * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, or none if the vector is empty.
+     * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, or none if the deque is empty.
      */
     public function shift ():Maybe {
 
@@ -477,17 +399,17 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->removeBack();
+     * $deque->removeBack();
      *
      * // Maybe(3))
      *
-     * $vector->toArray();
+     * $deque->toArray();
      *
      * // [1, 2]
      * </code>
@@ -506,93 +428,33 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
     /**
      * ### Removes the last value
      *
-     * Removes and returns the last value from the vector.
+     * Removes and returns the last value from the dwque.
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Deque;
      * use FireHub\Foundation\DataStructure\Storage\ListStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     * $deque = new Deque(new ListStorage(new ArrayInit([1, 2, 3])));
      *
-     * $vector->pop();
+     * $deque->pop();
      *
      * // Maybe(3))
      *
-     * $vector->toArray();
+     * $deque->toArray();
      *
      * // [1, 2]
      * </code>
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Vector::removeBack() To remove the last value from the vector.
+     * @uses \FireHub\Foundation\DataStructure\Deque::removeBack() To remove the last value from the deque.
      *
-     * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, or none if the vector is empty.
+     * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, or none if the deque is empty.
      */
     public function pop ():Maybe {
 
         return $this->removeBack();
-
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
-     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
-     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
-     *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
-     *
-     * $vector->set(0, 'x')
-     *
-     * // MutationOutcome::UPDATED
-     *
-     * $vector->toArray();
-     *
-     * // ['x', 2, 3]
-     * </code>
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Core\Boundary\Capability\Mutation\IndexMutation::set() To replace a value in the storage at
-     * the specified index.
-     */
-    public function set (int $index, mixed $value):MutationOutcome {
-
-        return $this->storage->set($index, $value);
-
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <code>
-     * use FireHub\Foundation\DataStructure\Vector;
-     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
-     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
-     *
-     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
-     *
-     * $vector->remove(0);
-     *
-     * // MutationOutcome::REMOVED
-     *
-     * $vector->toArray();
-     *
-     * // [2, 3]
-     * </code>
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Core\Boundary\Capability\Mutation\IndexMutation::remove() To remove a value from the storage
-     * at the specified index.
-     */
-    public function remove (int $index):MutationOutcome {
-
-        return $this->storage->remove($index);
 
     }
 
