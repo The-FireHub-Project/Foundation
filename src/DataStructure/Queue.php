@@ -37,7 +37,7 @@ use Traversable;
  *
  * @template TValue
  *
- * @implements \FireHub\Core\Boundary\Type\DataStructure\Collection\Stack<TValue>
+ * @implements \FireHub\Core\Boundary\Type\DataStructure\Collection\Queue<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\BackInsertion<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\FrontRemoval<TValue>
@@ -322,6 +322,8 @@ class Queue implements QueueBoundary, Arrayable, Cloneable, BackInsertion, Front
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Queue::removeFront() To remove the first value from the queue.
+     *
+     * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, wrapped in a Maybe.
      */
     public function dequeue ():Maybe {
 
