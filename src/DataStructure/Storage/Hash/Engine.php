@@ -33,7 +33,7 @@ use FireHub\Core\Meta\Enum\MutationOutcome;
  * lookup, mutation, removal, or size management.
  * @since 1.0.0
  *
- * @template TKey of int|string
+ * @template TKey
  * @template TValue
  */
 interface Engine extends Cloneable, Forkable {

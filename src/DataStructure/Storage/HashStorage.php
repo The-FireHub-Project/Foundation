@@ -39,7 +39,7 @@ use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
  * defines the public API and semantics exposed to its users.
  * @since 1.0.0
  *
- * @template TKey of array-key
+ * @template TKey
  * @template TValue
  *
  * @implements \FireHub\Foundation\DataStructure\Storage<TKey, TValue>
