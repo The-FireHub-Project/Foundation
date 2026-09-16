@@ -41,7 +41,13 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
  *
- * @phpstan-type StorageType = (Storage<int, TValue>&Cloneable&Metrics&BoundaryAccess<TValue>&DequeMutation<TValue>)
+ * @phpstan-type StorageType = (
+ *     Storage<int, TValue>
+ *     &Cloneable
+ *     &Metrics
+ *     &BoundaryAccess<TValue>
+ *     &DequeMutation<TValue>
+ * )
  */
 class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
 

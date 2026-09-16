@@ -42,7 +42,14 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\BackInsertion<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\FrontRemoval<TValue>
  *
- * @phpstan-type StorageType = (Storage<int, TValue>&Cloneable&Metrics&FrontAccess<TValue>&BackInsertion<TValue>&FrontRemoval<TValue>)
+ * @phpstan-type StorageType = (
+ *     Storage<int, TValue>
+ *     &Cloneable
+ *     &Metrics
+ *     &FrontAccess<TValue>
+ *     &BackInsertion<TValue>
+ *     &FrontRemoval<TValue>
+ * )
  */
 class Queue implements QueueBoundary, Arrayable, Cloneable, BackInsertion, FrontRemoval {
 

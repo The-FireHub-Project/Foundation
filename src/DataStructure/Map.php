@@ -42,7 +42,14 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, array{key: TKey, value: TValue}>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
  *
- * @phpstan-type StorageType = (Storage<TKey, TValue>&Cloneable&Forkable&Metrics&KeyAccess<TKey, TValue>&KeyMutation<TKey, TValue>)
+ * @phpstan-type StorageType = (
+ *     Storage<TKey, TValue>
+ *     &Cloneable
+ *     &Forkable
+ *     &Metrics
+ *     &KeyAccess<TKey, TValue>
+ *     &KeyMutation<TKey, TValue>
+ * )
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, KeyMutation {
 

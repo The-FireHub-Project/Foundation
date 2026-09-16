@@ -41,7 +41,13 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\BackMutation<TValue>
  *
- * @phpstan-type StorageType = (Storage<int, TValue>&Cloneable&Metrics&BackAccess<TValue>&BackMutation<TValue>)
+ * @phpstan-type StorageType = (
+ *     Storage<int, TValue>
+ *     &Cloneable
+ *     &Metrics
+ *     &BackAccess<TValue>
+ *     &BackMutation<TValue>
+ * )
  */
 class Stack implements StackBoundary, Arrayable, Cloneable, BackMutation {
 

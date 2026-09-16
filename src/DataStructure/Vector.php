@@ -43,7 +43,16 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  *
- * @phpstan-type StorageType = (Storage<int, TValue>&Cloneable&Forkable&Metrics&BoundaryAccess<TValue>&IndexAccess<TValue>&DequeMutation<TValue>&IndexMutation<TValue>)
+ * @phpstan-type StorageType = (
+ *     Storage<int, TValue>
+ *     &Cloneable
+ *     &Forkable
+ *     &Metrics
+ *     &BoundaryAccess<TValue>
+ *     &IndexAccess<TValue>
+ *     &DequeMutation<TValue>
+ *     &IndexMutation<TValue>
+ * )
  */
 class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMutation, IndexMutation {
 
