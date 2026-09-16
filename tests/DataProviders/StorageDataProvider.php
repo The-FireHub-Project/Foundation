@@ -13,7 +13,10 @@
 
 namespace FireHub\Tests\Foundation\DataProviders;
 
-use FireHub\Foundation\DataStructure\Storage\ListStorage;
+use FireHub\Foundation\DataStructure\Storage\ {
+    HashStorage, ListStorage
+};
+use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
 use FireHub\Foundation\DataStructure\Storage\Initialization\ {
     ArrayInit, EmptyInit
 };
@@ -46,6 +49,32 @@ final class StorageDataProvider {
 
         return [
             [new ListStorage(new ArrayInit([1, 2, 3]))]
+        ];
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @return array<\FireHub\Foundation\DataStructure\Storage\HashStorage<array-key, mixed>>
+     */
+    public static function emptyHash ():array {
+
+        return [
+            [new HashStorage(new ArrHash(new ArrayInit([])))]
+        ];
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @return array<\FireHub\Foundation\DataStructure\Storage\HashStorage<array-key, mixed>>
+     */
+    public static function hash ():array {
+
+        return [
+            [new HashStorage(new ArrHash(new ArrayInit(['x' => 1, 'y' => 2, 'z' => 3])))]
         ];
 
     }
