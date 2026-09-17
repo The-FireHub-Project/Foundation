@@ -15,7 +15,6 @@ namespace FireHub\Tests\Foundation\Unit\DataStructure;
 
 use FireHub\Testing\FireHubTestCase;
 use FireHub\Core\Meta\Enum\MutationOutcome;
-use FireHub\Core\Type\Exception\NoValueException;
 use FireHub\Foundation\DataStructure\Set;
 use FireHub\Foundation\DataStructure\Storage\HashSetStorage;
 use FireHub\Tests\Foundation\DataProviders\StorageDataProvider;
@@ -78,10 +77,10 @@ final class SetTest extends FireHubTestCase {
 
         $set = new Set($storage);
 
-        $copy = $set->fork();
-        $copy->add('Jana');
+        $fork = $set->fork();
+        $fork->add('Jana');
 
-        self::assertNotSame($storage, $copy);
+        self::assertNotSame($storage, $fork);
 
     }
 
@@ -138,13 +137,13 @@ final class SetTest extends FireHubTestCase {
     #[DataProviderExternal(StorageDataProvider::class, 'hashSet')]
     public function testSet (HashSetStorage $storage):void {
 
-        $vector = new Set($storage);
+        $set = new Set($storage);
 
-        self::assertSame(MutationOutcome::ALREADY_EXISTS, $vector->add('John'));
+        self::assertSame(MutationOutcome::ALREADY_EXISTS, $set->add('John'));
 
-        self::assertSame(MutationOutcome::CREATED, $vector->add('Jana'));
+        self::assertSame(MutationOutcome::CREATED, $set->add('Jana'));
 
-        self::assertSame(['John', 'Jane', 'Richard', 'Jana'], $vector->toArray());
+        self::assertSame(['John', 'Jane', 'Richard', 'Jana'], $set->toArray());
 
     }
 
@@ -158,13 +157,13 @@ final class SetTest extends FireHubTestCase {
     #[DataProviderExternal(StorageDataProvider::class, 'hashSet')]
     public function testRemove (HashSetStorage $storage):void {
 
-        $vector = new Set($storage);
+        $set = new Set($storage);
 
-        self::assertSame(MutationOutcome::REMOVED, $vector->remove('John'));
+        self::assertSame(MutationOutcome::REMOVED, $set->remove('John'));
 
-        self::assertSame(MutationOutcome::NOT_FOUND, $vector->remove('Jana'));
+        self::assertSame(MutationOutcome::NOT_FOUND, $set->remove('Jana'));
 
-        self::assertSame(['Jane', 'Richard'], $vector->toArray());
+        self::assertSame(['Jane', 'Richard'], $set->toArray());
 
     }
 

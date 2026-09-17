@@ -14,7 +14,7 @@
 namespace FireHub\Tests\Foundation\DataProviders;
 
 use FireHub\Foundation\DataStructure\Storage\ {
-    HashStorage, HashSetStorage, ListStorage
+    HashStorage, HashBagStorage, HashSetStorage, ListStorage
 };
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
 use FireHub\Foundation\DataStructure\Storage\Initialization\ {
@@ -83,7 +83,7 @@ final class StorageDataProvider {
     /**
      * @since 1.0.0
      *
-     * @return array<\FireHub\Foundation\DataStructure\Storage\HashSetStorage<array-key, mixed>>
+     * @return array<\FireHub\Foundation\DataStructure\Storage\HashSetStorage<mixed>>
      */
     public static function hashSet ():array {
 
@@ -95,6 +95,30 @@ final class StorageDataProvider {
 
         return [
             [$set]
+        ];
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidOccurrencesException
+     *
+     * @return array<\FireHub\Foundation\DataStructure\Storage\HashBagStorage<mixed>>
+     */
+    public static function hashBag ():array {
+
+        $bag = new HashBagStorage(new StringHashStrategy());
+
+        $bag->add('John');
+        $bag->add('John');
+        $bag->add('John');
+        $bag->add('Jane');
+        $bag->add('Jane');
+        $bag->add('Richard');
+
+        return [
+            [$bag]
         ];
 
     }
