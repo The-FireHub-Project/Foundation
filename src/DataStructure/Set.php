@@ -73,7 +73,7 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, ValueMutation 
      * use FireHub\Foundation\DataStructure\Storage\HashSetStorage;
      * use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\StringHashStrategy;
      *
-     * $set = new Set(new HashSetStorage(new StringHashStrategy))
+     * $set = new Set(new HashSetStorage(new StringHashStrategy));
      *
      * $set->add('John');
      * $set->add('Jane');
@@ -103,7 +103,7 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, ValueMutation 
      * use FireHub\Foundation\DataStructure\Storage\HashSetStorage;
      * use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\StringHashStrategy;
      *
-     * $set = new Set(new HashSetStorage(new StringHashStrategy))
+     * $set = new Set(new HashSetStorage(new StringHashStrategy));
      *
      * $set->add('John');
      * $set->add('Jane');
@@ -132,7 +132,7 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, ValueMutation 
      * use FireHub\Foundation\DataStructure\Storage\HashSetStorage;
      * use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\StringHashStrategy;
      *
-     * $set = new Set(new HashSetStorage(new StringHashStrategy))
+     * $set = new Set(new HashSetStorage(new StringHashStrategy));
      *
      * $set->add('John');
      * $set->add('Jane');
@@ -174,7 +174,7 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, ValueMutation 
      * use FireHub\Foundation\DataStructure\Storage\HashSetStorage;
      * use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\StringHashStrategy;
      *
-     * $set = new Set(new HashSetStorage(new StringHashStrategy))
+     * $set = new Set(new HashSetStorage(new StringHashStrategy));
      *
      * $set->add('John');
      * $set->add('Jane');
@@ -203,7 +203,7 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, ValueMutation 
      * use FireHub\Foundation\DataStructure\Storage\HashSetStorage;
      * use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\StringHashStrategy;
      *
-     * $set = new Set(new HashSetStorage(new StringHashStrategy))
+     * $set = new Set(new HashSetStorage(new StringHashStrategy));
      *
      * $set->add('John');
      * $set->add('Jane');
@@ -232,7 +232,7 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, ValueMutation 
      * use FireHub\Foundation\DataStructure\Storage\HashSetStorage;
      * use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\StringHashStrategy;
      *
-     * $set = new Set(new HashSetStorage(new StringHashStrategy))
+     * $set = new Set(new HashSetStorage(new StringHashStrategy));
      *
      * $set->add('John');
      * $set->add('Jane');
@@ -265,7 +265,7 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, ValueMutation 
      * use FireHub\Foundation\DataStructure\Storage\HashSetStorage;
      * use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\StringHashStrategy;
      *
-     * $set = new Set(new HashSetStorage(new StringHashStrategy))
+     * $set = new Set(new HashSetStorage(new StringHashStrategy));
      *
      * $set->add('John');
      * $set->add('Jane');
