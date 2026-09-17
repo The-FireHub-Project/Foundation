@@ -52,6 +52,8 @@ use FireHub\Runtime;
  * @implements \FireHub\Core\Boundary\Capability\Access\IndexAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
+ *
+ * @phpstan-type State list<TValue>
  */
 final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
     IndexMutation {
@@ -60,7 +62,7 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
      * ### Copy-on-write state
      * @since 1.0.0
      *
-     * @use \FireHub\Foundation\State\HasCopyOnWriteState<list<TValue>>
+     * @use \FireHub\Foundation\State\HasCopyOnWriteState<State>
      */
     use HasCopyOnWriteState;
 
@@ -99,7 +101,7 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
      */
     protected function copyData (mixed $data):array {
 
-        /** @var list<TValue> */
+        /** @var State */
         return Runtime\Copy::deep($data);
 
     }

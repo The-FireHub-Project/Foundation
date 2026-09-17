@@ -51,6 +51,8 @@ use SplFixedArray;
  * @implements \FireHub\Core\Boundary\Capability\Access\BoundaryAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\IndexAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
+ *
+ * @phpstan-type State SplFixedArray<null|TValue>
  */
 final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capacity, BoundaryAccess, IndexAccess,
     IndexMutation {
@@ -59,7 +61,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      * ### Copy-on-write state
      * @since 1.0.0
      *
-     * @use \FireHub\Foundation\State\HasCopyOnWriteState<SplFixedArray<null|TValue>>
+     * @use \FireHub\Foundation\State\HasCopyOnWriteState<State>
      */
     use HasCopyOnWriteState;
 
@@ -84,7 +86,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      */
     public function __construct (int $size, Initializer $initializer) {
 
-        /** @var SplFixedArray<null|TValue> $data */
+        /** @var State $data */
         $data = new SplFixedArray($size);
 
         $this->state = new SharedState($data);
@@ -121,7 +123,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
         foreach ($data as $index => $value)
             $copy[$index] = Runtime\Copy::deep($value);
 
-        /** @var SplFixedArray<null|TValue> */
+        /** @var State */
         return $copy;
 
     }

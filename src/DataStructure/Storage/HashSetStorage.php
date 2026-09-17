@@ -50,6 +50,12 @@ use FireHub\Runtime;
  * @implements \FireHub\Foundation\DataStructure\Storage<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\ValueAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\ValueMutation<TValue>
+ *
+ * @phpstan-type State array{
+ *     buckets: array<string, list<TValue>>,
+ *     size: int
+ * }
+
  */
 final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, ValueAccess, ValueMutation {
 
@@ -57,10 +63,7 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
      * ### Copy-on-write state
      * @since 1.0.0
      *
-     * @use \FireHub\Foundation\State\HasCopyOnWriteState<array{
-     *     buckets: array<string, list<TValue>>,
-     *     size: int
-     * }>
+     * @use \FireHub\Foundation\State\HasCopyOnWriteState<State>
      */
     use HasCopyOnWriteState;
 
@@ -78,12 +81,7 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
         private readonly Strategy $strategy
     ) {
 
-        /**
-         * @var array{
-         *     buckets: array<string, list<TValue>>,
-         *     size: int
-         * } $state
-         */
+        /** @var State $state */
         $state = [
             'buckets' => [],
             'size' => 0
@@ -104,7 +102,7 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
      */
     protected function copyData (mixed $data):array {
 
-        /** @var array{buckets: array<string, list<TValue>>, size: non-negative-int} */
+        /** @var State */
         return Runtime\Copy::deep($data);
 
     }

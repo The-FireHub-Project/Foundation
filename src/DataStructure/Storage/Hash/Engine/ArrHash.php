@@ -40,6 +40,8 @@ use FireHub\Runtime;
  * @template TValue
  *
  * @implements \FireHub\Foundation\DataStructure\Storage\Hash\Engine<TKey, TValue>
+ *
+ * @phpstan-type State array<TKey, TValue>
  */
 final class ArrHash implements Engine {
 
@@ -47,7 +49,7 @@ final class ArrHash implements Engine {
      * ### Copy-on-write state
      * @since 1.0.0
      *
-     * @use \FireHub\Foundation\State\HasCopyOnWriteState<array<TKey, TValue>>
+     * @use \FireHub\Foundation\State\HasCopyOnWriteState<State>
      */
     use HasCopyOnWriteState;
 
@@ -83,7 +85,7 @@ final class ArrHash implements Engine {
      */
     public function copyData (mixed $data):array {
 
-        /** @var array<TKey, TValue> */
+        /** @var State */
         return Runtime\Copy::deep($data);
 
     }
