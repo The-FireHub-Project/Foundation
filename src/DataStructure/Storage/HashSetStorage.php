@@ -183,7 +183,6 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashSetStorage::add() To add the specified value to the storage.
      * @uses \FireHub\Foundation\DataStructure\Storage\HashSetStorage::detach() To detach the storage.
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To calculate the hash value of the
      * specified value.
@@ -215,8 +214,6 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashSetStorage::remove() To remove the specified value from the
-     * storage.
      * @uses \FireHub\Foundation\DataStructure\Storage\HashSetStorage::detach() To detach the storage.
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To calculate the hash value of the
      * specified value.
