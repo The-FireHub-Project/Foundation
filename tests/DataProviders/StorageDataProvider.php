@@ -14,12 +14,13 @@
 namespace FireHub\Tests\Foundation\DataProviders;
 
 use FireHub\Foundation\DataStructure\Storage\ {
-    HashStorage, ListStorage
+    HashStorage, HashSetStorage, ListStorage
 };
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
 use FireHub\Foundation\DataStructure\Storage\Initialization\ {
     ArrayInit, EmptyInit
 };
+use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\StringHashStrategy;
 
 /**
  * ### Storage data provider
@@ -75,6 +76,25 @@ final class StorageDataProvider {
 
         return [
             [new HashStorage(new ArrHash(new ArrayInit(['x' => 1, 'y' => 2, 'z' => 3])))]
+        ];
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @return array<\FireHub\Foundation\DataStructure\Storage\HashSetStorage<array-key, mixed>>
+     */
+    public static function hashSet ():array {
+
+        $set = new HashSetStorage(new StringHashStrategy());
+
+        $set->add('John');
+        $set->add('Jane');
+        $set->add('Richard');
+
+        return [
+            [$set]
         ];
 
     }
