@@ -11,7 +11,7 @@
  * @package Foundation\Tests
  */
 
-namespace FireHub\Tests\Foundation\Unit\Policy;
+namespace FireHub\Tests\Foundation\Unit\Conversion\Policy;
 
 use FireHub\Testing\FireHubTestCase;
 use FireHub\Foundation\Conversion\Policy\Strict;

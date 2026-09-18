@@ -11,7 +11,7 @@
  * @package Foundation\Tests
  */
 
-namespace FireHub\Tests\Foundation\Unit\Type;
+namespace FireHub\Tests\Foundation\Unit\Conversion\Type;
 
 use FireHub\Testing\FireHubTestCase;
 use FireHub\Foundation\Conversion\Type\ArrayConverter;

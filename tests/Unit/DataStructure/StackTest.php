@@ -51,6 +51,8 @@ final class StackTest extends FireHubTestCase {
      *
      * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
      *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
+     *
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
@@ -128,6 +130,8 @@ final class StackTest extends FireHubTestCase {
      *
      * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
      *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
+     *
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
@@ -145,6 +149,8 @@ final class StackTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
      *
      * @return void
      */

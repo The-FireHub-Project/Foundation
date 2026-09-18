@@ -14,7 +14,6 @@
 namespace FireHub\Tests\Foundation\Unit\DataStructure;
 
 use FireHub\Testing\FireHubTestCase;
-use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Core\Type\Exception\NoValueException;
 use FireHub\Foundation\DataStructure\Queue;
 use FireHub\Foundation\DataStructure\Storage\ListStorage;
@@ -51,6 +50,8 @@ final class QueueTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
      *
      * @return void
      */
@@ -129,6 +130,8 @@ final class QueueTest extends FireHubTestCase {
      *
      * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
      *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
+     *
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
@@ -146,6 +149,8 @@ final class QueueTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
      *
      * @return void
      */

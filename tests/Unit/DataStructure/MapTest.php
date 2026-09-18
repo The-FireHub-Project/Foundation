@@ -56,6 +56,8 @@ final class MapTest extends FireHubTestCase {
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashStorage $storage
      *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
+     *
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'hash')]
@@ -74,6 +76,8 @@ final class MapTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashStorage $storage
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
      *
      * @return void
      */
@@ -158,6 +162,8 @@ final class MapTest extends FireHubTestCase {
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashStorage $storage
      *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
+     *
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'hash')]
@@ -188,6 +194,8 @@ final class MapTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashStorage $storage
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
      *
      * @return void
      */

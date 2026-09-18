@@ -54,6 +54,8 @@ final class BagTest extends FireHubTestCase {
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashBagStorage $storage
      *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
+     *
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'hashBag')]
@@ -72,6 +74,8 @@ final class BagTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashBagStorage $storage
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
      *
      * @return void
      */
@@ -164,6 +168,8 @@ final class BagTest extends FireHubTestCase {
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashBagStorage $storage
      *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
+     *
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'hashBag')]
@@ -186,6 +192,8 @@ final class BagTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashBagStorage $storage
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
      *
      * @return void
      */
@@ -211,6 +219,8 @@ final class BagTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashBagStorage $storage
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
      *
      * @return void
      */

@@ -51,6 +51,8 @@ final class SetTest extends FireHubTestCase {
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashSetStorage $storage
      *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
+     *
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'hashSet')]
@@ -69,6 +71,8 @@ final class SetTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashSetStorage $storage
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
      *
      * @return void
      */
@@ -132,6 +136,8 @@ final class SetTest extends FireHubTestCase {
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashSetStorage $storage
      *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
+     *
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'hashSet')]
@@ -151,6 +157,8 @@ final class SetTest extends FireHubTestCase {
      * @since 1.0.0
      *
      * @param \FireHub\Foundation\DataStructure\Storage\HashSetStorage $storage
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
      *
      * @return void
      */
