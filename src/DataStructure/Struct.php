@@ -13,9 +13,9 @@
 
 namespace FireHub\Foundation\DataStructure;
 
-use FireHub\Core\Boundary\Type\DataStructure\Record\Tuple as TupleBoundary;
+use FireHub\Core\Boundary\Type\DataStructure\Record\Struct as StructBoundary;
 use FireHub\Core\Boundary\Capability\ {
-    Access\IndexAccess,
+    Access\KeyAccess,
     Conversion\Arrayable,
     Measurement\Metrics,
     Cloneable
@@ -25,35 +25,41 @@ use FireHub\Runtime;
 use Traversable;
 
 /**
- * ### Tuple data structure
+ * ### Struct data structure
  *
- * Represents a fixed-size positional Record whose elements are identified by zero-based integer indexes.
+ * Represents a fixed-size keyed Record whose elements are identified by integer or string keys.
  *
- * Elements are arranged in a defined linear order, where each position represents a distinct component of a single
- * composite value. The number and positions of elements remain fixed for the lifetime of the Tuple.
+ * Each key identifies a distinct component of a single composite value and forms part of the Struct's defined
+ * structure. The set of keys remains fixed for the lifetime of the Struct.
  *
- * The Tuple delegates element storage and access to an underlying Storage implementation that provides positional
- * access, boundary access, and measurement capabilities.
+ * Unlike a Map, which represents a dynamically changing collection of key-value associations, a Struct represents
+ * a single structured value with a fixed set of keyed elements. Insertion and removal operations are therefore not
+ * part of the Struct.
  *
- * Unlike dynamically sized Collections, a Tuple does not expose insertion or removal operations. Its structure is
- * established by the underlying Storage and remains unchanged throughout the lifetime of the Tuple.
+ * The Struct provides keyed access to its elements while remaining immutable from the perspective of its public
+ * interface. Existing elements cannot be replaced, and the defined structure cannot be extended or reduced after
+ * construction.
  *
- * Tuple elements may contain values of different types, represented collectively by the TValue template type.
+ * The iteration order of the underlying Storage does not form part of the Struct's semantic structure. Elements are
+ * identified by their keys rather than by their position within the iteration sequence.
+ *
+ * Struct elements may contain values of different types, represented collectively by the TValue template type.
  * @since 1.0.0
  *
+ * @template TKey of array-key
  * @template TValue
  *
- * @implements \FireHub\Core\Boundary\Type\DataStructure\Record\Tuple<TValue>
- * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Type\DataStructure\Record\Struct<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<TKey, TValue>
  *
  * @phpstan-type StorageType = (
- *     Storage<int, TValue>
+ *     Storage<TKey, TValue>
  *     &Cloneable
  *     &Metrics
- *     &IndexAccess<TValue>
+ *     &KeyAccess<TKey, TValue>
  * )
  */
-class Tuple implements TupleBoundary, Arrayable, Cloneable {
+class Struct implements StructBoundary, Arrayable, Cloneable {
 
     /**
      * ### Constructor
@@ -66,22 +72,22 @@ class Tuple implements TupleBoundary, Arrayable, Cloneable {
      * @return void
      */
     final public function __construct (
-        protected Storage&Cloneable&Metrics&IndexAccess $storage
+        protected Storage&Cloneable&Metrics&KeyAccess $storage
     ) {}
 
     /**
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Tuple;
+     * use FireHub\Foundation\DataStructure\Struct;
      * use FireHub\Foundation\DataStructure\Storage\FixedStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $tuple = new Tuple(new FixedStorage(3, new ArrayInit(['one', 'two', 'three'])));
+     * $struct = new Struct(new HashStorage(new ArrHash(new ArrayInit(['x' => 1, 'y' => 2, 'z' => 3]))));
      *
-     * $tuple->toArray();
+     * $struct->toArray();
      *
-     * // ['one', 'two', 'three']
+     * // ['x' => 1, 'y' => 2, 'z' => 3]
      * </code>
      *
      * @since 1.0.0
@@ -99,15 +105,15 @@ class Tuple implements TupleBoundary, Arrayable, Cloneable {
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Tuple;
+     * use FireHub\Foundation\DataStructure\Struct;
      * use FireHub\Foundation\DataStructure\Storage\FixedStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $tuple = new Tuple(new FixedStorage(3, new ArrayInit(['one', 'two', 'three'])));
+     * $struct = new Struct(new HashStorage(new ArrHash(new ArrayInit(['x' => 1, 'y' => 2, 'z' => 3]))));
      *
-     * $vector->copy();
+     * $struct->copy();
      *
-     * // ['one', 'two', 'three']
+     * // ['x' => 1, 'y' => 2, 'z' => 3]
      * </code>
      *
      * @since 1.0.0
@@ -126,13 +132,13 @@ class Tuple implements TupleBoundary, Arrayable, Cloneable {
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Tuple;
+     * use FireHub\Foundation\DataStructure\Struct;
      * use FireHub\Foundation\DataStructure\Storage\FixedStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $tuple = new Tuple(new FixedStorage(3, new ArrayInit(['one', 'two', 'three'])));
+     * $struct = new Struct(new HashStorage(new ArrHash(new ArrayInit(['x' => 1, 'y' => 2, 'z' => 3]))));
      *
-     * $tuple->isEmpty();
+     * $struct->isEmpty();
      *
      * // false
      * </code>
@@ -151,13 +157,13 @@ class Tuple implements TupleBoundary, Arrayable, Cloneable {
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Tuple;
+     * use FireHub\Foundation\DataStructure\Struct;
      * use FireHub\Foundation\DataStructure\Storage\FixedStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $tuple = new Tuple(new FixedStorage(3, new ArrayInit(['one', 'two', 'three'])));
+     * $struct = new Struct(new HashStorage(new ArrHash(new ArrayInit(['x' => 1, 'y' => 2, 'z' => 3]))));
      *
-     * $tuple->size();
+     * $struct->size();
      *
      * // 3
      * </code>
@@ -176,13 +182,13 @@ class Tuple implements TupleBoundary, Arrayable, Cloneable {
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Tuple;
+     * use FireHub\Foundation\DataStructure\Struct;
      * use FireHub\Foundation\DataStructure\Storage\FixedStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $tuple = new Tuple(new FixedStorage(3, new ArrayInit(['one', 'two', 'three'])));
+     * $struct = new Struct(new HashStorage(new ArrHash(new ArrayInit(['x' => 1, 'y' => 2, 'z' => 3]))));
      *
-     * $tuple->has(0);
+     * $struct->has('x');
      *
      * // true
      * </code>
@@ -192,9 +198,9 @@ class Tuple implements TupleBoundary, Arrayable, Cloneable {
      * @uses \FireHub\Foundation\DataStructure\Storage::has() To check if the storage has a value at the specified
      * index.
      */
-    public function has (int $index):bool {
+    public function has (mixed $key):bool {
 
-        return $this->storage->has($index);
+        return $this->storage->has($key);
 
     }
 
@@ -202,24 +208,24 @@ class Tuple implements TupleBoundary, Arrayable, Cloneable {
      * {@inheritDoc}
      *
      * <code>
-     * use FireHub\Foundation\DataStructure\Tuple;
+     * use FireHub\Foundation\DataStructure\Struct;
      * use FireHub\Foundation\DataStructure\Storage\FixedStorage;
      * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
      *
-     * $tuple = new Tuple(new FixedStorage(3, new ArrayInit(['one', 'two', 'three'])));
+     * $struct = new Struct(new HashStorage(new ArrHash(new ArrayInit(['x' => 1, 'y' => 2, 'z' => 3]))));
      *
-     * $tuple->get(0);
+     * $struct->get('x');
      *
-     * // Maybe('one')
+     * // Maybe(1)
      * </code>
      *
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage::get() To get the value at the specified index.
      */
-    public function get (int $index):Maybe {
+    public function get (mixed $key):Maybe {
 
-        return $this->storage->get($index);
+        return $this->storage->get($key);
 
     }
 
