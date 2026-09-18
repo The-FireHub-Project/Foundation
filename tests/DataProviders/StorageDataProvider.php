@@ -14,7 +14,7 @@
 namespace FireHub\Tests\Foundation\DataProviders;
 
 use FireHub\Foundation\DataStructure\Storage\ {
-    HashStorage, HashBagStorage, HashSetStorage, ListStorage
+    FixedStorage, HashStorage, HashBagStorage, HashSetStorage, ListStorage
 };
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
 use FireHub\Foundation\DataStructure\Storage\Initialization\ {
@@ -50,6 +50,21 @@ final class StorageDataProvider {
 
         return [
             [new ListStorage(new ArrayInit([1, 2, 3]))]
+        ];
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @throws  \FireHub\Foundation\DataStructure\Exception\OverflowException
+     *
+     * @return array<\FireHub\Foundation\DataStructure\Storage\ListStorage<mixed>>
+     */
+    public static function fixed ():array {
+
+        return [
+            [new FixedStorage(3, new ArrayInit(['one', 'two', 'three']))]
         ];
 
     }

@@ -19,9 +19,10 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\BackInsertion, Mutation\FrontRemoval,
-    Cloneable
+    Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
 
@@ -51,7 +52,13 @@ use Traversable;
  *     &FrontRemoval<TValue>
  * )
  */
-class Queue implements QueueBoundary, Arrayable, Cloneable, BackInsertion, FrontRemoval {
+class Queue implements QueueBoundary, Arrayable, Cloneable, Freezable, Thawable, BackInsertion, FrontRemoval {
+
+    /**
+     * ### Freeze state
+     * @since 1.0.0
+     */
+    use HasFreezeState;
 
     /**
      * ### Constructor
@@ -115,6 +122,23 @@ class Queue implements QueueBoundary, Arrayable, Cloneable, BackInsertion, Front
     public function copy ():static {
 
         return new static($this->storage->copy());
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Queue::copy() To create a copy of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Queue::thawState() To freeze the state of the data structure.
+     */
+    public function thaw ():static {
+
+        $instance = $this->copy();
+        $instance->thawState();
+
+        return $instance;
 
     }
 
@@ -241,8 +265,13 @@ class Queue implements QueueBoundary, Arrayable, Cloneable, BackInsertion, Front
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\FrontMutation::insertBack() To insert values at the back
      * of the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function insertBack (mixed ...$values):void {
+
+        $this->guardMutable();
 
         $this->storage->insertBack(...$values);
 
@@ -268,6 +297,8 @@ class Queue implements QueueBoundary, Arrayable, Cloneable, BackInsertion, Front
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Queue::insertBack() To insert values at the back of the deque.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function enqueue (mixed ...$values):void {
 
@@ -298,8 +329,13 @@ class Queue implements QueueBoundary, Arrayable, Cloneable, BackInsertion, Front
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\FrontMutation::removeFront() To remove the first value from
      * the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function removeFront ():Maybe {
+
+        $this->guardMutable();
 
         return $this->storage->removeFront();
 
@@ -329,6 +365,8 @@ class Queue implements QueueBoundary, Arrayable, Cloneable, BackInsertion, Front
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Queue::removeFront() To remove the first value from the queue.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      *
      * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, wrapped in a Maybe.
      */

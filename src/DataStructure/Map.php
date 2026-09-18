@@ -19,10 +19,11 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\KeyMutation,
-    Cloneable, Forkable
+    Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Foundation\State\HasFreezeState;
 use Traversable;
 
 /**
@@ -51,7 +52,13 @@ use Traversable;
  *     &KeyMutation<TKey, TValue>
  * )
  */
-class Map implements MapBoundary, Arrayable, Cloneable, Forkable, KeyMutation {
+class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation {
+
+    /**
+     * ### Freeze state
+     * @since 1.0.0
+     */
+    use HasFreezeState;
 
     /**
      * ### Constructor
@@ -150,6 +157,23 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, KeyMutation {
     public function fork ():static {
 
         return new static($this->storage->fork());
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Map::fork() To create a fork of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Map::thawState() To freeze the state of the data structure.
+     */
+    public function thaw ():static {
+
+        $instance = $this->fork();
+        $instance->thawState();
+
+        return $instance;
 
     }
 
@@ -279,8 +303,13 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, KeyMutation {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage::set() To set the value associated with the specified key.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function set (mixed $key, mixed $value):MutationOutcome {
+
+        $this->guardMutable();
 
         return $this->storage->set($key, $value);
 
@@ -311,8 +340,13 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, KeyMutation {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage::remove() To remove the specified key from the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function remove (mixed $key):MutationOutcome {
+
+        $this->guardMutable();
 
         return $this->storage->remove($key);
 

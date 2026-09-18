@@ -19,9 +19,10 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\ValueMutation,
-    Cloneable, Forkable
+    Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
 
@@ -49,7 +50,13 @@ use Traversable;
  *     &ValueMutation<TValue>
  * )
  */
-class Set implements SetBoundary, Arrayable, Cloneable, Forkable, ValueMutation {
+class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, ValueMutation {
+
+    /**
+     * ### Freeze state
+     * @since 1.0.0
+     */
+    use HasFreezeState;
 
     /**
      * ### Constructor
@@ -154,6 +161,23 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, ValueMutation 
     }
 
     /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Set::fork() To create a fork of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Set::thawState() To freeze the state of the data structure.
+     */
+    public function thaw ():static {
+
+        $instance = $this->fork();
+        $instance->thawState();
+
+        return $instance;
+
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @since 1.0.0
@@ -250,8 +274,13 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, ValueMutation 
      * @since 1.0.0
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\ValueMutation::add() To add a value to the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function add (mixed $value):MutationOutcome {
+
+        $this->guardMutable();
 
         return $this->storage->add($value);
 
@@ -283,8 +312,13 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, ValueMutation 
      * @since 1.0.0
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\ValueMutation::remove() To remove a value from the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function remove (mixed $value):MutationOutcome {
+
+        $this->guardMutable();
 
         return $this->storage->remove($value);
 

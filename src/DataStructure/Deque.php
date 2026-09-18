@@ -19,9 +19,10 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\DequeMutation,
-    Cloneable
+    Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
 
@@ -49,7 +50,13 @@ use Traversable;
  *     &DequeMutation<TValue>
  * )
  */
-class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
+class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable, DequeMutation {
+
+    /**
+     * ### Freeze state
+     * @since 1.0.0
+     */
+    use HasFreezeState;
 
     /**
      * ### Constructor
@@ -113,6 +120,23 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
     public function copy ():static {
 
         return new static($this->storage->copy());
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Deque::copy() To create a copy of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Deque::thawState() To freeze the state of the data structure.
+     */
+    public function thaw ():static {
+
+        $instance = $this->copy();
+        $instance->thawState();
+
+        return $instance;
 
     }
 
@@ -235,8 +259,13 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\FrontMutation::insertFront() To insert values at the front
      * of the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function insertFront (mixed ...$values):void {
+
+        $this->guardMutable();
 
         $this->storage->insertFront(...$values);
 
@@ -267,6 +296,8 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
      * Values to prepend to the deque.
      * </p>
      *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
+     *
      * @return $this The current deque instance.
      */
     public function prepend (mixed ...$values):static {
@@ -296,8 +327,13 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\FrontMutation::insertBack() To insert values at the back
      * of the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function insertBack (mixed ...$values):void {
+
+        $this->guardMutable();
 
         $this->storage->insertBack(...$values);
 
@@ -327,6 +363,8 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
      * @param TValue ...$values <p>
      * Values to append to the deque.
      * </p>
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      *
      * @return $this The current deque instance.
      */
@@ -361,8 +399,13 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\FrontMutation::removeFront() To remove the first value from
      * the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function removeFront ():Maybe {
+
+        $this->guardMutable();
 
         return $this->storage->removeFront();
 
@@ -392,6 +435,8 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Deque::removeFront() To remove the first value from the deque.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      *
      * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, or none if the deque is empty.
      */
@@ -424,8 +469,13 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\BackMutation::removeBack() To remove the last value from
      * the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function removeBack ():Maybe {
+
+        $this->guardMutable();
 
         return $this->storage->removeBack();
 
@@ -455,6 +505,8 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, DequeMutation {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Deque::removeBack() To remove the last value from the deque.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      *
      * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, or none if the deque is empty.
      */

@@ -19,9 +19,10 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\DistinctMetrics,
     Mutation\MultiplicityMutation,
-    Cloneable, Forkable
+    Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
 
@@ -52,7 +53,14 @@ use Traversable;
  *     &MultiplicityMutation<TValue>
  * )
  */
-class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, DistinctMetrics, MultiplicityMutation {
+class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DistinctMetrics,
+    MultiplicityMutation {
+
+    /**
+     * ### Freeze state
+     * @since 1.0.0
+     */
+    use HasFreezeState;
 
     /**
      * ### Constructor
@@ -162,6 +170,23 @@ class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, DistinctMetric
     public function fork ():static {
 
         return new static($this->storage->fork());
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Bag::fork() To create a fork of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Bag::thawState() To freeze the state of the data structure.
+     */
+    public function thaw ():static {
+
+        $instance = $this->fork();
+        $instance->thawState();
+
+        return $instance;
 
     }
 
@@ -333,8 +358,13 @@ class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, DistinctMetric
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage::add() To add the specified value.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function add (mixed $value, int $count = 1):MutationOutcome {
+
+        $this->guardMutable();
 
         return $this->storage->add($value, $count);
 
@@ -373,8 +403,13 @@ class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, DistinctMetric
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage::remove() To remove the specified value.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function remove (mixed $value, int $count = 1):MutationOutcome {
+
+        $this->guardMutable();
 
         return $this->storage->remove($value, $count);
 
@@ -409,8 +444,13 @@ class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, DistinctMetric
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage::removeAll() To remove all occurrences of the specified value.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function removeAll (mixed $value):MutationOutcome {
+
+        $this->guardMutable();
 
         return $this->storage->removeAll($value);
 

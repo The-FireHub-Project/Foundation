@@ -19,9 +19,10 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\BackMutation,
-    Cloneable
+    Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
 
@@ -49,7 +50,13 @@ use Traversable;
  *     &BackMutation<TValue>
  * )
  */
-class Stack implements StackBoundary, Arrayable, Cloneable, BackMutation {
+class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable, BackMutation {
+
+    /**
+     * ### Freeze state
+     * @since 1.0.0
+     */
+    use HasFreezeState;
 
     /**
      * ### Constructor
@@ -113,6 +120,23 @@ class Stack implements StackBoundary, Arrayable, Cloneable, BackMutation {
     public function copy ():static {
 
         return new static($this->storage->copy());
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stack::copy() To create a copy of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Stack::thawState() To freeze the state of the data structure.
+     */
+    public function thaw ():static {
+
+        $instance = $this->copy();
+        $instance->thawState();
+
+        return $instance;
 
     }
 
@@ -239,8 +263,13 @@ class Stack implements StackBoundary, Arrayable, Cloneable, BackMutation {
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\FrontMutation::insertBack() To insert values at the back
      * of the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function insertBack (mixed ...$values):void {
+
+        $this->guardMutable();
 
         $this->storage->insertBack(...$values);
 
@@ -270,6 +299,8 @@ class Stack implements StackBoundary, Arrayable, Cloneable, BackMutation {
      * @param TValue ...$values <p>
      * Values to append to the stack.
      * </p>
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      *
      * @return $this The current stack instance.
      */
@@ -304,8 +335,13 @@ class Stack implements StackBoundary, Arrayable, Cloneable, BackMutation {
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\BackMutation::removeBack() To remove the last value from
      * the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function removeBack ():Maybe {
+
+        $this->guardMutable();
 
         return $this->storage->removeBack();
 
@@ -335,6 +371,8 @@ class Stack implements StackBoundary, Arrayable, Cloneable, BackMutation {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Stack::removeBack() To remove the last value from the deque.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      *
      * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, or none if the stack is empty.
      */

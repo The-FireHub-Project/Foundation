@@ -19,10 +19,11 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
-    Cloneable, Forkable
+    Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
 
@@ -54,7 +55,14 @@ use Traversable;
  *     &IndexMutation<TValue>
  * )
  */
-class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMutation, IndexMutation {
+class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DequeMutation,
+    IndexMutation {
+
+    /**
+     * ### Freeze state
+     * @since 1.0.0
+     */
+    use HasFreezeState;
 
     /**
      * ### Constructor
@@ -117,7 +125,9 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      */
     public function copy ():static {
 
-        return new static($this->storage->copy());
+        return clone($this, [
+            'storage' => $this->storage->copy()
+        ]);
 
     }
 
@@ -142,7 +152,26 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      */
     public function fork ():static {
 
-        return new static($this->storage->fork());
+        return clone($this, [
+            'storage' => $this->storage->fork()
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Vector::fork() To create a fork of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Vector::thawState() To freeze the state of the data structure.
+     */
+    public function thaw ():static {
+
+        $instance = $this->fork();
+        $instance->thawState();
+
+        return $instance;
 
     }
 
@@ -316,8 +345,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\FrontMutation::insertFront() To insert values at the front
      * of the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function insertFront (mixed ...$values):void {
+
+        $this->guardMutable();
 
         $this->storage->insertFront(...$values);
 
@@ -348,6 +382,8 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * Values to prepend to the vector.
      * </p>
      *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
+     *
      * @return $this The current vector instance.
      */
     public function prepend (mixed ...$values):static {
@@ -377,8 +413,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\FrontMutation::insertBack() To insert values at the back
      * of the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function insertBack (mixed ...$values):void {
+
+        $this->guardMutable();
 
         $this->storage->insertBack(...$values);
 
@@ -408,6 +449,8 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * @param TValue ...$values <p>
      * Values to append to the vector.
      * </p>
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      *
      * @return $this The current vector instance.
      */
@@ -442,8 +485,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\FrontMutation::removeFront() To remove the first value from
      * the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function removeFront ():Maybe {
+
+        $this->guardMutable();
 
         return $this->storage->removeFront();
 
@@ -473,6 +521,8 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Vector::removeFront() To remove the first value from the vector.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      *
      * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, or none if the vector is empty.
      */
@@ -505,8 +555,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\BackMutation::removeBack() To remove the last value from
      * the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function removeBack ():Maybe {
+
+        $this->guardMutable();
 
         return $this->storage->removeBack();
 
@@ -536,6 +591,8 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Vector::removeBack() To remove the last value from the vector.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      *
      * @return \FireHub\Core\Type\Maybe<TValue|mixed> The removed value, or none if the vector is empty.
      */
@@ -568,8 +625,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\IndexMutation::set() To replace a value in the storage at
      * the specified index.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function set (int $index, mixed $value):MutationOutcome {
+
+        $this->guardMutable();
 
         return $this->storage->set($index, $value);
 
@@ -598,8 +660,13 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, DequeMut
      *
      * @uses \FireHub\Core\Boundary\Capability\Mutation\IndexMutation::remove() To remove a value from the storage
      * at the specified index.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
      */
     public function remove (int $index):MutationOutcome {
+
+        $this->guardMutable();
 
         return $this->storage->remove($index);
 
