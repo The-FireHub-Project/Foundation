@@ -23,6 +23,7 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
@@ -61,6 +62,14 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @since 1.0.0
      */
     use HasFreezeState;
+
+    /**
+     * ### Provides rejection capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanReject<int, TValue>
+     */
+    use CanReject;
 
     /**
      * ### Constructor
@@ -374,21 +383,6 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
                 $storage->add($key); // @phpstan-ignore argument.type
 
         return new static($storage);
-
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Set::filter() To filter the values using the provided callback.
-     */
-    public function reject (callable $callback):static {
-
-        return $this->filter(
-            fn ($value, $key = null):bool => !$callback($value, $key)
-        );
 
     }
 

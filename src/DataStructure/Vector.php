@@ -24,6 +24,7 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
@@ -66,6 +67,14 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
      * @since 1.0.0
      */
     use HasFreezeState;
+
+    /**
+     * ### Provides rejection capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanReject<int, TValue>
+     */
+    use CanReject;
 
     /**
      * ### Constructor
@@ -721,21 +730,6 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
                 $storage->insertBack($value);
 
         return new static($storage);
-
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Vector::filter() To filter the values using the provided callback.
-     */
-    public function reject (callable $callback):static {
-
-        return $this->filter(
-            fn ($value, $key = null):bool => !$callback($value, $key)
-        );
 
     }
 

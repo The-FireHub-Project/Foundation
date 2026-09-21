@@ -24,6 +24,7 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
 use FireHub\Foundation\State\HasFreezeState;
 use Traversable;
 
@@ -63,6 +64,14 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @since 1.0.0
      */
     use HasFreezeState;
+
+    /**
+     * ### Provides rejection capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanReject<TKey, TValue>
+     */
+    use CanReject;
 
     /**
      * ### Constructor
@@ -402,21 +411,6 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
                 $storage->set($key, $value);
 
         return new static($storage);
-
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Set::filter() To filter the values using the provided callback.
-     */
-    public function reject (callable $callback):static {
-
-        return $this->filter(
-            fn ($value, $key = null):bool => !$callback($value, $key)
-        );
 
     }
 

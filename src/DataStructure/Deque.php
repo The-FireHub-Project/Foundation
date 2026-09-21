@@ -23,6 +23,7 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
@@ -60,6 +61,14 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
      * @since 1.0.0
      */
     use HasFreezeState;
+
+    /**
+     * ### Provides rejection capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanReject<int, TValue>
+     */
+    use CanReject;
 
     /**
      * ### Constructor
@@ -566,21 +575,6 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
 
         return new static($storage);
-
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Deque::filter() To filter the values using the provided callback.
-     */
-    public function reject (callable $callback):static {
-
-        return $this->filter(
-            fn ($value, $key = null):bool => !$callback($value, $key)
-        );
 
     }
 
