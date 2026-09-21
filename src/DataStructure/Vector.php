@@ -19,7 +19,7 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
-    Transformation\Filterable, Transformation\Mappable,
+    Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
@@ -45,7 +45,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
- * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -59,7 +59,7 @@ use Traversable;
  * )
  */
 class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DequeMutation,
-    IndexMutation, Mappable, Filterable {
+    IndexMutation, Mappable, Rejectable {
 
     /**
      * ### Freeze state
@@ -721,6 +721,21 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
                 $storage->insertBack($value);
 
         return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Vector::filter() To filter the values using the provided callback.
+     */
+    public function reject (callable $callback):static {
+
+        return $this->filter(
+            fn ($value, $key = null):bool => !$callback($value, $key)
+        );
 
     }
 

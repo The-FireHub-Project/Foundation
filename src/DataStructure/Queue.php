@@ -19,7 +19,7 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\BackInsertion, Mutation\FrontRemoval,
-    Transformation\Filterable, Transformation\Mappable,
+    Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
     Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
@@ -44,7 +44,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\BackInsertion<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\FrontRemoval<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
- * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -56,7 +56,7 @@ use Traversable;
  * )
  */
 class Queue implements QueueBoundary, Arrayable, Cloneable, Freezable, Thawable, BackInsertion, FrontRemoval,
-    Mappable, Filterable {
+    Mappable, Rejectable {
 
     /**
      * ### Freeze state
@@ -426,6 +426,21 @@ class Queue implements QueueBoundary, Arrayable, Cloneable, Freezable, Thawable,
                 $storage->insertBack($value);
 
         return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Queue::filter() To filter the values using the provided callback.
+     */
+    public function reject (callable $callback):static {
+
+        return $this->filter(
+            fn ($value, $key = null):bool => !$callback($value, $key)
+        );
 
     }
 

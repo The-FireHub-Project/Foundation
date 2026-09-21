@@ -15,7 +15,7 @@ namespace FireHub\Foundation\DataStructure;
 
 use FireHub\Core\Boundary\Type\DataStructure\Stream as StreamBoundary;
 use FireHub\Core\Boundary\Capability\Transformation\ {
-    Filterable, Mappable
+    Mappable, Rejectable
 };
 use FireHub\Foundation\DataStructure\Stream\ {
     Source\FilterSource, Source\MapSource,
@@ -45,9 +45,9 @@ use Traversable;
  *
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Stream<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
- * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<TKey, TValue>
  */
-readonly class Stream implements StreamBoundary, Mappable, Filterable {
+readonly class Stream implements StreamBoundary, Mappable, Rejectable {
 
     /**
      * ### Constructor
@@ -91,6 +91,21 @@ readonly class Stream implements StreamBoundary, Mappable, Filterable {
 
         return new static(
             new FilterSource($this->source, $callback(...))
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream::filter() To filter the values using the provided callback.
+     */
+    public function reject (callable $callback):static {
+
+        return $this->filter(
+            fn ($value, $key = null):bool => !$callback($value, $key)
         );
 
     }

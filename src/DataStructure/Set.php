@@ -19,7 +19,7 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\ValueMutation,
-    Transformation\Filterable, Transformation\Mappable,
+    Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
@@ -42,7 +42,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\ValueMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
- * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -54,7 +54,7 @@ use Traversable;
  * )
  */
 class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, ValueMutation, Mappable,
-    Filterable {
+    Rejectable {
 
     /**
      * ### Freeze state
@@ -374,6 +374,21 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
                 $storage->add($key); // @phpstan-ignore argument.type
 
         return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Set::filter() To filter the values using the provided callback.
+     */
+    public function reject (callable $callback):static {
+
+        return $this->filter(
+            fn ($value, $key = null):bool => !$callback($value, $key)
+        );
 
     }
 

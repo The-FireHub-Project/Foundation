@@ -19,7 +19,7 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\BackMutation,
-    Transformation\Filterable, Transformation\Mappable,
+    Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
     Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
@@ -43,7 +43,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\BackMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
- * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -53,7 +53,7 @@ use Traversable;
  *     &BackMutation<TValue>
  * )
  */
-class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable, BackMutation, Mappable, Filterable {
+class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable, BackMutation, Mappable, Rejectable {
 
     /**
      * ### Freeze state
@@ -431,6 +431,21 @@ class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable,
                 $storage->insertBack($value);
 
         return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stack::filter() To filter the values using the provided callback.
+     */
+    public function reject (callable $callback):static {
+
+        return $this->filter(
+            fn ($value, $key = null):bool => !$callback($value, $key)
+        );
 
     }
 
