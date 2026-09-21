@@ -17,6 +17,7 @@ use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Measurement\Capacity, Measurement\Metrics,
     Mutation\IndexMutation,
+    Transformation\Mappable,
     Cloneable, Forkable
 };
 use FireHub\Core\Type\Maybe;
@@ -51,11 +52,12 @@ use SplFixedArray;
  * @implements \FireHub\Core\Boundary\Capability\Access\BoundaryAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\IndexAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  *
  * @phpstan-type State SplFixedArray<null|TValue>
  */
 final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capacity, BoundaryAccess, IndexAccess,
-    IndexMutation {
+    IndexMutation, Mappable {
 
     /**
      * ### Copy-on-write state
@@ -339,6 +341,28 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
         unset($data[$index]);
 
         return MutationOutcome::REMOVED;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     */
+    public function map (callable $callback):self {
+
+        $source = $this->state->data();
+        $mapped = new SplFixedArray($source->getSize());
+
+        foreach ($source as $index => $value)
+            if ($value !== null)
+                $mapped[$index] = $callback($value, $index);
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($mapped)
+        ]);
 
     }
 

@@ -17,6 +17,7 @@ use FireHub\Core\Boundary\Capability\ {
     Access\KeyAccess,
     Measurement\Metrics,
     Mutation\KeyMutation,
+    Transformation\Filterable, Transformation\Mappable,
     Cloneable, Forkable
 };
 use FireHub\Core\Type\Maybe;
@@ -45,8 +46,11 @@ use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
  * @implements \FireHub\Foundation\DataStructure\Storage<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\KeyAccess<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
  */
-final readonly class HashStorage implements Storage, Cloneable, Forkable, Metrics, KeyAccess, KeyMutation {
+final readonly class HashStorage implements Storage, Cloneable, Forkable, Metrics, KeyAccess, KeyMutation, Mappable,
+    Filterable {
 
     /**
      * ### Underlying hash engine
@@ -184,6 +188,38 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
     public function remove (mixed $key):MutationOutcome {
 
         return $this->engine->remove($key);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::map() To map the hash engine using the
+     * specified callback.
+     */
+    public function map (callable $callback):self {
+
+        return new self(
+            $this->engine->map($callback)
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::filter() To filter the hash engine using the
+     * specified callback.
+     */
+    public function filter (callable $callback):self {
+
+        return new self(
+            $this->engine->filter($callback)
+        );
 
     }
 

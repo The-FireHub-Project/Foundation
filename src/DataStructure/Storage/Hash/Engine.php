@@ -14,6 +14,7 @@
 namespace FireHub\Foundation\DataStructure\Storage\Hash;
 
 use FireHub\Core\Boundary\Capability\ {
+    Transformation\Filterable, Transformation\Mappable,
     Cloneable, Forkable
 };
 use FireHub\Core\Type\Maybe;
@@ -35,8 +36,11 @@ use FireHub\Core\Meta\Enum\MutationOutcome;
  *
  * @template TKey
  * @template TValue
+ *
+ * @extends \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
+ * @extends \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
  */
-interface Engine extends Cloneable, Forkable {
+interface Engine extends Cloneable, Forkable, Mappable, Filterable {
 
     /**
      * ### Returns iterable for traversing the stored key-value pairs

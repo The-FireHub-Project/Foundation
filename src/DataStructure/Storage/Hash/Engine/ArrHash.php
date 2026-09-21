@@ -194,4 +194,46 @@ final class ArrHash implements Engine {
 
     }
 
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Transform::map() To map the storage.
+     */
+    public function map (callable $callback):self {
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState(
+                Runtime\Arr\Transform::map(
+                    $this->state->data(),
+                    $callback
+                )
+            )
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Transform::filter() To filter the storage.
+     */
+    public function filter (callable $callback):self {
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState(
+                Runtime\Arr\Transform::filter(
+                    $this->state->data(),
+                    $callback
+                )
+            )
+        ]);
+
+    }
+
 }

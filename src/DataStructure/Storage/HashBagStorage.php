@@ -17,6 +17,7 @@ use FireHub\Core\Boundary\Capability\ {
     Access\MultiplicityAccess,
     Measurement\DistinctMetrics,
     Mutation\MultiplicityMutation,
+    Transformation\Filterable, Transformation\Mappable,
     Cloneable, Forkable
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
@@ -53,6 +54,8 @@ use FireHub\Runtime;
  * @implements \FireHub\Foundation\DataStructure\Storage<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\MultiplicityAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\MultiplicityMutation<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
  *
  * @phpstan-type State array{
  *     buckets: array<string, list<array{value: TValue, count: int}>>,
@@ -60,7 +63,8 @@ use FireHub\Runtime;
  *     distinct_size: int
  * }
  */
-final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetrics, MultiplicityAccess, MultiplicityMutation {
+final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetrics, MultiplicityAccess,
+    MultiplicityMutation, Mappable, Filterable {
 
     /**
      * ### Copy-on-write state
@@ -389,6 +393,77 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
         }
 
         return MutationOutcome::NOT_FOUND;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\HashBagStorage::add() To add the mapped value to the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     *
+     * @template TMapped
+     */
+    public function map (callable $callback):self {
+
+        /** @var self<TMapped> $mapped */
+        $mapped = new self($this->strategy);
+
+        $index = 0;
+        foreach ($this->state->data()['buckets'] as $bucket) {
+
+            foreach ($bucket as $entry) {
+
+                $mapped->add(
+                    $callback($entry['value'], $index++),
+                    $entry['count'] // @phpstan-ignore argument.type
+                );
+
+            }
+
+        }
+
+        return $mapped; // @phpstan-ignore return.type
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     */
+    public function filter (callable $callback):self {
+
+        $buckets = []; $size = 0; $distinct_size = 0;
+        foreach ($this->state->data()['buckets'] as $hash => $bucket) {
+
+            foreach ($bucket as $entry) {
+
+                if (!$callback($entry['value']))
+                    continue;
+
+                $buckets[$hash][] = $entry;
+                $size += $entry['count'];
+                $distinct_size++;
+
+            }
+
+        }
+
+        /** @var State $state */
+        $state = [
+            'buckets' => $buckets,
+            'size' => $size,
+            'distinct_size' => $distinct_size
+        ];
+
+        return clone($this, [
+            'state' => new SharedState($state)
+        ]);
 
     }
 

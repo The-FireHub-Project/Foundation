@@ -17,6 +17,7 @@ use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
+    Transformation\Filterable, Transformation\Mappable,
     Cloneable, Forkable
 };
 use FireHub\Core\Type\Maybe;
@@ -52,11 +53,13 @@ use FireHub\Runtime;
  * @implements \FireHub\Core\Boundary\Capability\Access\IndexAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
  *
  * @phpstan-type State list<TValue>
  */
 final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
-    IndexMutation {
+    IndexMutation, Mappable, Filterable {
 
     /**
      * ### Copy-on-write state
@@ -360,6 +363,51 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
         $data = Runtime\Arr\Access::values($data);
 
         return MutationOutcome::REMOVED;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Transform::map() To map the storage.
+     */
+    public function map (callable $callback):self {
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState(
+                Runtime\Arr\Transform::map(
+                    $this->state->data(),
+                    $callback
+                )
+            )
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Access::values() To reindex the array.
+     * @uses \FireHub\Runtime\Arr\Transform::filter() To filter the storage.
+     */
+    public function filter (callable $callback):self {
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState(
+                Runtime\Arr\Access::values(
+                    Runtime\Arr\Transform::filter(
+                        $this->state->data(),
+                        $callback
+                    )
+                )
+            )
+        ]);
 
     }
 
