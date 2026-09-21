@@ -17,7 +17,6 @@ use FireHub\Core\Boundary\Capability\ {
     Access\ValueAccess,
     Measurement\Metrics,
     Mutation\ValueMutation,
-    Transformation\Filterable, Transformation\Mappable,
     Cloneable, Forkable
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
@@ -51,8 +50,6 @@ use FireHub\Runtime;
  * @implements \FireHub\Foundation\DataStructure\Storage<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\ValueAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\ValueMutation<TValue>
- * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
- * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
  *
  * @phpstan-type State array{
  *     buckets: array<string, list<TValue>>,
@@ -60,8 +57,7 @@ use FireHub\Runtime;
  * }
 
  */
-final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, ValueAccess, ValueMutation, Mappable,
-    Filterable {
+final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, ValueAccess, ValueMutation {
 
     /**
      * ### Copy-on-write state
@@ -254,64 +250,6 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
         }
 
         return MutationOutcome::NOT_FOUND;
-
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashSetStorage::iterate() To iterate over the storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashSetStorage::add() To add the mapped value to the storage.
-     *
-     * @template TMapped
-     */
-    public function map (callable $callback):self {
-
-        /** @var self<TMapped> $mapped */
-        $mapped = new self($this->strategy);
-
-        foreach ($this->iterate() as $index => $value)
-            $mapped->add($callback($value, $index));
-
-        return $mapped; // @phpstan-ignore return.type
-
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
-     */
-    public function filter (callable $callback):self {
-
-        $buckets = []; $size = 0;
-        foreach ($this->state->data()['buckets'] as $hash => $bucket) {
-
-            foreach ($bucket as $value) {
-
-                if (!$callback($value))
-                    continue;
-
-                $buckets[$hash][] = $value;
-                $size++;
-
-            }
-
-        }
-
-        /** @var State $state */
-        $state = [
-            'buckets' => $buckets,
-            'size' => $size
-        ];
-
-        return clone($this, [
-            'state' => new SharedState($state)
-        ]);
 
     }
 
