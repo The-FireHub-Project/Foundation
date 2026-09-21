@@ -35,4 +35,14 @@ use FireHub\Core\Boundary\Capability\Iteration;
  *
  * @extends \FireHub\Core\Boundary\Capability\Iteration<TKey, TValue>
  */
-interface Storage extends Iteration {}
+interface Storage extends Iteration {
+
+    /**
+     * ### Returns a new empty copy of the storage
+     * @since 1.0.0
+     *
+     * @return static<TKey, TValue>
+     */
+    public function emptyCopy ():static;
+
+}

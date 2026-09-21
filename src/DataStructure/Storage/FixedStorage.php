@@ -23,6 +23,7 @@ use FireHub\Core\Boundary\Capability\ {
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
+use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
 use FireHub\Foundation\Maybe\ {
     None, Some
 };
@@ -105,6 +106,21 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
             $this->state->data()[$key++] = $value;
 
         }
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::capacity() To get the capacity of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit To initialize the storage with an empty
+     * array.
+     */
+    public function emptyCopy ():self {
+
+        return new self($this->capacity(), new EmptyInit);
 
     }
 

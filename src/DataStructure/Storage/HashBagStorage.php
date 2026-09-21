@@ -100,6 +100,17 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
      * @inheritDoc
      *
      * @since 1.0.0
+     */
+    public function emptyCopy ():self {
+
+        return new self($this->strategy);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Copy::deep() To deep copy the storage.
      *

@@ -43,6 +43,14 @@ use FireHub\Core\Meta\Enum\MutationOutcome;
 interface Engine extends Cloneable, Forkable, Mappable, Filterable {
 
     /**
+     * ### Returns a new empty copy of the hash engine
+     * @since 1.0.0
+     *
+     * @return static<TKey, TValue>
+     */
+    public function emptyCopy ():static;
+
+    /**
      * ### Returns iterable for traversing the stored key-value pairs
      * @since 1.0.0
      *

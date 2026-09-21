@@ -23,6 +23,7 @@ use FireHub\Core\Boundary\Capability\ {
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
+use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
 use FireHub\Foundation\Maybe\ {
     None, Some
 };
@@ -90,6 +91,21 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
                 Runtime\Iterator::toArray($initializer->initialize())
             )
         );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit To initialize the storage with an empty
+     * array.
+     */
+    public function emptyCopy ():self {
+
+        /** @var self<TValue> */
+        return new self(new EmptyInit);
 
     }
 

@@ -95,6 +95,17 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
      * @inheritDoc
      *
      * @since 1.0.0
+     */
+    public function emptyCopy ():self {
+
+        return new self($this->strategy);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Copy::deep() To deep copy the storage.
      *

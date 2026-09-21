@@ -17,6 +17,7 @@ use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage\Initializer;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
+use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
 use FireHub\Foundation\Maybe\ {
     None, Some
 };
@@ -71,6 +72,21 @@ final class ArrHash implements Engine {
         $this->state = new SharedState( // @phpstan-ignore assign.propertyType
             Runtime\Iterator::toArray($initializer->initialize())
         );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit To initialize the storage with an empty
+     * array.
+     */
+    public function emptyCopy ():self {
+
+        /** @var self<TKey, TValue> */
+        return new self(new EmptyInit);
 
     }
 

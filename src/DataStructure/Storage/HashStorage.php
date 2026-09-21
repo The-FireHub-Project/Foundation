@@ -71,6 +71,22 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::emptyCopy() To create an empty copy of the hash
+     * engine.
+     */
+    public function emptyCopy ():self {
+
+        return new self(
+            $this->engine->emptyCopy()
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::copy() To copy the hash engine.
      */
     public function copy ():self {
