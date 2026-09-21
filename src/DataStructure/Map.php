@@ -19,6 +19,7 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\KeyMutation,
+    Transformation\Filterable, Transformation\Mappable,
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
@@ -42,6 +43,8 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Collection\Map<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, array{key: TKey, value: TValue}>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<TKey, TValue>
@@ -52,7 +55,8 @@ use Traversable;
  *     &KeyMutation<TKey, TValue>
  * )
  */
-class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation {
+class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
+    Filterable {
 
     /**
      * ### Freeze state
@@ -349,6 +353,55 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
         $this->guardMutable();
 
         return $this->storage->remove($key);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::set() To insert mapped values into the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::map() To map the values in the storage using the provided
+     * callback.
+     */
+    public function map (callable $callback):static {
+
+        if ($this->storage instanceof Mappable)
+            return new static($this->storage->map($callback));
+
+        $storage = $this->storage->emptyCopy();
+        foreach ($this->storage->iterate() as $key => $value)
+            $storage->set($key, $callback($value, $key));
+
+        return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::set() To insert mapped values into the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::filter() To filter the values in the storage using the provided
+     * callback.
+     */
+    public function filter (callable $callback):static {
+
+        if ($this->storage instanceof Filterable)
+            return new static($this->storage->filter($callback));
+
+        $storage = $this->storage->emptyCopy();
+        foreach ($this->storage->iterate() as $key => $value)
+            if ($callback($value, $key))
+                $storage->set($key, $value);
+
+        return new static($storage);
 
     }
 

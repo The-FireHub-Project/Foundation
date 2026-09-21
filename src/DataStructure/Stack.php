@@ -19,6 +19,7 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\BackMutation,
+    Transformation\Filterable, Transformation\Mappable,
     Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
@@ -41,6 +42,8 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Collection\Stack<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\BackMutation<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -50,7 +53,7 @@ use Traversable;
  *     &BackMutation<TValue>
  * )
  */
-class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable, BackMutation {
+class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable, BackMutation, Mappable, Filterable {
 
     /**
      * ### Freeze state
@@ -379,6 +382,55 @@ class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable,
     public function pop ():Maybe {
 
         return $this->removeBack();
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::insertBack() To insert values at the back of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::map() To map the values in the storage using the provided
+     * callback.
+     */
+    public function map (callable $callback):static {
+
+        if ($this->storage instanceOf Mappable)
+            return new static($this->storage->map($callback)); // @phpstan-ignore argument.type
+
+        $storage = $this->storage->emptyCopy();
+        foreach ($this->storage->iterate() as $index => $value)
+            $storage->insertBack($callback($value, $index));
+
+        return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::insertBack() To insert values at the back of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::filter() To filter the values in the storage using the provided
+     * callback.
+     */
+    public function filter (callable $callback):static {
+
+        if ($this->storage instanceof Filterable)
+            return new static($this->storage->filter($callback)); // @phpstan-ignore argument.type
+
+        $storage = $this->storage->emptyCopy();
+        foreach ($this->storage->iterate() as $index => $value)
+            if ($callback($value, $index))
+                $storage->insertBack($value);
+
+        return new static($storage);
 
     }
 

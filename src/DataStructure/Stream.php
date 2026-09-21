@@ -7,14 +7,20 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.0
+ * @php-version >=8.2
  * @package Foundation
  */
 
 namespace FireHub\Foundation\DataStructure;
 
 use FireHub\Core\Boundary\Type\DataStructure\Stream as StreamBoundary;
-use FireHub\Foundation\DataStructure\Stream\Source;
+use FireHub\Core\Boundary\Capability\Transformation\ {
+    Filterable, Mappable
+};
+use FireHub\Foundation\DataStructure\Stream\ {
+    Source\FilterSource, Source\MapSource,
+    Source
+};
 use Traversable;
 
 /**
@@ -38,8 +44,10 @@ use Traversable;
  * @template TValue
  *
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Stream<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
  */
-readonly class Stream implements StreamBoundary {
+readonly class Stream implements StreamBoundary, Mappable, Filterable {
 
     /**
      * ### Constructor
@@ -51,9 +59,41 @@ readonly class Stream implements StreamBoundary {
      *
      * @return void
      */
-    public function __construct (
+    final public function __construct (
         protected Source $source
     ) {}
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\MapSource To create a new Stream instance with the
+     * mapped elements.
+     */
+    public function map (callable $callback):static {
+
+        return new static(
+            new MapSource($this->source, $callback(...))
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\FilterSource To create a new Stream instance with the
+     * filtered elements.
+     */
+    public function filter (callable $callback):static {
+
+        return new static(
+            new FilterSource($this->source, $callback(...))
+        );
+
+    }
 
     /**
      * @inheritDoc
