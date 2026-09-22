@@ -24,6 +24,7 @@ use FireHub\Foundation\Maybe\ {
 use FireHub\Foundation\State\ {
     HasCopyOnWriteState, SharedState
 };
+use FireHub\Foundation\DataStructure\Storage\Exception\InvalidHashKeyException;
 use FireHub\Runtime;
 
 /**
@@ -140,8 +141,12 @@ final class ArrHash implements Engine {
      *
      * @uses \FireHub\Runtime\Arr\Access::keyExists() To check if the hash has a key.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the underlying data.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::isInvalidKey() To check if the key is
+     * invalid.
      */
     public function has (mixed $key):bool {
+
+        if (!$this->isValidKey($key)) return false;
 
         return Runtime\Arr\Access::keyExists($this->state->data(), $key);
 
@@ -171,8 +176,15 @@ final class ArrHash implements Engine {
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::detach() To detach the storage.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the underlying data.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::isInvalidKey() To check if the key is
+     * invalid.
+     *
+     * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidHashKeyException If the key is invalid.
      */
     public function set (mixed $key, mixed $value):MutationOutcome {
+
+        if (!$this->isValidKey($key))
+            throw new InvalidHashKeyException;
 
         $outcome = $this->has($key)
             ? MutationOutcome::UPDATED
@@ -249,6 +261,23 @@ final class ArrHash implements Engine {
                 )
             )
         ]);
+
+    }
+
+    /**
+     * ### Checks if the key is valid
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\DataIs::int() To check if the key is an integer.
+     * @uses \FireHub\Runtime\DataIs::string() To check if the key is a string.
+     *
+     * @phpstan-assert-if-true array-key $key
+     *
+     * @return bool Whether the key is valid.
+     */
+    private function isValidKey (mixed $key):bool {
+
+        return Runtime\DataIs::int($key) || Runtime\DataIs::string($key);
 
     }
 
