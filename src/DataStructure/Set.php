@@ -179,7 +179,7 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Set::fork() To create a fork of the data structure.
-     * @uses \FireHub\Foundation\DataStructure\Set::thawState() To freeze the state of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Set::thawState() To thaw the state of the data structure.
      */
     public function thaw ():static {
 

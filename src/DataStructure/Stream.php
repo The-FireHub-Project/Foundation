@@ -25,7 +25,7 @@ use FireHub\Foundation\DataStructure\Stream\ {
     Source
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
-    Skip, Take
+    Select, Skip, Take
 };
 use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
 use Traversable;
@@ -109,6 +109,20 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
         return new static(
             new FilterSource($this->source, $callback(...))
         );
+
+    }
+
+    /**
+     * ### Creates a Select instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Select<int, TValue, $this> A select transformation of
+     * the data structure.
+     */
+    public function select ():Select {
+
+        /** @var Select<int, TValue, $this> */
+        return new Select($this);
 
     }
 

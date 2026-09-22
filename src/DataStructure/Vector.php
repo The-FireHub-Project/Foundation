@@ -28,7 +28,7 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Chunkable, Skippable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
-    Chunk, Skip, Take
+    Chunk, Select, Skip, Take
 };
 use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
@@ -186,7 +186,7 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Vector::fork() To create a fork of the data structure.
-     * @uses \FireHub\Foundation\DataStructure\Vector::thawState() To freeze the state of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Vector::thawState() To thaw the state of the data structure.
      */
     public function thaw ():static {
 
@@ -740,6 +740,20 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
                 $storage->insertBack($value);
 
         return new static($storage);
+
+    }
+
+    /**
+     * ### Creates a Select instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Select<int, TValue, $this> A select transformation of
+     * the data structure.
+     */
+    public function select ():Select {
+
+        /** @var Select<int, TValue, $this> */
+        return new Select($this);
 
     }
 

@@ -28,7 +28,7 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Chunkable, Skippable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
-    Chunk, Skip, Take
+    Chunk, Select, Skip, Take
 };
 use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
@@ -189,7 +189,7 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Map::fork() To create a fork of the data structure.
-     * @uses \FireHub\Foundation\DataStructure\Map::thawState() To freeze the state of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Map::thawState() To thaw the state of the data structure.
      */
     public function thaw ():static {
 
@@ -421,6 +421,20 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
                 $storage->set($key, $value);
 
         return new static($storage);
+
+    }
+
+    /**
+     * ### Creates a Select instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Select<int, TValue, $this> A select transformation of
+     * the data structure.
+     */
+    public function select ():Select {
+
+        /** @var Select<int, TValue, $this> */
+        return new Select($this);
 
     }
 

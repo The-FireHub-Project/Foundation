@@ -23,6 +23,12 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
+    Skippable, Takeable
+};
+use FireHub\Foundation\DataStructure\Transformation\ {
+    Select, Skip, Take
+};
 use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
@@ -45,6 +51,8 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\BackMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -54,7 +62,8 @@ use Traversable;
  *     &BackMutation<TValue>
  * )
  */
-class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable, BackMutation, Mappable, Rejectable {
+class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable, BackMutation, Mappable, Rejectable,
+    Takeable, Skippable {
 
     /**
      * ### Freeze state
@@ -141,7 +150,7 @@ class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable,
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Stack::copy() To create a copy of the data structure.
-     * @uses \FireHub\Foundation\DataStructure\Stack::thawState() To freeze the state of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Stack::thawState() To thaw the state of the data structure.
      */
     public function thaw ():static {
 
@@ -273,7 +282,7 @@ class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable,
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Core\Boundary\Capability\Mutation\FrontMutation::insertBack() To insert values at the back
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackMutation::insertBack() To insert values at the back
      * of the storage.
      * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
      *
@@ -440,6 +449,109 @@ class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable,
                 $storage->insertBack($value);
 
         return new static($storage);
+
+    }
+
+    /**
+     * ### Creates a Select instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Select<int, TValue, $this> A select transformation of
+     * the data structure.
+     */
+    public function select ():Select {
+
+        /** @var Select<int, TValue, $this> */
+        return new Select($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::insertBack() To insert values at the back of the
+     * storage.
+     */
+    public function takeWhile (callable $callback):static {
+
+        $storage = $this->storage->emptyCopy();
+
+        foreach ($this->storage->iterate() as $index => $value) {
+
+            if (!$callback($value, $index))
+                break;
+
+            $storage->insertBack($value);
+
+        }
+
+        return new static($storage);
+
+    }
+
+    /**
+     * ### Creates a Take instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Take<int, TValue, $this> A take transformation of the
+     * data structure.
+     */
+    public function take ():Take {
+
+        /** @var Take<int, TValue, $this> */
+        return new Take($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::insertBack() To insert values at the back of the
+     * storage.
+     */
+    public function skipWhile (callable $callback):static {
+
+        $storage = $this->storage->emptyCopy();
+        $skipping = true;
+
+        foreach ($this->storage->iterate() as $index => $value) {
+
+            if ($skipping) {
+
+                if ($callback($value, $index))
+                    continue;
+
+                $skipping = false;
+
+            }
+
+            $storage->insertBack($value);
+
+        }
+
+        return new static($storage);
+
+    }
+
+    /**
+     * ### Creates a Skip instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Skip<int, TValue, $this> A skip transformation of the
+     * data structure.
+     */
+    public function skip ():Skip {
+
+        /** @var Skip<int, TValue, $this> */
+        return new Skip($this);
 
     }
 
