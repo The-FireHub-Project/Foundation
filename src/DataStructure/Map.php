@@ -24,8 +24,12 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
-use FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable;
-use FireHub\Foundation\DataStructure\Transformation\Chunk;
+use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
+    Chunkable, Skippable, Takeable
+};
+use FireHub\Foundation\DataStructure\Transformation\ {
+    Chunk, Skip, Take
+};
 use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
@@ -50,6 +54,8 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<TKey, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<TKey, TValue>
@@ -61,7 +67,7 @@ use Traversable;
  * )
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
-    Rejectable, Chunkable {
+    Rejectable, Chunkable, Takeable, Skippable {
 
     /**
      * ### Freeze state
@@ -473,6 +479,93 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
 
         /** @var Chunk<TKey, TValue, $this> */
         return new Chunk($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::set() To insert values at the storage.
+     */
+    public function takeWhile (callable $callback):static {
+
+        $storage = $this->storage->emptyCopy();
+
+        foreach ($this->storage->iterate() as $key => $value) {
+
+            if (!$callback($value, $key))
+                break;
+
+            $storage->set($key, $value);
+
+        }
+
+        return new static($storage);
+
+    }
+
+    /**
+     * ### Creates a Take instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Take<TKey, TValue, $this> A take transformation of the
+     * data structure.
+     */
+    public function take ():Take {
+
+        /** @var Take<TKey, TValue, $this> */
+        return new Take($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::set() To insert values at the storage.
+     */
+    public function skipWhile (callable $callback):static {
+
+        $storage = $this->storage->emptyCopy();
+        $skipping = true;
+
+        foreach ($this->storage->iterate() as $key => $value) {
+
+            if ($skipping) {
+
+                if ($callback($value, $key))
+                    continue;
+
+                $skipping = false;
+
+            }
+
+            $storage->set($key, $value);
+
+        }
+
+        return new static($storage);
+
+    }
+
+    /**
+     * ### Creates a Skip instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Skip<TKey, TValue, $this> A skip transformation of the
+     * data structure.
+     */
+    public function skip ():Skip {
+
+        /** @var Skip<TKey, TValue, $this> */
+        return new Skip($this);
 
     }
 

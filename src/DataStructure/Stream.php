@@ -17,9 +17,15 @@ use FireHub\Core\Boundary\Type\DataStructure\Stream as StreamBoundary;
 use FireHub\Core\Boundary\Capability\Transformation\ {
     Mappable, Rejectable
 };
+use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
+    Skippable, Takeable
+};
 use FireHub\Foundation\DataStructure\Stream\ {
-    Source\FilterSource, Source\MapSource,
+    Source\FilterSource, Source\MapSource, Source\SkipSource, Source\TakeSource,
     Source
+};
+use FireHub\Foundation\DataStructure\Transformation\ {
+    Skip, Take
 };
 use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
 use Traversable;
@@ -47,8 +53,10 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Stream<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<TKey, TValue>
  */
-readonly class Stream implements StreamBoundary, Mappable, Rejectable {
+readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable, Skippable {
 
     /**
      * ### Provides rejection capabilities
@@ -101,6 +109,72 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable {
         return new static(
             new FilterSource($this->source, $callback(...))
         );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\TakeSource To create a new Stream instance with the
+     * limited number of elements.
+     */
+    public function takeWhile (callable $callback):static {
+
+        return new static(
+            new TakeSource(
+                $this->source,
+                $callback(...)
+            )
+        );
+
+    }
+
+    /**
+     * ### Creates a Take instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Take<TKey, TValue, $this> A take transformation of the
+     * data structure.
+     */
+    public function take ():Take {
+
+        /** @var Take<TKey, TValue, $this> */
+        return new Take($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\SkipSource To create a new Stream instance with the
+     * skipped elements.
+     */
+    public function skipWhile (callable $callback):static {
+
+        return new static(
+            new SkipSource(
+                $this->source,
+                $callback(...)
+            )
+        );
+
+    }
+
+    /**
+     * ### Creates a Skip instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Skip<TKey, TValue, $this> A skip transformation of the
+     * data structure.
+     */
+    public function skip ():Skip {
+
+        /** @var Skip<TKey, TValue, $this> */
+        return new Skip($this);
 
     }
 
