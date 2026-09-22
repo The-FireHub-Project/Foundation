@@ -24,7 +24,10 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable;
+use FireHub\Foundation\DataStructure\Transformation\Chunk;
 use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
+use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
 use Traversable;
 
@@ -46,6 +49,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<TKey, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<TKey, TValue>
@@ -57,7 +61,7 @@ use Traversable;
  * )
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
-    Rejectable {
+    Rejectable, Chunkable {
 
     /**
      * ### Freeze state
@@ -411,6 +415,64 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
                 $storage->set($key, $value);
 
         return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\FactorySource To create a stream source from a factory
+     * function.
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::set() To insert values at the storage.
+     */
+    public function chunkBy (callable $callback):Stream {
+
+        return new Stream(
+            new FactorySource(
+                function () use ($callback):iterable {
+
+                    $storage = $this->storage->emptyCopy();
+                    $has_values = false;
+
+                    foreach ($this->storage->iterate() as $key => $value) {
+
+                        if ($has_values && $callback($value, $key)) {
+
+                            yield new static($storage);
+
+                            $storage = $this->storage->emptyCopy();
+
+                        }
+
+                        $storage->set($key, $value);
+                        $has_values = true;
+
+                    }
+
+                    if ($has_values)
+                        yield new static($storage);
+
+                }
+            )
+        );
+
+    }
+
+    /**
+     * ### Creates a Chunk instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Chunk<TKey, TValue, $this> A chunk of the data
+     * structure.
+     */
+    public function chunk ():Chunk {
+
+        /** @var Chunk<TKey, TValue, $this> */
+        return new Chunk($this);
 
     }
 

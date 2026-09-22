@@ -23,7 +23,10 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable;
+use FireHub\Foundation\DataStructure\Transformation\Chunk;
 use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
+use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
@@ -45,6 +48,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -54,7 +58,8 @@ use Traversable;
  *     &DequeMutation<TValue>
  * )
  */
-class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable, DequeMutation, Mappable, Rejectable {
+class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable, DequeMutation, Mappable, Rejectable,
+    Chunkable {
 
     /**
      * ### Freeze state
@@ -575,6 +580,63 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
 
         return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\FactorySource To create a stream source from a factory
+     * function.
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::insertBack() To insert values at the storage.
+     */
+    public function chunkBy (callable $callback):Stream {
+
+        return new Stream(
+            new FactorySource(
+                function () use ($callback):iterable {
+
+                    $storage = $this->storage->emptyCopy();
+                    $has_values = false;
+
+                    foreach ($this->storage->iterate() as $index => $value) {
+
+                        if ($has_values && $callback($value, $index)) {
+
+                            yield new static($storage);
+
+                            $storage = $this->storage->emptyCopy();
+
+                        }
+
+                        $storage->insertBack($value);
+                        $has_values = true;
+
+                    }
+
+                    if ($has_values)
+                        yield new static($storage);
+
+                }
+            )
+        );
+
+    }
+
+    /**
+     * ### Creates a Chunk instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Chunk<int, TValue, $this> A chunk of the data structure.
+     */
+    public function chunk ():Chunk {
+
+        /** @var Chunk<int, TValue, $this> */
+        return new Chunk($this);
 
     }
 
