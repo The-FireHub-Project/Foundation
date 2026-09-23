@@ -265,6 +265,26 @@ final class ArrHash implements Engine {
     }
 
     /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Transform::reverse() To reverse the storage.
+     */
+    public function reverse ():self {
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState(
+                Runtime\Arr\Transform::reverse(
+                    $this->state->data(), true
+                )
+            )
+        ]);
+
+    }
+
+    /**
      * ### Checks if the key is valid
      * @since 1.0.0
      *

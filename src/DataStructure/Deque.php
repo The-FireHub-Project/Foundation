@@ -24,7 +24,7 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Skippable, Takeable
+    Chunkable, Reversible, Skippable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Take
@@ -58,6 +58,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -68,7 +69,7 @@ use Traversable;
  * )
  */
 class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable, DequeMutation, Mappable, Rejectable,
-    Chunkable, Takeable, Skippable {
+    Chunkable, Takeable, Skippable, Reversible {
 
     /**
      * ### Freeze state
@@ -765,6 +766,37 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
         /** @var Skip<int, TValue, $this> */
         return new Skip($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::insertBack() To insert values at the back of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::reverse() To reverse the values in the storage.
+     * @uses \FireHub\Runtime\Arr\Transform::reverse() To reverse the values in an array.
+     * @uses \FireHub\Runtime\Iterator::toArray() To convert an iterator to an array.
+     */
+    public function reverse ():static {
+
+        if ($this->storage instanceof Reversible)
+            return new static($this->storage->reverse());
+
+        $storage = $this->storage->emptyCopy();
+
+        $values = Runtime\Arr\Transform::reverse(
+            Runtime\Iterator::toArray(
+                $this->storage->iterate()
+            )
+        );
+
+        $storage->insertBack(...$values);
+
+        return new static($storage);
 
     }
 

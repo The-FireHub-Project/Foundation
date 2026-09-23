@@ -25,7 +25,7 @@ use FireHub\Core\Boundary\Capability\ {
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Skippable, Takeable
+    Chunkable, Reversible, Skippable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Take
@@ -36,6 +36,7 @@ use FireHub\Foundation\DataStructure\Concern\ {
 };
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
+use FireHub\Runtime;
 use Traversable;
 
 /**
@@ -59,6 +60,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<TKey, TValue>
@@ -70,7 +72,7 @@ use Traversable;
  * )
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
-    Rejectable, Chunkable, Takeable, Skippable {
+    Rejectable, Chunkable, Takeable, Skippable, Reversible {
 
     /**
      * ### Freeze state
@@ -82,7 +84,7 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * ### Provides countable capabilities
      * @since 1.0.0
      *
-     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanCount<int, TValue>
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanCount<TKey, TValue>
      */
     use CanCount;
 
@@ -447,12 +449,12 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * ### Creates a Select instance
      * @since 1.0.0
      *
-     * @return \FireHub\Foundation\DataStructure\Transformation\Select<int, TValue, $this> A select transformation of
+     * @return \FireHub\Foundation\DataStructure\Transformation\Select<TKey, TValue, $this> A select transformation of
      * the data structure.
      */
     public function select ():Select {
 
-        /** @var Select<int, TValue, $this> */
+        /** @var Select<TKey, TValue, $this> */
         return new Select($this);
 
     }
@@ -599,6 +601,34 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
 
         /** @var Skip<TKey, TValue, $this> */
         return new Skip($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::set() To insert values to the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::reverse() To reverse the values in the storage.
+     * @uses \FireHub\Foundation\DataStructure\Map::toArray() To convert the storage to an array.
+     * @uses \FireHub\Runtime\Arr\Transform::reverse() To reverse the array.
+     */
+    public function reverse ():static {
+
+        if ($this->storage instanceof Reversible)
+            return new static($this->storage->reverse());
+
+        $storage = $this->storage->emptyCopy();
+
+        $entries = Runtime\Arr\Transform::reverse($this->toArray());
+
+        foreach ($entries as $entry)
+            $storage->set($entry['key'], $entry['value']);
+
+        return new static($storage);
 
     }
 

@@ -24,6 +24,7 @@ use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
+use FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible;
 use FireHub\Foundation\Maybe\ {
     None, Some
 };
@@ -56,11 +57,12 @@ use FireHub\Runtime;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
  *
  * @phpstan-type State list<TValue>
  */
 final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
-    IndexMutation, Mappable, Filterable {
+    IndexMutation, Mappable, Filterable, Reversible {
 
     /**
      * ### Copy-on-write state
@@ -421,6 +423,26 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
                         $this->state->data(),
                         $callback
                     )
+                )
+            )
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Transform::reverse() To reverse the storage.
+     */
+    public function reverse ():self {
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState(
+                Runtime\Arr\Transform::reverse(
+                    $this->state->data()
                 )
             )
         ]);
