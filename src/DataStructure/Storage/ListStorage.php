@@ -21,11 +21,13 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Forkable
 };
 use FireHub\Core\Type\Maybe;
-use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Core\Meta\Enum\ {
+    MutationOutcome, Side
+};
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Reversible, Shufflable
+    Padable, Reversible, Shufflable
 };
 use FireHub\Foundation\Maybe\ {
     None, Some
@@ -61,11 +63,12 @@ use FireHub\Runtime;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Padable<int, TValue>
  *
  * @phpstan-type State list<TValue>
  */
 final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
-    IndexMutation, Mappable, Filterable, Reversible, Shufflable {
+    IndexMutation, Mappable, Filterable, Reversible, Shufflable, Padable {
 
     /**
      * ### Copy-on-write state
@@ -465,6 +468,42 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
         $data = $this->state->data();
 
         Runtime\Arr\Ordering::shuffle($data);
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($data)
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::size() To get the size of the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Structure::pad() To pad the storage.
+     * @uses \FireHub\Runtime\Math::divideInt() To calculate the padding size.
+     */
+    public function pad (int $size, mixed $value, Side $side = Side::RIGHT):self {
+
+        $current = $this->size();
+        $data = $this->state->data();
+
+        if ($size <= $current)
+            return clone($this, [ // @phpstan-ignore assign.propertyType
+                'state' => new SharedState($data)
+            ]);
+
+        match ($side) {
+            Side::LEFT => $data = Runtime\Arr\Structure::pad($data, -$size, $value),
+            Side::RIGHT => $data = Runtime\Arr\Structure::pad($data, $size, $value),
+            Side::BOTH => $data = Runtime\Arr\Structure::pad(
+                Runtime\Arr\Structure::pad(
+                    $data, -($current + Runtime\Math::divideInt($size - $current, 2)), $value
+                ), $size, $value
+            )
+        };
 
         return clone($this, [ // @phpstan-ignore assign.propertyType
             'state' => new SharedState($data)

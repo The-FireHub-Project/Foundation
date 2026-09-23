@@ -23,8 +23,9 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Core\Meta\Enum\Side;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Reversible, Shufflable, Skippable, Takeable
+    Chunkable, Padable, Reversible, Shufflable, Skippable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Take
@@ -60,6 +61,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Padable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -70,7 +72,7 @@ use Traversable;
  * )
  */
 class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable, DequeMutation, Mappable, Rejectable,
-    Chunkable, Takeable, Skippable, Reversible, Shufflable {
+    Chunkable, Takeable, Skippable, Reversible, Shufflable, Padable {
 
     /**
      * ### Freeze state
@@ -828,6 +830,48 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
         $storage = $this->storage->emptyCopy();
 
         foreach ($values as $value)
+            $storage->insertBack($value);
+
+        return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::insertFront() To insert values into the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::insertBack() To insert values into the storage.
+     * @uses \FireHub\Runtime\Math::divideInt() To calculate the padding size.
+     */
+    public function pad (int $size, mixed $value, Side $side = Side::RIGHT):static {
+
+        if ($this->storage instanceof Padable)
+            return new static($this->storage->pad($size, $value, $side));
+
+        $storage = $this->storage->copy();
+
+        $remaining = $size - $storage->size();
+
+        if ($remaining <= 0)
+            return new static($storage);
+
+        [$left, $right] = match ($side) {
+            Side::LEFT => [$remaining, 0],
+            Side::RIGHT => [0, $remaining],
+            Side::BOTH => [
+                Runtime\Math::divideInt($remaining, 2),
+                $remaining - Runtime\Math::divideInt($remaining, 2)
+            ]
+        };
+
+        while ($left-- > 0)
+            $storage->insertFront($value);
+
+        while ($right-- > 0)
             $storage->insertBack($value);
 
         return new static($storage);
