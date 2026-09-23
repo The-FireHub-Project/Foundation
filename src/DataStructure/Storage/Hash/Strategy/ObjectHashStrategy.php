@@ -18,18 +18,18 @@ use FireHub\Foundation\DataStructure\Storage\Hash\ValueEncoder;
 use FireHub\Runtime;
 
 /**
- * ### Provides a hash strategy for mixed scalar values
+ * ### Provides a hash strategy for object values
  *
- * Mixed hash strategy provides deterministic hashing and strict equality comparison for null, boolean, integer,
- * floating-point, string values, and objects used by hash-based storage implementations.
+ * Object hash strategy provides identity-based hashing and equality comparison for object values used by hash-based
+ * storage implementations.
  *
- * The value type forms part of the hash representation, ensuring that values of different types remain logically
- * distinct even when their textual representations are identical.
+ * Objects are considered equal only when they reference the same object instance. Equal objects therefore always
+ * produce the same hash, while hash collisions between different objects are resolved through identity comparison.
  * @since 1.0.0
  *
- * @implements \FireHub\Foundation\DataStructure\Storage\Hash\Strategy<mixed>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Hash\Strategy<object>
  */
-final readonly class MixedHashStrategy implements Strategy {
+final readonly class ObjectHashStrategy implements Strategy {
 
     /**
      * @inheritDoc
@@ -56,10 +56,14 @@ final readonly class MixedHashStrategy implements Strategy {
      * @inheritDoc
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\DataIs::object() To check if both values are objects.
      */
     public function equals (mixed $left, mixed $right):bool {
 
-        return $left === $right;
+        return Runtime\DataIs::object($left)
+            && Runtime\DataIs::object($right)
+            && $left === $right;
 
     }
 

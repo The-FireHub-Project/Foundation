@@ -78,6 +78,8 @@ class Queue implements QueueBoundary, Arrayable, Cloneable, Freezable, Thawable,
     /**
      * ### Provides countable capabilities
      * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanCount<int, TValue>
      */
     use CanCount;
 

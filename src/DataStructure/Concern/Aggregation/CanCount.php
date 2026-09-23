@@ -24,6 +24,9 @@ use FireHub\Foundation\DataStructure\Aggregation\Count;
  * This trait exposes count aggregation without defining or altering the underlying data structure, storage, or
  * iteration semantics.
  * @since 1.0.0
+ *
+ * @template TKey
+ * @template TValue
  */
 trait CanCount {
 
@@ -31,11 +34,11 @@ trait CanCount {
      * ### Creates a count aggregation instance
      * @since 1.0.0
      *
-     * @return \FireHub\Foundation\DataStructure\Aggregation\Count<mixed, null|bool|int|float|string|object> The count
-     * transformation.
+     * @return \FireHub\Foundation\DataStructure\Aggregation\Count<TKey, TValue> The count aggregation.
      */
     public function count ():Count {
 
+        /** @var \FireHub\Foundation\DataStructure\Aggregation\Count<TKey, TValue> */
         return new Count($this);
 
     }

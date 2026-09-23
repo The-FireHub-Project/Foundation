@@ -83,6 +83,8 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
     /**
      * ### Provides countable capabilities
      * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanCount<int, TValue>
      */
     use CanCount;
 

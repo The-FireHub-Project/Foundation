@@ -29,7 +29,7 @@ use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\MixedHashStrategy;
  * @since 1.0.0
  *
  * @template TKey
- * @template TValue of null|bool|int|float|string|object
+ * @template TValue
  */
 final readonly class Count {
 
@@ -84,7 +84,7 @@ final readonly class Count {
      * The multiplicity of a value therefore represents its number of occurrences within the source.
      * @since 1.0.0
      *
-     * @return \FireHub\Foundation\DataStructure\Bag<TValue> A bag containing the source values and preserving their
+     * @return \FireHub\Foundation\DataStructure\Bag<mixed> A bag containing the source values and preserving their
      * multiplicities.
      */
     public function values ():Bag {
@@ -108,7 +108,7 @@ final readonly class Count {
      *
      * @uses \FireHub\Foundation\DataStructure\Bag::add() To add derived identities to the bag.
      *
-     * @template TIdentity of null|bool|int|float|string|object
+     * @template TIdentity
      *
      * @param callable(TValue, TKey=):TIdentity $selector <p>
      * Callback that derives the identity used to group and count values.
