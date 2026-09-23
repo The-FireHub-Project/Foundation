@@ -30,7 +30,8 @@ use FireHub\Foundation\DataStructure\Transformation\ {
     Select, Skip, Take
 };
 use FireHub\Foundation\DataStructure\Concern\ {
-    Aggregation\CanCount, Transformation\CanReject
+    Aggregation\CanCount,
+    Transformation\CanMultiplicity, Transformation\CanReject
 };
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
@@ -82,6 +83,14 @@ class Queue implements QueueBoundary, Arrayable, Cloneable, Freezable, Thawable,
      * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanCount<int, TValue>
      */
     use CanCount;
+
+    /**
+     * ### Provides multiplicity capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanMultiplicity<int, TValue>
+     */
+    use CanMultiplicity;
 
     /**
      * ### Provides rejection capabilities

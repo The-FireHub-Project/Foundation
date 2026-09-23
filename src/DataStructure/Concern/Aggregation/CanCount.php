@@ -27,6 +27,8 @@ use FireHub\Foundation\DataStructure\Aggregation\Count;
  *
  * @template TKey
  * @template TValue
+ *
+ * @phpstan-require-implements \FireHub\Core\Boundary\Type\Enumerable<TKey, TValue>
  */
 trait CanCount {
 

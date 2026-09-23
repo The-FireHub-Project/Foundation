@@ -29,7 +29,7 @@ namespace FireHub\Foundation\DataStructure\Concern\Transformation;
  * @template TKey
  * @template TValue
  *
- * @mixin \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
+ * @phpstan-require-implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
  */
 trait CanReject {
 

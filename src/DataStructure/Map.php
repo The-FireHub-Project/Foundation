@@ -31,7 +31,8 @@ use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Take
 };
 use FireHub\Foundation\DataStructure\Concern\ {
-    Aggregation\CanCount, Transformation\CanReject
+    Aggregation\CanCount,
+    Transformation\CanMultiplicity, Transformation\CanReject
 };
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
@@ -84,6 +85,14 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanCount<int, TValue>
      */
     use CanCount;
+
+    /**
+     * ### Provides multiplicity capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanMultiplicity<TKey, TValue>
+     */
+    use CanMultiplicity;
 
     /**
      * ### Provides rejection capabilities
