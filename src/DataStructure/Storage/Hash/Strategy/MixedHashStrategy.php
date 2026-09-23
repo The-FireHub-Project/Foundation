@@ -21,13 +21,13 @@ use FireHub\Runtime;
  * ### Provides a hash strategy for mixed scalar values
  *
  * Mixed hash strategy provides deterministic hashing and strict equality comparison for null, boolean, integer,
- * floating-point, and string values used by hash-based storage implementations.
+ * floating-point, string values, and objects used by hash-based storage implementations.
  *
  * The value type forms part of the hash representation, ensuring that values of different types remain logically
  * distinct even when their textual representations are identical.
  * @since 1.0.0
  *
- * @implements \FireHub\Foundation\DataStructure\Storage\Hash\Strategy<null|bool|int|float|string>
+ * @implements \FireHub\Foundation\DataStructure\Storage\Hash\Strategy<null|bool|int|float|string|object>
  */
 final readonly class MixedHashStrategy implements Strategy {
 
@@ -40,6 +40,8 @@ final readonly class MixedHashStrategy implements Strategy {
      * @uses \FireHub\Runtime\DataIs::int() To check if the specified value is an integer.
      * @uses \FireHub\Runtime\DataIs::float() To check if the specified value is a floating-point number
      * @uses \FireHub\Runtime\DataIs::string() To check if the specified value is a string.
+     * @uses \FireHub\Runtime\DataIs::object() To check if the specified value is an object.
+     * @uses \FireHub\Runtime\ObjectModel\Identity::id() To get the identity of the specified object.
      * @uses \FireHub\Runtime\Data::getDebugType() To get the debug type of the specified value.
      * @uses \FireHub\Runtime\Hash::hash() To hash the specified value.
      * @uses \FireHub\Runtime\Hash\Algorithm::XXH3 To use the XXH3 algorithm for hashing.
@@ -56,6 +58,7 @@ final readonly class MixedHashStrategy implements Strategy {
             Runtime\DataIs::int($value) => "int:$value",
             Runtime\DataIs::float($value) => 'float:' . Runtime\Binary::pack('E', $value === 0.0 ? 0.0 : $value),
             Runtime\DataIs::string($value) => "string:$value",
+            Runtime\DataIs::object($value) => "object:".$value::class.':'.Runtime\ObjectModel\Identity::id($value),
             default => throw new InvalidHashValueTypeException(
                 "Invalid hash value type.",
                 [

@@ -218,6 +218,8 @@ class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
     /**
      * {@inheritDoc}
      *
+     * <code>
+     *
      * use FireHub\Foundation\DataStructure\Set;
      * use FireHub\Foundation\DataStructure\Storage\HashBagStorage;
      * use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\StringHashStrategy;
@@ -249,6 +251,7 @@ class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
     /**
      * {@inheritDoc}
      *
+     * <code>
      * use FireHub\Foundation\DataStructure\Set;
      * use FireHub\Foundation\DataStructure\Storage\HashBagStorage;
      * use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\StringHashStrategy;

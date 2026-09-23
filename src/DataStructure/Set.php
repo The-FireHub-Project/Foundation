@@ -23,7 +23,9 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
-use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
+use FireHub\Foundation\DataStructure\Concern\ {
+    Aggregation\CanCount, Transformation\CanReject
+};
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
@@ -62,6 +64,12 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @since 1.0.0
      */
     use HasFreezeState;
+
+    /**
+     * ### Provides countable capabilities
+     * @since 1.0.0
+     */
+    use CanCount;
 
     /**
      * ### Provides rejection capabilities

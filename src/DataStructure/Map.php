@@ -30,7 +30,9 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Take
 };
-use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
+use FireHub\Foundation\DataStructure\Concern\ {
+    Aggregation\CanCount, Transformation\CanReject
+};
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
 use Traversable;
@@ -74,6 +76,12 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @since 1.0.0
      */
     use HasFreezeState;
+
+    /**
+     * ### Provides countable capabilities
+     * @since 1.0.0
+     */
+    use CanCount;
 
     /**
      * ### Provides rejection capabilities
