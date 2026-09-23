@@ -285,6 +285,33 @@ final class ArrHash implements Engine {
     }
 
     /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Access::keys() To get the keys of the storage.
+     * @uses \FireHub\Runtime\Arr\Ordering::shuffle() To shuffle the storage.
+     */
+    public function shuffle ():self {
+
+        $data = $this->state->data();
+
+        $keys = Runtime\Arr\Access::keys($data);
+
+        Runtime\Arr\Ordering::shuffle($keys);
+
+        $shuffled = [];
+        foreach ($keys as $key)
+            $shuffled[$key] = $data[$key]; // @phpstan-ignore offsetAccess.notFound
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($shuffled)
+        ]);
+
+    }
+
+    /**
      * ### Checks if the key is valid
      * @since 1.0.0
      *

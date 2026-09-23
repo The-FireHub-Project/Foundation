@@ -24,7 +24,9 @@ use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
-use FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible;
+use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
+    Reversible, Shufflable
+};
 
 /**
  * ### Provides a storage implementation for hash-based key-value pairs
@@ -50,9 +52,10 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
  */
 final readonly class HashStorage implements Storage, Cloneable, Forkable, Metrics, KeyAccess, KeyMutation, Mappable,
-    Filterable, Reversible {
+    Filterable, Reversible, Shufflable {
 
     /**
      * ### Underlying hash engine
@@ -252,6 +255,21 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
 
         return new self(
             $this->engine->reverse()
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::shuffle() To shuffle the hash engine.
+     */
+    public function shuffle ():self {
+
+        return new self(
+            $this->engine->shuffle()
         );
 
     }

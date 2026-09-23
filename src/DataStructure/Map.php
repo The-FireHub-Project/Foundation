@@ -25,7 +25,7 @@ use FireHub\Core\Boundary\Capability\ {
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Reversible, Skippable, Takeable
+    Chunkable, Reversible, Shufflable, Skippable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Take
@@ -61,6 +61,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<TKey, TValue>
@@ -72,7 +73,7 @@ use Traversable;
  * )
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
-    Rejectable, Chunkable, Takeable, Skippable, Reversible {
+    Rejectable, Chunkable, Takeable, Skippable, Reversible, Shufflable {
 
     /**
      * ### Freeze state
@@ -624,6 +625,35 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
         $storage = $this->storage->emptyCopy();
 
         $entries = Runtime\Arr\Transform::reverse($this->toArray());
+
+        foreach ($entries as $entry)
+            $storage->set($entry['key'], $entry['value']);
+
+        return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::set() To insert values into the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::shuffle() To shuffle the values in the storage.
+     * @uses \FireHub\Foundation\DataStructure\Map::toArray() To convert the map entries to an array.
+     * @uses \FireHub\Runtime\Arr\Ordering::shuffle() To shuffle the array.
+     */
+    public function shuffle ():static {
+
+        if ($this->storage instanceof Shufflable)
+            return new static($this->storage->shuffle());
+
+        $entries = $this->toArray();
+
+        Runtime\Arr\Ordering::shuffle($entries);
+
+        $storage = $this->storage->emptyCopy();
 
         foreach ($entries as $entry)
             $storage->set($entry['key'], $entry['value']);

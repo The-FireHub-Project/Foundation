@@ -24,7 +24,9 @@ use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
-use FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible;
+use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
+    Reversible, Shufflable
+};
 use FireHub\Foundation\Maybe\ {
     None, Some
 };
@@ -58,11 +60,12 @@ use FireHub\Runtime;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
  *
  * @phpstan-type State list<TValue>
  */
 final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
-    IndexMutation, Mappable, Filterable, Reversible {
+    IndexMutation, Mappable, Filterable, Reversible, Shufflable {
 
     /**
      * ### Copy-on-write state
@@ -445,6 +448,26 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
                     $this->state->data()
                 )
             )
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Ordering::shuffle() To shuffle the storage.
+     */
+    public function shuffle ():self {
+
+        $data = $this->state->data();
+
+        Runtime\Arr\Ordering::shuffle($data);
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($data)
         ]);
 
     }

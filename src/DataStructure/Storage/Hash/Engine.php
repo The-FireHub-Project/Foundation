@@ -19,7 +19,9 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
-use FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible;
+use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
+    Reversible, Shufflable
+};
 
 /**
  * ### Defines the fundamental contract for a hash storage engine
@@ -41,8 +43,9 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible;
  * @extends \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
  * @extends \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
  * @extends \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
+ * @extends  \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
  */
-interface Engine extends Cloneable, Forkable, Mappable, Filterable, Reversible {
+interface Engine extends Cloneable, Forkable, Mappable, Filterable, Reversible, Shufflable {
 
     /**
      * ### Returns a new empty copy of the hash engine

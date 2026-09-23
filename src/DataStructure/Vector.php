@@ -25,7 +25,7 @@ use FireHub\Core\Boundary\Capability\ {
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Reversible, Skippable, Takeable
+    Chunkable, Reversible, Shufflable, Skippable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Take
@@ -61,6 +61,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -74,7 +75,7 @@ use Traversable;
  * )
  */
 class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DequeMutation,
-    IndexMutation, Mappable, Rejectable, Chunkable, Takeable, Skippable, Reversible {
+    IndexMutation, Mappable, Rejectable, Chunkable, Takeable, Skippable, Reversible, Shufflable {
 
     /**
      * ### Freeze state
@@ -949,6 +950,39 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
         );
 
         $storage->insertBack(...$values);
+
+        return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::insertBack() To insert values into the storage.
+     * @uses \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable::shuffle() To shuffle the underlying
+     * storage when supported.
+     * @uses \FireHub\Runtime\Arr\Ordering::shuffle() To shuffle the materialized values.
+     */
+    public function shuffle ():static {
+
+        if ($this->storage instanceof Shufflable)
+            return new static($this->storage->shuffle());
+
+        $values = [];
+
+        foreach ($this->storage->iterate() as $value)
+            $values[] = $value;
+
+        Runtime\Arr\Ordering::shuffle($values);
+
+        $storage = $this->storage->emptyCopy();
+
+        foreach ($values as $value)
+            $storage->insertBack($value);
 
         return new static($storage);
 
