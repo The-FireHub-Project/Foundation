@@ -69,13 +69,21 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
     use HasCopyOnWriteState;
 
     /**
+     * ### Number of stored values
+     * @since 1.0.0
+     *
+     * @var non-negative-int
+     */
+    private int $size;
+
+    /**
      * ### Constructor
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\Initializer::initialize() To initialize the storage.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      *
-     * @param non-negative-int $size <p>
+     * @param non-negative-int $capacity <p>
      * The fixed number of positions in the storage.
      * </p>
      * @param Initializer<int, TValue> $initializer <p>
@@ -87,18 +95,15 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      *
      * @return void
      */
-    public function __construct (int $size, Initializer $initializer) {
+    public function __construct (int $capacity, Initializer $initializer) {
 
         /** @var State $data */
-        $data = new SplFixedArray($size);
-
-        $this->state = new SharedState($data);
+        $data = new SplFixedArray($capacity);
 
         $key = 0;
-
         foreach ($initializer->initialize() as $value) {
 
-            if ($key >= $size)
+            if ($key >= $capacity)
                 throw new OverflowException(
                     'The initializer contains more values than the storage size allows.'
                 );
@@ -107,6 +112,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
 
         }
 
+        $this->size = $key;
         $this->state = new SharedState($data);
 
     }
@@ -192,18 +198,10 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      * @inheritDoc
      *
      * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function size ():int {
 
-        $size = 0;
-
-        foreach ($this->state->data() as $value)
-            if ($value !== null)
-                $size++;
-
-        return $size;
+        return $this->size;
 
     }
 
@@ -273,7 +271,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
 
         for ($index = $this->capacity() - 1; $index >= 0; $index--)
             if ($data[$index] !== null)
-                return new Some($this->state->data()[$index]);
+                return new Some($data[$index]);
 
         return new None();
 
@@ -310,9 +308,11 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      */
     public function get (int $index):Maybe {
 
+        $data = $this->state->data();
+
         /** @var \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None */
         return $this->has($index) // @phpstan-ignore varTag.type
-            ? new Some($this->state->data()[$index])
+            ? new Some($data[$index])
             : new None();
 
     }
@@ -333,13 +333,19 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
 
         $this->detach();
 
-        $outcome = $this->state->data()[$index] === null
-            ? MutationOutcome::CREATED
-            : MutationOutcome::UPDATED;
+        $data = $this->state->data();
 
-        $this->state->data()[$index] = $value;
+        if ($data[$index] === null) {
 
-        return $outcome;
+            $data[$index] = $value;
+            $this->size++;
+
+            return MutationOutcome::CREATED;
+        }
+
+        $data[$index] = $value;
+
+        return MutationOutcome::UPDATED;
 
     }
 
@@ -363,6 +369,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
         $data = &$this->state->data();
 
         unset($data[$index]);
+        $this->size--; // @phpstan-ignore assign.propertyType
 
         return MutationOutcome::REMOVED;
 
