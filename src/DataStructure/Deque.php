@@ -24,8 +24,11 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\Side;
+use FireHub\Foundation\DataStructure\Storage\HashStorage;
+use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
+use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Padable, Reversible, Shufflable, Skippable, Takeable
+    Chunkable, Groupable, Padable, Reversible, Shufflable, Skippable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Take
@@ -57,6 +60,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Groupable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
@@ -72,7 +76,7 @@ use Traversable;
  * )
  */
 class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable, DequeMutation, Mappable, Rejectable,
-    Chunkable, Takeable, Skippable, Reversible, Shufflable, Padable {
+    Chunkable, Groupable, Takeable, Skippable, Reversible, Shufflable, Padable {
 
     /**
      * ### Freeze state
@@ -680,6 +684,62 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
         /** @var Chunk<int, TValue, $this> */
         return new Chunk($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty storage for each generated group.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the source storage.
+     * @uses \FireHub\Foundation\DataStructure\Map::set() To associate a group with its identity.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::insertBack() To insert values at the back of the
+     * storage.
+     *
+     * @template TGroup of array-key
+     */
+    public function groupBy (callable $selector):Map {
+
+        /**
+         * Native PHP array is intentionally used as the temporary group index.
+         *
+         * Group values are written directly into their destination storage during
+         * source iteration, avoiding repeated Map lookups, Maybe allocation, and
+         * high-level Vector mutation in the hot path.
+         *
+         * @var array<TGroup, StorageType> $groups
+         */
+        $groups = [];
+
+        foreach ($this->storage->iterate() as $index => $value) {
+
+            $identity = $selector($value, $index);
+
+            if (isset($groups[$identity])) {
+
+                $groups[$identity]->insertBack($value);
+
+                continue;
+
+            }
+
+            $storage = $this->storage->emptyCopy();
+
+            $storage->insertBack($value);
+
+            $groups[$identity] = $storage;
+
+        }
+
+        $result = new Map(new HashStorage(new ArrHash(new EmptyInit)));
+
+        foreach ($groups as $identity => $storage)
+            $result->set($identity, new static($storage));
+
+        /** @var \FireHub\Foundation\DataStructure\Map<TGroup, static> */
+        return $result;
 
     }
 
