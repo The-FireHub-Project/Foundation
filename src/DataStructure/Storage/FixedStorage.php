@@ -103,9 +103,11 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
                     'The initializer contains more values than the storage size allows.'
                 );
 
-            $this->state->data()[$key++] = $value;
+            $data[$key++] = $value;
 
         }
+
+        $this->state = new SharedState($data);
 
     }
 
@@ -245,7 +247,9 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      */
     public function first ():Maybe {
 
-        foreach ($this->state->data() as $value)
+        $data = $this->state->data();
+
+        foreach ($data as $value)
             if ($value !== null)
                 return new Some($value);
 
@@ -265,8 +269,10 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      */
     public function last ():Maybe {
 
+        $data = $this->state->data();
+
         for ($index = $this->capacity() - 1; $index >= 0; $index--)
-            if ($this->state->data()[$index] !== null)
+            if ($data[$index] !== null)
                 return new Some($this->state->data()[$index]);
 
         return new None();
@@ -283,9 +289,11 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      */
     public function has (int $index):bool {
 
+        $data = $this->state->data();
+
         return $index >= 0
             && $index < $this->capacity()
-            && $this->state->data()[$index] !== null;
+            && $data[$index] !== null;
 
     }
 
