@@ -24,7 +24,9 @@ use FireHub\Foundation\Maybe\ {
 use FireHub\Foundation\State\ {
     HasCopyOnWriteState, SharedState
 };
-use FireHub\Foundation\DataStructure\Storage\Exception\InvalidHashKeyException;
+use FireHub\Foundation\DataStructure\Storage\Exception\ {
+    InvalidHashKeyException, InvalidRangeLength
+};
 use FireHub\Runtime;
 
 /**
@@ -258,6 +260,34 @@ final class ArrHash implements Engine {
                 Runtime\Arr\Transform::filter(
                     $this->state->data(),
                     $callback
+                )
+            )
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Structure::slice() To slice the storage.
+     *
+     * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidRangeLength If the range length is less
+     * than zero.
+     */
+    public function slice (int $offset, ?int $length = null):self {
+
+        if ($length !== null && $length < 0)
+            throw new InvalidRangeLength(
+                'Range length must be greater than or equal to zero.'
+            );
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState(
+                Runtime\Arr\Structure::slice(
+                    $this->state->data(), $offset, $length, true
                 )
             )
         ]);

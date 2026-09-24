@@ -27,7 +27,7 @@ use FireHub\Core\Meta\Enum\ {
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Padable, Reversible, Shufflable
+    Padable, Reversible, Shufflable, Sliceable, Spliceable
 };
 use FireHub\Foundation\Maybe\ {
     None, Some
@@ -35,6 +35,7 @@ use FireHub\Foundation\Maybe\ {
 use FireHub\Foundation\State\ {
     HasCopyOnWriteState, SharedState
 };
+use FireHub\Foundation\DataStructure\Storage\Exception\InvalidRangeLength;
 use FireHub\Runtime;
 
 /**
@@ -61,6 +62,8 @@ use FireHub\Runtime;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Spliceable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Padable<int, TValue>
@@ -68,7 +71,7 @@ use FireHub\Runtime;
  * @phpstan-type State list<TValue>
  */
 final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
-    IndexMutation, Mappable, Filterable, Reversible, Shufflable, Padable {
+    IndexMutation, Mappable, Filterable, Sliceable, Spliceable, Reversible, Shufflable, Padable {
 
     /**
      * ### Copy-on-write state
@@ -431,6 +434,68 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
                     )
                 )
             )
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Structure::slice() To slice the storage.
+     *
+     * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidRangeLength If the range length is less
+     * than zero.
+     */
+    public function slice (int $offset, ?int $length = null):self {
+
+        if ($length !== null && $length < 0)
+            throw new InvalidRangeLength(
+                'Range length must be greater than or equal to zero.'
+            );
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState(
+                Runtime\Arr\Structure::slice(
+                    $this->state->data(), $offset, $length
+                )
+            )
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::detach() To detach the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Structure::splice() To splice the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit To initialize the removed values.
+     *
+     * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidRangeLength If the range length is less
+     * than zero.
+     */
+    public function splice (int $offset, ?int $length = null, iterable $replacement = []):self {
+
+        if ($length !== null && $length < 0)
+            throw new InvalidRangeLength(
+                'Range length must be greater than or equal to zero.'
+            );
+
+        $this->detach();
+
+        $data = &$this->state->data();
+
+        $removed = Runtime\Arr\Structure::splice(
+            $data, $offset, $length, Runtime\Iterator::toArray($replacement)
+        );
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($removed)
         ]);
 
     }

@@ -25,7 +25,7 @@ use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Reversible, Shufflable
+    Reversible, Shufflable, Sliceable
 };
 
 /**
@@ -51,11 +51,12 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
  */
 final readonly class HashStorage implements Storage, Cloneable, Forkable, Metrics, KeyAccess, KeyMutation, Mappable,
-    Filterable, Reversible, Shufflable {
+    Filterable, Sliceable, Reversible, Shufflable {
 
     /**
      * ### Underlying hash engine
@@ -240,6 +241,22 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
 
         return new self(
             $this->engine->filter($callback)
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::slice() To slice the hash engine using the
+     * specified callback.
+     */
+    public function slice (int $offset, ?int $length = null):self {
+
+        return new self(
+            $this->engine->slice($offset, $length)
         );
 
     }
