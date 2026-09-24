@@ -13,9 +13,11 @@
 
 namespace FireHub\Foundation\DataStructure\Transformation;
 
+use FireHub\Core\Boundary\Capability\Measurement\Metrics;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable;
 use FireHub\Foundation\DataStructure\Stream;
 use FireHub\Foundation\DataStructure\Exception\ChunkSizeException;
+use FireHub\Runtime;
 
 /**
  * ### Chunk transformation
@@ -34,7 +36,10 @@ use FireHub\Foundation\DataStructure\Exception\ChunkSizeException;
  *
  * @template TKey
  * @template TValue
- * @template TSource of \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable
+ * @template TSource of (
+ *     \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<TKey, TValue>
+ *     &\FireHub\Core\Boundary\Capability\Measurement\Metrics
+ * )
  */
 final readonly class Chunk {
 
@@ -49,7 +54,7 @@ final readonly class Chunk {
      * @return void
      */
     public function __construct (
-        private Chunkable $source
+        private Chunkable&Metrics $source
     ) {}
 
     /**
@@ -84,6 +89,76 @@ final readonly class Chunk {
             static function () use (&$position, $size):bool {
 
                 return $position++ % $size === 0;
+
+            }
+        );
+
+    }
+
+    /**
+     * ### Chunks by count
+     *
+     * Partitions the source into the specified number of consecutive chunks while distributing elements as evenly as
+     * possible between them.
+     *
+     * When the requested count cannot evenly divide the number of source elements, the additional elements are
+     * distributed among the first chunks. The difference in size between generated chunks is therefore at most one
+     * element.
+     *
+     * When the requested count exceeds the number of source elements, each element is placed into its own chunk and no
+     * empty chunks are generated.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable::chunkBy() To partition the source.
+     * @uses \FireHub\Core\Boundary\Capability\Measurement\Metrics::size() To determine the number of source elements.
+     * @uses \FireHub\Runtime\Math::divideInt() To calculate the chunk size.
+     * @uses \FireHub\Runtime\Math::min() To ensure the requested count is not greater than the number of source
+     * elements.
+     *
+     * @param positive-int $count <p>
+     * Requested number of chunks.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\DataStructure\Exception\ChunkSizeException If count is less than one.
+     *
+     * @return \FireHub\Foundation\DataStructure\Stream<int, TSource> The generated chunks.
+     */
+    public function byCount (int $count):Stream {
+
+        if ($count < 1)
+            throw new ChunkSizeException(
+                'The chunk count must be greater than zero.'
+            );
+
+        $source = $this->source;
+
+        $size = $source->size();
+
+        if ($size === 0)
+            return $this->source->chunkBy(
+                static fn ():bool => false
+            );
+
+        $count = Runtime\Math::min($count, $size);
+
+        $base_size = Runtime\Math::divideInt($size, $count);
+        $remainder = $size % $count;
+
+        $chunk = 0; $position = 1;
+        $boundary = $base_size + ($chunk < $remainder ? 1 : 0);
+        return $this->source->chunkBy(static function () use (
+            &$chunk, &$position, &$boundary, $base_size, $remainder
+        ):bool {
+
+                $position++;
+
+                if ($position <= $boundary) return false;
+
+                $chunk++;
+
+                $boundary += $base_size + ($chunk < $remainder ? 1 : 0);
+
+                return true;
 
             }
         );
