@@ -28,10 +28,10 @@ use FireHub\Foundation\DataStructure\Storage\HashStorage;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Groupable, Reversible, Shufflable, Skippable, Takeable
+    Chunkable, Groupable, Reversible, Shufflable, Skippable, Splittable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
-    Chunk, Select, Skip, Take
+    Chunk, Select, Skip, Split, Take
 };
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanCount,
@@ -61,6 +61,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Splittable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Groupable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<TKey, TValue>
@@ -77,7 +78,7 @@ use Traversable;
  * )
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
-    Rejectable, Chunkable, Groupable, Takeable, Skippable, Reversible, Shufflable {
+    Rejectable, Chunkable, Splittable, Groupable, Takeable, Skippable, Reversible, Shufflable {
 
     /**
      * ### Freeze state
@@ -519,6 +520,68 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
 
         /** @var Chunk<TKey, TValue, $this> */
         return new Chunk($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\FactorySource To create a stream source from a factory
+     * function.
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::set() To insert values at the storage.
+     */
+    public function splitBy (callable $callback):Stream {
+
+        return new Stream(
+            new FactorySource(
+                function () use ($callback):iterable {
+
+                    $storage = $this->storage->emptyCopy();
+                    $has_values = false;
+
+                    foreach ($this->storage->iterate() as $key => $value) {
+
+                        if ($callback($value, $key)) {
+
+                            if ($has_values)
+                                yield new static($storage);
+
+                            $storage = $this->storage->emptyCopy();
+                            $has_values = false;
+
+                            continue;
+
+                        }
+
+                        $storage->set($key, $value);
+                        $has_values = true;
+
+                    }
+
+                    if ($has_values)
+                        yield new static($storage);
+
+                }
+            )
+        );
+
+    }
+
+    /**
+     * ### Creates a Split instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Split<TKey, TValue, $this> A split transformation of the
+     * data structure.
+     */
+    public function split ():Split {
+
+        /** @var Split<TKey, TValue, $this> */
+        return new Split($this);
 
     }
 

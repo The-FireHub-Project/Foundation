@@ -135,7 +135,7 @@ final readonly class Chunk {
         $boundary = false;
 
         return $this->source->chunkBy(
-            static function ($value, $key) use ($callback, &$boundary):bool {
+            static function ($value, $key = null) use ($callback, &$boundary):bool {
 
                 $start = $boundary;
                 $boundary = $callback($value, $key);

@@ -49,7 +49,7 @@ interface Chunkable {
      * Each generated chunk preserves the concrete type and semantics of the source data structure.
      * @since 1.0.0
      *
-     * @param callable(TValue, TKey):bool $callback <p>
+     * @param callable(TValue, TKey=):bool $callback <p>
      * Callback that determines whether the current element starts a new chunk.
      * </p>
      *
