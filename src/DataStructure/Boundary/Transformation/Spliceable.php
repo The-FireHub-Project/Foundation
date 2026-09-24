@@ -75,7 +75,7 @@ interface Spliceable {
      * Sequence of values to insert at the resolved offset in place of the removed range.
      * </p>
      *
-     * @return static<TKey|TReplacementKey, TValue|TReplacementValue> A new instance containing the removed elements.
+     * @return static<TKey, TValue> A new instance containing the removed elements.
      */
     public function splice (int $offset, ?int $length = null, iterable $replacement = []):static;
 

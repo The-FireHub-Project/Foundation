@@ -30,7 +30,7 @@ use FireHub\Foundation\DataStructure\Storage\HashStorage;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Groupable, Padable, Reversible, Shufflable, Skippable, Splittable, Takeable
+    Chunkable, Groupable, Padable, Reversible, Shufflable, Skippable, Sliceable, Spliceable, Splittable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Split, Take
@@ -41,6 +41,7 @@ use FireHub\Foundation\DataStructure\Concern\ {
 };
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
+use FireHub\Foundation\DataStructure\Exception\InvalidRangeLength;
 use FireHub\Runtime;
 use Traversable;
 
@@ -67,6 +68,8 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Groupable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Spliceable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Padable<int, TValue>
@@ -83,8 +86,8 @@ use Traversable;
  * )
  */
 class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DequeMutation,
-    IndexMutation, Mappable, Rejectable, Chunkable, Splittable, Groupable, Takeable, Skippable, Reversible,
-    Shufflable, Padable {
+    IndexMutation, Mappable, Rejectable, Chunkable, Splittable, Groupable, Takeable, Skippable, Sliceable, Spliceable,
+    Reversible, Shufflable, Padable {
 
     /**
      * ### Freeze state
@@ -1048,6 +1051,142 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
 
         /** @var Skip<int, TValue, $this> */
         return new Skip($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable::slice() To slice the source storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the source storage.
+     * @uses \FireHub\Core\Boundary\Capability\Measurement\Metrics::size() To get the size of the source storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::insertBack() To insert values into the resulting
+     * storage.
+     * @uses \FireHub\Runtime\Math::min() To clamp the start index to the size of the source storage.
+     * @uses \FireHub\Runtime\Math::max() To clamp the end index to the size of the source storage.
+     *
+     * @throws \FireHub\Foundation\DataStructure\Exception\InvalidRangeLength If the range length is less than zero.
+     */
+    public function slice (int $offset, ?int $length = null):static {
+
+        if ($length !== null && $length < 0)
+            throw new InvalidRangeLength(
+                'Range length must be greater than or equal to zero.'
+            );
+
+        if ($this->storage instanceof Sliceable)
+            return new static(
+                $this->storage->slice($offset, $length)
+            );
+
+        $size = $this->storage->size();
+
+        $start = $offset >= 0
+            ? Runtime\Math::min($offset, $size)
+            : Runtime\Math::max(0, $size + $offset);
+
+        $end = $length === null
+            ? $size
+            : Runtime\Math::min($size, $start + max(0, $length));
+
+        $storage = $this->storage->emptyCopy();
+
+        $position = 0;
+        foreach ($this->storage->iterate() as $value) {
+
+            if ($position >= $end)
+                break;
+
+            if ($position >= $start)
+                $storage->insertBack($value);
+
+            $position++;
+
+        }
+
+        return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Boundary\Transformation\Spliceable::splice() To use an optimized storage
+     * splicing implementation when available.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To guard against mutation of a frozen vector.
+     * @uses \FireHub\Core\Boundary\Capability\Measurement\Metrics::size() To get the size of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create empty storages.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::insertBack() To insert values into storages.
+     * @uses \FireHub\Runtime\Math::min() To clamp the start index to the size of the source storage.
+     * @uses \FireHub\Runtime\Math::max() To clamp the end index to the size of the source storage.
+     *
+     * @template TReplacementValue
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
+     * @throws \FireHub\Foundation\DataStructure\Exception\InvalidRangeLength If the range length is less than zero.
+     */
+    public function splice (int $offset, ?int $length = null, iterable $replacement = []):static {
+
+        $this->guardMutable();
+
+        if ($length !== null && $length < 0)
+            throw new InvalidRangeLength(
+                'Range length must be greater than or equal to zero.'
+            );
+
+        if ($this->storage instanceof Spliceable)
+            return new static(
+                $this->storage->splice($offset, $length, $replacement)
+            );
+
+        $size = $this->storage->size();
+
+        $start = $offset >= 0
+            ? Runtime\Math::min($offset, $size)
+            : Runtime\Math::max(0, $size + $offset);
+
+        $end = $length === null
+            ? $size
+            : Runtime\Math::min($size, $start + $length);
+
+        /** @var StorageType $storage */
+        $storage = $this->storage->emptyCopy();
+        $removed = $this->storage->emptyCopy();
+
+        $position = 0; $replacement_inserted = false;
+        foreach ($this->storage->iterate() as $value) {
+
+            if (!$replacement_inserted && $position === $start) {
+
+                foreach ($replacement as $replacement_value)
+                    $storage->insertBack($replacement_value);
+
+                $replacement_inserted = true;
+
+            }
+
+            if ($position >= $start && $position < $end)
+                $removed->insertBack($value);
+            else
+                $storage->insertBack($value);
+
+            $position++;
+
+        }
+
+        if (!$replacement_inserted)
+            foreach ($replacement as $replacement_value)
+                $storage->insertBack($replacement_value);
+
+        $this->storage = $storage;
+
+        return new static($removed);
 
     }
 

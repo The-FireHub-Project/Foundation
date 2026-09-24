@@ -28,7 +28,7 @@ use FireHub\Foundation\DataStructure\Storage\HashStorage;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Groupable, Padable, Reversible, Shufflable, Skippable, Splittable, Takeable
+    Chunkable, Groupable, Padable, Reversible, Shufflable, Skippable, Sliceable, Splittable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Split, Take
@@ -39,6 +39,7 @@ use FireHub\Foundation\DataStructure\Concern\ {
 };
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
+use FireHub\Foundation\DataStructure\Exception\InvalidRangeLength;
 use FireHub\Runtime;
 use Traversable;
 
@@ -64,6 +65,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Groupable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Padable<int, TValue>
@@ -77,7 +79,7 @@ use Traversable;
  * )
  */
 class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable, DequeMutation, Mappable, Rejectable,
-    Chunkable, Splittable, Groupable, Takeable, Skippable, Reversible, Shufflable, Padable {
+    Chunkable, Splittable, Groupable, Takeable, Skippable, Sliceable, Reversible, Shufflable, Padable {
 
     /**
      * ### Freeze state
@@ -892,6 +894,64 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
         /** @var Skip<int, TValue, $this> */
         return new Skip($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable::slice() To slice the source storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the source storage.
+     * @uses \FireHub\Core\Boundary\Capability\Measurement\Metrics::size() To get the size of the source storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::insertBack() To insert values into the resulting
+     * storage.
+     * @uses \FireHub\Runtime\Math::min() To clamp the start index to the size of the source storage.
+     * @uses \FireHub\Runtime\Math::max() To clamp the end index to the size of the source storage.
+
+     *
+     * @throws \FireHub\Foundation\DataStructure\Exception\InvalidRangeLength If the range length is less than zero.
+     */
+    public function slice (int $offset, ?int $length = null):static {
+
+        if ($length !== null && $length < 0)
+            throw new InvalidRangeLength(
+                'Range length must be greater than or equal to zero.'
+            );
+
+        if ($this->storage instanceof Sliceable)
+            return new static(
+                $this->storage->slice($offset, $length)
+            );
+
+        $size = $this->storage->size();
+
+        $start = $offset >= 0
+            ? Runtime\Math::min($offset, $size)
+            : Runtime\Math::max(0, $size + $offset);
+
+        $end = $length === null
+            ? $size
+            : Runtime\Math::min($size, $start + max(0, $length));
+
+        $storage = $this->storage->emptyCopy();
+
+        $position = 0;
+        foreach ($this->storage->iterate() as $value) {
+
+            if ($position >= $end)
+                break;
+
+            if ($position >= $start)
+                $storage->insertBack($value);
+
+            $position++;
+
+        }
+
+        return new static($storage);
 
     }
 
