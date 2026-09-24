@@ -23,6 +23,9 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Foundation\DataStructure\Storage\FixedStorage;
+use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
+use FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable;
 use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
@@ -47,6 +50,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\MultiplicityMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -58,7 +62,7 @@ use Traversable;
  * )
  */
 class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DistinctMetrics,
-    MultiplicityMutation, Mappable, Rejectable {
+    MultiplicityMutation, Mappable, Rejectable, Partitionable {
 
     /**
      * ### Freeze state
@@ -517,6 +521,41 @@ class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
                 $storage->add($key); // @phpstan-ignore argument.type
 
         return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create empty storages for the generated partitions.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the source storage.
+     * @uses \FireHub\Foundation\DataStructure\Bag::add() To add values into their corresponding partition.
+     */
+    public function partition (callable $callback):Tuple {
+
+        $matched = $this->storage->emptyCopy();
+        $unmatched = $this->storage->emptyCopy();
+
+        foreach ($this->storage->iterate() as $index => $value) {
+
+            if ($callback($value, $index))
+                $matched->add($value);
+            else
+                $unmatched->add($value);
+
+        }
+
+        return new Tuple( // @phpstan-ignore return.type
+            new FixedStorage( // @phpstan-ignore argument.type
+                2,
+                new ArrayInit([
+                    new static($matched),
+                    new static($unmatched)
+                ])
+            )
+        );
 
     }
 

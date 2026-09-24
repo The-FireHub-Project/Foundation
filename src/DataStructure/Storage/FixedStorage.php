@@ -95,15 +95,18 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      *
      * @return void
      */
-    public function __construct (int $capacity, Initializer $initializer) {
+    public function __construct (
+        private readonly int $capacity,
+        Initializer $initializer
+    ) {
 
         /** @var State $data */
-        $data = new SplFixedArray($capacity);
+        $data = new SplFixedArray($this->capacity);
 
         $key = 0;
         foreach ($initializer->initialize() as $value) {
 
-            if ($key >= $capacity)
+            if ($key >= $this->capacity)
                 throw new OverflowException(
                     'The initializer contains more values than the storage size allows.'
                 );
@@ -122,13 +125,12 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::capacity() To get the capacity of the storage.
      * @uses \FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit To initialize the storage with an empty
      * array.
      */
     public function emptyCopy ():self {
 
-        return new self($this->capacity(), new EmptyInit);
+        return new self($this->capacity, new EmptyInit);
 
     }
 
@@ -171,12 +173,10 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      * @inheritDoc
      *
      * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::size() To get the size of the storage.
      */
     public function isEmpty ():bool {
 
-        return $this->size() === 0;
+        return $this->size === 0;
 
     }
 
@@ -209,13 +209,10 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      * @inheritDoc
      *
      * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function capacity ():int {
 
-        /** @var non-negative-int */
-        return $this->state->data()->getSize();
+        return $this->capacity;
 
     }
 
@@ -223,14 +220,11 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      * @inheritDoc
      *
      * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::capacity() To get the capacity of the storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::size() To get the size of the storage.
      */
     public function remainingCapacity ():int {
 
         /** @var non-negative-int */
-        return $this->capacity() - $this->size();
+        return $this->capacity - $this->size;
 
     }
 
@@ -260,7 +254,6 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::capacity() To get the capacity of the storage.
      * @uses \FireHub\Foundation\Maybe\Some As return value.
      * @uses \FireHub\Foundation\Maybe\None If the storage is empty.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
@@ -269,7 +262,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
 
         $data = $this->state->data();
 
-        for ($index = $this->capacity() - 1; $index >= 0; $index--)
+        for ($index = $this->capacity - 1; $index >= 0; $index--)
             if ($data[$index] !== null)
                 return new Some($data[$index]);
 
@@ -282,7 +275,6 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::capacity() To get the capacity of the storage.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function has (int $index):bool {
@@ -290,7 +282,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
         $data = $this->state->data();
 
         return $index >= 0
-            && $index < $this->capacity()
+            && $index < $this->capacity
             && $data[$index] !== null;
 
     }
@@ -322,16 +314,15 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::capacity() To get the capacity of the storage.
      * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::detach() To detach the storage.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function set (int $index, mixed $value):MutationOutcome {
 
-        if ($index < 0 || $index >= $this->capacity())
+        if ($index < 0 || $index >= $this->capacity)
             return MutationOutcome::NOT_FOUND;
 
-        $this->detach();
+       $this->detach();
 
         $data = $this->state->data();
 

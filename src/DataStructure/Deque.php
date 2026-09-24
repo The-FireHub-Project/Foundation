@@ -24,11 +24,15 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\Side;
-use FireHub\Foundation\DataStructure\Storage\HashStorage;
+use FireHub\Foundation\DataStructure\Storage\ {
+    FixedStorage, HashStorage
+};
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
-use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
+use FireHub\Foundation\DataStructure\Storage\Initialization\ {
+    ArrayInit, EmptyInit
+};
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Groupable, Padable, Reversible, Shufflable, Skippable, Sliceable, Splittable, Takeable
+    Chunkable, Groupable, Padable, Partitionable, Reversible, Shufflable, Skippable, Sliceable, Splittable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Split, Take
@@ -63,6 +67,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Splittable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Groupable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<int, TValue>
@@ -79,7 +84,7 @@ use Traversable;
  * )
  */
 class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable, DequeMutation, Mappable, Rejectable,
-    Chunkable, Splittable, Groupable, Takeable, Skippable, Sliceable, Reversible, Shufflable, Padable {
+    Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable, Sliceable, Reversible, Shufflable, Padable {
 
     /**
      * ### Freeze state
@@ -805,6 +810,42 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
         /** @var \FireHub\Foundation\DataStructure\Map<TGroup, static> */
         return $result;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create empty storages for the generated partitions.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the source storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::insertBack() To insert values into their
+     * corresponding partition.
+     */
+    public function partition (callable $callback):Tuple {
+
+        $matched = $this->storage->emptyCopy();
+        $unmatched = $this->storage->emptyCopy();
+
+        foreach ($this->storage->iterate() as $index => $value) {
+
+            if ($callback($value, $index))
+                $matched->insertBack($value);
+            else
+                $unmatched->insertBack($value);
+
+        }
+
+        return new Tuple( // @phpstan-ignore return.type
+            new FixedStorage( // @phpstan-ignore argument.type
+                2,
+                new ArrayInit([
+                    new static($matched),
+                    new static($unmatched)
+                ])
+            )
+        );
 
     }
 

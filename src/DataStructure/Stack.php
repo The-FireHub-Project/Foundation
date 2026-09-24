@@ -23,8 +23,10 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\DataStructure\Storage\FixedStorage;
+use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Skippable, Takeable
+    Partitionable, Skippable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Select, Skip, Take
@@ -54,6 +56,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\BackMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
  *
@@ -66,7 +69,7 @@ use Traversable;
  * )
  */
 class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable, BackMutation, Mappable, Rejectable,
-    Takeable, Skippable {
+    Partitionable, Takeable, Skippable {
 
     /**
      * ### Freeze state
@@ -482,6 +485,42 @@ class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
         /** @var Select<int, TValue, $this> */
         return new Select($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create empty storages for the generated partitions.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the source storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::insertBack() To insert values into their
+     * corresponding partition.
+     */
+    public function partition (callable $callback):Tuple {
+
+        $matched = $this->storage->emptyCopy();
+        $unmatched = $this->storage->emptyCopy();
+
+        foreach ($this->storage->iterate() as $index => $value) {
+
+            if ($callback($value, $index))
+                $matched->insertBack($value);
+            else
+                $unmatched->insertBack($value);
+
+        }
+
+        return new Tuple( // @phpstan-ignore return.type
+            new FixedStorage( // @phpstan-ignore argument.type
+                2,
+                new ArrayInit([
+                    new static($matched),
+                    new static($unmatched)
+                ])
+            )
+        );
 
     }
 

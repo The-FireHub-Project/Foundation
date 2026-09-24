@@ -24,11 +24,15 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
-use FireHub\Foundation\DataStructure\Storage\HashStorage;
+use FireHub\Foundation\DataStructure\Storage\ {
+    FixedStorage, HashStorage
+};
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
-use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
+use FireHub\Foundation\DataStructure\Storage\Initialization\ {
+    ArrayInit, EmptyInit
+};
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Groupable, Reversible, Shufflable, Skippable, Splittable, Takeable
+    Chunkable, Groupable, Partitionable, Reversible, Shufflable, Skippable, Splittable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Split, Take
@@ -63,6 +67,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Splittable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Groupable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
@@ -78,7 +83,7 @@ use Traversable;
  * )
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
-    Rejectable, Chunkable, Splittable, Groupable, Takeable, Skippable, Reversible, Shufflable {
+    Rejectable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable, Reversible, Shufflable {
 
     /**
      * ### Freeze state
@@ -636,6 +641,41 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
 
         /** @var \FireHub\Foundation\DataStructure\Map<TGroup, static> */
         return $result;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create empty storages for the generated partitions.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the source storage.
+     * @uses \FireHub\Foundation\DataStructure\Map::set() To associate a partition with its identity.
+     */
+    public function partition (callable $callback):Tuple {
+
+        $matched = $this->storage->emptyCopy();
+        $unmatched = $this->storage->emptyCopy();
+
+        foreach ($this->storage->iterate() as $key => $value) {
+
+            if ($callback($value, $key))
+                $matched->set($key, $value);
+            else
+                $unmatched->set($key, $value);
+
+        }
+
+        return new Tuple( // @phpstan-ignore return.type
+            new FixedStorage( // @phpstan-ignore argument.type
+                2,
+                new ArrayInit([
+                    new static($matched),
+                    new static($unmatched)
+                ])
+            )
+        );
 
     }
 
