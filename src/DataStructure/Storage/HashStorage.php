@@ -1,0 +1,352 @@
+<?php declare(strict_types = 1);
+
+/**
+ * This file is part of the FireHub Project ecosystem
+ *
+ * @author Danijel Galić <danijel.galic@outlook.com>
+ * @copyright 2026-present The FireHub Project - All rights reserved
+ * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
+ *
+ * @php-version >=8.2
+ * @package Foundation
+ */
+
+namespace FireHub\Foundation\DataStructure\Storage;
+
+use FireHub\Core\Boundary\Capability\ {
+    Access\KeyAccess,
+    Measurement\Metrics,
+    Mutation\KeyMutation,
+    Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Sortable,
+    Cloneable, Forkable
+};
+use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
+use FireHub\Core\Type\Maybe;
+use FireHub\Core\Meta\Enum\ {
+    Order, MutationOutcome
+};
+use FireHub\Foundation\DataStructure\Storage;
+use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
+use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
+    Reversible, Shufflable, Sliceable
+};
+
+/**
+ * ### Provides a storage implementation for hash-based key-value pairs
+ *
+ * Hash storage maintains values in an associative key-value representation, allowing values to be stored and
+ * retrieved through their associated keys. Keys are preserved as provided by the initialization strategy, and
+ * values retain the insertion order defined by the underlying PHP array representation.
+ *
+ * The implementation is designed as a general-purpose associative storage mechanism and does not impose the
+ * public semantics of a particular data structure. Higher-level structures such as maps and associative
+ * collections may use hash storage according to the capabilities they require.
+ *
+ * Hash storage manages the underlying representation and storage behavior while the consuming data structure
+ * defines the public API and semantics exposed to its users.
+ * @since 1.0.0
+ *
+ * @template TKey
+ * @template TValue
+ *
+ * @implements \FireHub\Foundation\DataStructure\Storage<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Access\KeyAccess<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\KeySortable<TKey>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
+ */
+final readonly class HashStorage implements Storage, Cloneable, Forkable, Metrics, KeyAccess, KeyMutation, Mappable,
+    Filterable, Sortable, KeySortable, Sliceable, Reversible, Shufflable {
+
+    /**
+     * ### Underlying hash engine
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\DataStructure\Storage\Hash\Engine<TKey, TValue> $engine <p>
+     * The hash engine to use for storage.
+     * </p>
+     *
+     * @return void
+     */
+    public function __construct (
+        private Engine $engine
+    ) {}
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::emptyCopy() To create an empty copy of the hash
+     * engine.
+     */
+    public function emptyCopy ():self {
+
+        return new self(
+            $this->engine->emptyCopy()
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::copy() To copy the hash engine.
+     */
+    public function copy ():self {
+
+        return new self(
+            $this->engine->copy()
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::fork() To fork the hash engine.
+     */
+    public function fork ():self {
+
+        return new self(
+            $this->engine->fork()
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::iterate() To iterate over the hash engine.
+     */
+    public function iterate ():iterable {
+
+        return $this->engine->iterate();
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\HashStorage::size() To get the size of the storage.
+     */
+    public function isEmpty ():bool {
+
+        return $this->size() === 0;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::size() To get the size of the hash engine.
+     */
+    public function size ():int {
+
+        return $this->engine->size();
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::has() To check if the hash engine has a value for
+     * the specified key.
+     */
+    public function has (mixed $key):bool {
+
+        return $this->engine->has($key);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::get() To get the value associated with the
+     * specified key.
+     */
+    public function get (mixed $key):Maybe {
+
+        return $this->engine->get($key);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::set() To set the value associated with the
+     * specified key.
+     */
+    public function set (mixed $key, mixed $value):MutationOutcome {
+
+        return $this->engine->set($key, $value);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::remove() To remove the value associated with the
+     * specified key.
+     */
+    public function remove (mixed $key):MutationOutcome {
+
+        return $this->engine->remove($key);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::map() To map the hash engine using the
+     * specified callback.
+     */
+    public function map (callable $callback):self {
+
+        return new self(
+            $this->engine->map($callback)
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::filter() To filter the hash engine using the
+     * specified callback.
+     */
+    public function filter (callable $callback):self {
+
+        return new self(
+            $this->engine->filter($callback)
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sort() To sort the values in the storage.
+     */
+    public function sort (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):self {
+
+        return new self($this->engine->sort($order, $algorithm));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortKeys() To sort the values in the storage.
+     */
+    public function sortKeys (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):self {
+
+        return new self($this->engine->sortKeys($order, $algorithm));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortWith() To sort the values in the storage.
+     */
+    public function sortWith (callable $comparator, ?SortAlgorithm $algorithm = null):self {
+
+        return new self($this->engine->sortWith($comparator, $algorithm));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\KeySortable::sortKeysWith() To sort the keys in the
+     * storage.
+     */
+    public function sortKeysWith (callable $comparator, ?SortAlgorithm $algorithm = null):self {
+
+        return new self($this->engine->sortKeysWith($comparator, $algorithm));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::slice() To slice the hash engine using the
+     * specified callback.
+     */
+    public function slice (int $offset, ?int $length = null):self {
+
+        return new self(
+            $this->engine->slice($offset, $length)
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::reverse() To reverse the hash engine.
+     */
+    public function reverse ():self {
+
+        return new self(
+            $this->engine->reverse()
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::shuffle() To shuffle the hash engine.
+     */
+    public function shuffle ():self {
+
+        return new self(
+            $this->engine->shuffle()
+        );
+
+    }
+
+}
