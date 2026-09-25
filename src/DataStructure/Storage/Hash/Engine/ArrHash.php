@@ -14,7 +14,9 @@
 namespace FireHub\Foundation\DataStructure\Storage\Hash\Engine;
 
 use FireHub\Core\Type\Maybe;
-use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Core\Meta\Enum\ {
+    Order, MutationOutcome
+};
 use FireHub\Foundation\DataStructure\Storage\Initializer;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
@@ -262,6 +264,86 @@ final class ArrHash implements Engine {
                     $callback
                 )
             )
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Ordering::sort() To sort the values in the storage.
+     */
+    public function sort (Order $order = Order::ASC):self {
+
+        $data = $this->state->data();
+
+        Runtime\Arr\Ordering::sort($data, true, $order);
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($data)
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Ordering::sortByKeys() To sort the keys in the storage.
+     */
+    public function sortKeys (Order $order = Order::ASC):self {
+
+        $data = $this->state->data();
+
+        Runtime\Arr\Ordering::sortByKeys($data, $order);
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($data)
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Ordering::sortBy() To sort the values in the storage.
+     */
+    public function sortWith (callable $comparator):self {
+
+        $data = $this->state->data();
+
+        Runtime\Arr\Ordering::sortBy($data, $comparator, true);
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($data)
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Ordering::sortKeysBy() To sort the keys in the storage.
+     */
+    public function sortKeysWith (callable $comparator):self {
+
+        $data = $this->state->data();
+
+        Runtime\Arr\Ordering::sortKeysBy($data, $comparator);
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($data)
         ]);
 
     }

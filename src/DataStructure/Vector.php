@@ -19,12 +19,12 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
-    Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
+    Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable, Transformation\Sortable,
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
-    Side, MutationOutcome
+    Order, Side, MutationOutcome
 };
 use FireHub\Foundation\DataStructure\Storage\ {
     FixedStorage, HashStorage
@@ -68,6 +68,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Splittable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Groupable<int, TValue>
@@ -89,10 +90,11 @@ use Traversable;
  *     &IndexAccess<TValue>
  *     &DequeMutation<TValue>
  *     &IndexMutation<TValue>
+ *     &Sortable<TValue>
  * )
  */
 class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DequeMutation,
-    IndexMutation, Mappable, Rejectable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable,
+    IndexMutation, Mappable, Rejectable, Sortable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable,
     Sliceable, Spliceable, Reversible, Shufflable, Padable {
 
     /**
@@ -136,7 +138,8 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
      * @return void
      */
     final public function __construct (
-        protected Storage&Cloneable&Forkable&Metrics&BoundaryAccess&IndexAccess&DequeMutation&IndexMutation $storage
+        protected Storage&Cloneable&Forkable&Metrics&BoundaryAccess&IndexAccess&DequeMutation&IndexMutation&Sortable
+        $storage
     ) {}
 
     /**
@@ -793,6 +796,32 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
 
         /** @var Select<int, TValue, $this> */
         return new Select($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sort() To sort the values in the storage.
+     */
+    public function sort (Order $order = Order::DESC):static {
+
+        return new static($this->storage->sort($order));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortWith() To sort the values in the storage.
+     */
+    public function sortWith (callable $comparator):static {
+
+        return new static($this->storage->sortWith($comparator));
 
     }
 

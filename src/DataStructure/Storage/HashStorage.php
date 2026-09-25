@@ -17,11 +17,13 @@ use FireHub\Core\Boundary\Capability\ {
     Access\KeyAccess,
     Measurement\Metrics,
     Mutation\KeyMutation,
-    Transformation\Filterable, Transformation\Mappable,
+    Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Sortable,
     Cloneable, Forkable
 };
 use FireHub\Core\Type\Maybe;
-use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Core\Meta\Enum\ {
+    Order, MutationOutcome
+};
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
@@ -51,12 +53,14 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\KeySortable<TKey>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
  */
 final readonly class HashStorage implements Storage, Cloneable, Forkable, Metrics, KeyAccess, KeyMutation, Mappable,
-    Filterable, Sliceable, Reversible, Shufflable {
+    Filterable, Sortable, KeySortable, Sliceable, Reversible, Shufflable {
 
     /**
      * ### Underlying hash engine
@@ -242,6 +246,59 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
         return new self(
             $this->engine->filter($callback)
         );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sort() To sort the values in the storage.
+     */
+    public function sort (Order $order = Order::ASC):self {
+
+        return new self($this->engine->sort($order));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortKeys() To sort the values in the storage.
+     */
+    public function sortKeys (Order $order = Order::ASC):self {
+
+        return new self($this->engine->sortKeys($order));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortWith() To sort the values in the storage.
+     */
+    public function sortWith (callable $comparator):self {
+
+        return new self($this->engine->sortWith($comparator));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\KeySortable::sortKeysWith() To sort the keys in the
+     * storage.
+     */
+    public function sortKeysWith (callable $comparator):self {
+
+        return new self($this->engine->sortKeysWith($comparator));
 
     }
 

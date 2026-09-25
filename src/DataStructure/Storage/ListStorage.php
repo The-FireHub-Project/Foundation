@@ -17,12 +17,12 @@ use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
-    Transformation\Filterable, Transformation\Mappable,
+    Transformation\Filterable, Transformation\Mappable, Transformation\Sortable,
     Cloneable, Forkable
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
-    MutationOutcome, Side
+    Order, MutationOutcome, Side
 };
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
@@ -62,6 +62,7 @@ use FireHub\Runtime;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Spliceable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
@@ -71,7 +72,7 @@ use FireHub\Runtime;
  * @phpstan-type State list<TValue>
  */
 final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
-    IndexMutation, Mappable, Filterable, Sliceable, Spliceable, Reversible, Shufflable, Padable {
+    IndexMutation, Mappable, Filterable, Sortable, Sliceable, Spliceable, Reversible, Shufflable, Padable {
 
     /**
      * ### Copy-on-write state
@@ -434,6 +435,46 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
                     )
                 )
             )
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Ordering::sort() To sort the values in the storage.
+     */
+    public function sort (Order $order = Order::ASC):self {
+
+        $data = $this->state->data();
+
+        Runtime\Arr\Ordering::sort($data, order: $order);
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($data)
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Ordering::sortBy() To sort the values in the storage.
+     */
+    public function sortWith (callable $comparator):self {
+
+        $data = $this->state->data();
+
+        Runtime\Arr\Ordering::sortBy($data, $comparator);
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($data)
         ]);
 
     }

@@ -19,11 +19,14 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\KeyMutation,
-    Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
+    Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Rejectable,
+    Transformation\Sortable,
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
-use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Core\Meta\Enum\ {
+    Order, MutationOutcome
+};
 use FireHub\Foundation\DataStructure\Storage\ {
     FixedStorage, HashStorage
 };
@@ -64,6 +67,8 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\KeySortable<TKey>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Splittable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Groupable<TKey, TValue>
@@ -80,10 +85,13 @@ use Traversable;
  *     &Metrics
  *     &KeyAccess<TKey, TValue>
  *     &KeyMutation<TKey, TValue>
+ *     &Sortable<TValue>
+ *     &KeySortable<TKey>
  * )
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
-    Rejectable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable, Reversible, Shufflable {
+    Rejectable, Sortable, KeySortable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable, Reversible,
+    Shufflable {
 
     /**
      * ### Freeze state
@@ -126,7 +134,7 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @return void
      */
     final public function __construct (
-        protected Storage&Cloneable&Forkable&Metrics&KeyAccess&KeyMutation $storage
+        protected Storage&Cloneable&Forkable&Metrics&KeyAccess&KeyMutation&Sortable&KeySortable $storage
     ) {}
 
     /**
@@ -467,6 +475,59 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
 
         /** @var Select<TKey, TValue, $this> */
         return new Select($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sort() To sort the values in the storage.
+     */
+    public function sort (Order $order = Order::ASC):static {
+
+        return new static($this->storage->sort($order));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortKeys() To sort the values in the storage.
+     */
+    public function sortKeys (Order $order = Order::ASC):static {
+
+        return new static($this->storage->sortKeys($order));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortWith() To sort the values in the storage.
+     */
+    public function sortWith (callable $comparator):static {
+
+        return new static($this->storage->sortWith($comparator));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\KeySortable::sortKeysWith() To sort the keys in the
+     * storage.
+     */
+    public function sortKeysWith (callable $comparator):static {
+
+        return new static($this->storage->sortKeysWith($comparator));
 
     }
 
