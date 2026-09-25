@@ -22,6 +22,7 @@ use FireHub\Core\Boundary\Capability\ {
     Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable, Transformation\Sortable,
     Cloneable, Forkable, Freezable, Thawable
 };
+use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, Side, MutationOutcome
@@ -806,9 +807,9 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
      *
      * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sort() To sort the values in the storage.
      */
-    public function sort (Order $order = Order::DESC):static {
+    public function sort (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):static {
 
-        return new static($this->storage->sort($order));
+        return new static($this->storage->sort($order, $algorithm));
 
     }
 
@@ -819,9 +820,9 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
      *
      * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortWith() To sort the values in the storage.
      */
-    public function sortWith (callable $comparator):static {
+    public function sortWith (callable $comparator, ?SortAlgorithm $algorithm = null):static {
 
-        return new static($this->storage->sortWith($comparator));
+        return new static($this->storage->sortWith($comparator, $algorithm));
 
     }
 

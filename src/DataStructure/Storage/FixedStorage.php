@@ -17,11 +17,14 @@ use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Measurement\Capacity, Measurement\Metrics,
     Mutation\IndexMutation,
-    Transformation\Mappable,
+    Transformation\Mappable, Transformation\Sortable,
     Cloneable, Forkable
 };
+use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
 use FireHub\Core\Type\Maybe;
-use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Core\Meta\Enum\ {
+    Order, MutationOutcome
+};
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
 use FireHub\Foundation\Maybe\ {
@@ -30,6 +33,7 @@ use FireHub\Foundation\Maybe\ {
 use FireHub\Foundation\State\ {
     HasCopyOnWriteState, SharedState
 };
+use FireHub\Foundation\Algorithm\Sorting\QuickSort;
 use FireHub\Foundation\DataStructure\Exception\OverflowException;
 use FireHub\Runtime;
 use SplFixedArray;
@@ -54,11 +58,12 @@ use SplFixedArray;
  * @implements \FireHub\Core\Boundary\Capability\Access\IndexAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
  *
  * @phpstan-type State SplFixedArray<null|TValue>
  */
 final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capacity, BoundaryAccess, IndexAccess,
-    IndexMutation, Mappable {
+    IndexMutation, Mappable, Sortable {
 
     /**
      * ### Copy-on-write state
@@ -367,6 +372,36 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
     }
 
     /**
+     * ### Packs occupied values
+     *
+     * Creates a new storage instance with all occupied values moved toward the beginning of the storage while preserving
+     * their relative order.
+     *
+     * Empty positions are moved after all occupied positions. The size and capacity of the storage remain unchanged.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     *
+     * @return self<TValue> New storage instance with packed occupied values.
+     */
+    public function pack ():self {
+
+        $source = $this->state->data();
+        $packed = new SplFixedArray($this->capacity);
+
+        $index = 0;
+
+        foreach ($source as $value)
+            if ($value !== null)
+                $packed[$index++] = $value;
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($packed)
+        ]);
+
+    }
+
+    /**
      * @inheritDoc
      *
      * @since 1.0.0
@@ -385,6 +420,55 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
         return clone($this, [ // @phpstan-ignore assign.propertyType
             'state' => new SharedState($mapped)
         ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     */
+    public function sort (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):self {
+
+        return $this->sortWith(
+            match ($order) {
+                Order::ASC => static fn (mixed $first, mixed $second):int => $first <=> $second,
+                Order::DESC => static fn (mixed $first, mixed $second):int => $second <=> $first
+            },
+            $algorithm
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::pack() To pack the occupied values before sorting.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\Algorithm\Sorting\QuickSort To sort the values.
+     */
+    public function sortWith (callable $comparator, ?SortAlgorithm $algorithm = null):self {
+
+        $sorted = $this->pack();
+        $data = $sorted->state->data();
+
+        ($algorithm ?? new QuickSort())->sort(
+            $sorted->size,
+            static fn (int $index):mixed => $data[$index],
+            static function (int $first, int $second) use ($data):void {
+
+                $temporary = $data[$first];
+
+                $data[$first] = $data[$second];
+                $data[$second] = $temporary;
+
+            },
+            $comparator
+        );
+
+        return $sorted;
 
     }
 

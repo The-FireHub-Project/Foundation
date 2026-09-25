@@ -23,6 +23,7 @@ use FireHub\Core\Boundary\Capability\ {
     Transformation\Sortable,
     Cloneable, Forkable, Freezable, Thawable
 };
+use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, MutationOutcome
@@ -485,9 +486,9 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      *
      * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sort() To sort the values in the storage.
      */
-    public function sort (Order $order = Order::ASC):static {
+    public function sort (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):static {
 
-        return new static($this->storage->sort($order));
+        return new static($this->storage->sort($order, $algorithm));
 
     }
 
@@ -498,9 +499,9 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      *
      * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortKeys() To sort the values in the storage.
      */
-    public function sortKeys (Order $order = Order::ASC):static {
+    public function sortKeys (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):static {
 
-        return new static($this->storage->sortKeys($order));
+        return new static($this->storage->sortKeys($order, $algorithm));
 
     }
 
@@ -511,9 +512,9 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      *
      * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortWith() To sort the values in the storage.
      */
-    public function sortWith (callable $comparator):static {
+    public function sortWith (callable $comparator, ?SortAlgorithm $algorithm = null):static {
 
-        return new static($this->storage->sortWith($comparator));
+        return new static($this->storage->sortWith($comparator, $algorithm));
 
     }
 
@@ -525,9 +526,9 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @uses \FireHub\Core\Boundary\Capability\Transformation\KeySortable::sortKeysWith() To sort the keys in the
      * storage.
      */
-    public function sortKeysWith (callable $comparator):static {
+    public function sortKeysWith (callable $comparator, ?SortAlgorithm $algorithm = null):static {
 
-        return new static($this->storage->sortKeysWith($comparator));
+        return new static($this->storage->sortKeysWith($comparator, $algorithm));
 
     }
 

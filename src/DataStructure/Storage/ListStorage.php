@@ -20,6 +20,7 @@ use FireHub\Core\Boundary\Capability\ {
     Transformation\Filterable, Transformation\Mappable, Transformation\Sortable,
     Cloneable, Forkable
 };
+use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, MutationOutcome, Side
@@ -444,10 +445,20 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::sortWith() To sort the storage.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      * @uses \FireHub\Runtime\Arr\Ordering::sort() To sort the values in the storage.
      */
-    public function sort (Order $order = Order::ASC):self {
+    public function sort (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):self {
+
+        if ($algorithm !== null)
+            return $this->sortWith(
+                match ($order) {
+                    Order::ASC => static fn (mixed $first, mixed $second):int => $first <=> $second,
+                    Order::DESC => static fn (mixed $first, mixed $second):int => $second <=> $first
+                },
+                $algorithm
+            );
 
         $data = $this->state->data();
 
@@ -464,14 +475,40 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::sort() To sort the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::size() To get the size of the storage.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      * @uses \FireHub\Runtime\Arr\Ordering::sortBy() To sort the values in the storage.
      */
-    public function sortWith (callable $comparator):self {
+    public function sortWith (callable $comparator, ?SortAlgorithm $algorithm = null):self {
 
         $data = $this->state->data();
 
-        Runtime\Arr\Ordering::sortBy($data, $comparator);
+        if ($algorithm === null) {
+
+            Runtime\Arr\Ordering::sortBy($data, $comparator);
+
+        } else {
+
+            $algorithm->sort(
+                $this->size(),
+                static function (int $index) use (&$data):mixed {
+
+                    return $data[$index]; // @phpstan-ignore offsetAccess.notFound
+
+                },
+                static function (int $first, int $second) use (&$data):void {
+
+                    $temporary = $data[$first]; // @phpstan-ignore offsetAccess.notFound
+
+                    $data[$first] = $data[$second]; // @phpstan-ignore offsetAccess.notFound
+                    $data[$second] = $temporary;
+
+                },
+                $comparator
+            );
+
+        }
 
         return clone($this, [ // @phpstan-ignore assign.propertyType
             'state' => new SharedState($data)

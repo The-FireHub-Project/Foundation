@@ -13,6 +13,7 @@
 
 namespace FireHub\Foundation\DataStructure\Storage\Hash\Engine;
 
+use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, MutationOutcome
@@ -273,12 +274,28 @@ final class ArrHash implements Engine {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::sortUsing() To sort the storage.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      * @uses \FireHub\Runtime\Arr\Ordering::sort() To sort the values in the storage.
      */
-    public function sort (Order $order = Order::ASC):self {
+    public function sort (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):self {
 
         $data = $this->state->data();
+
+        if ($algorithm !== null) {
+
+            return $this->sortUsing(
+                $algorithm,
+                match ($order) {
+                    Order::ASC => static fn (mixed $first, mixed $second):int =>
+                        $data[$first] <=> $data[$second], // @phpstan-ignore-line
+
+                    Order::DESC => static fn (mixed $first, mixed $second):int =>
+                        $data[$second] <=> $data[$first] // @phpstan-ignore-line
+                }
+            );
+
+        }
 
         Runtime\Arr\Ordering::sort($data, true, $order);
 
@@ -293,10 +310,23 @@ final class ArrHash implements Engine {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::sortUsing() To sort the storage.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      * @uses \FireHub\Runtime\Arr\Ordering::sortByKeys() To sort the keys in the storage.
      */
-    public function sortKeys (Order $order = Order::ASC):self {
+    public function sortKeys (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):self {
+
+        if ($algorithm !== null)
+            return $this->sortUsing(
+                $algorithm,
+                match ($order) {
+                    Order::ASC => static fn (mixed $first, mixed $second):int =>
+                        $first <=> $second,
+
+                    Order::DESC => static fn (mixed $first, mixed $second):int =>
+                        $second <=> $first
+                }
+            );
 
         $data = $this->state->data();
 
@@ -313,12 +343,26 @@ final class ArrHash implements Engine {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::sortUsing() To sort the storage.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      * @uses \FireHub\Runtime\Arr\Ordering::sortBy() To sort the values in the storage.
      */
-    public function sortWith (callable $comparator):self {
+    public function sortWith (callable $comparator, ?SortAlgorithm $algorithm = null):self {
 
         $data = $this->state->data();
+
+        if ($algorithm !== null) {
+
+            return $this->sortUsing(
+                $algorithm,
+                static fn (mixed $first, mixed $second):int =>
+                $comparator(
+                    $data[$first], // @phpstan-ignore offsetAccess.notFound
+                    $data[$second] // @phpstan-ignore offsetAccess.notFound
+                )
+            );
+
+        }
 
         Runtime\Arr\Ordering::sortBy($data, $comparator, true);
 
@@ -333,10 +377,17 @@ final class ArrHash implements Engine {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::sortUsing() To sort the storage.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      * @uses \FireHub\Runtime\Arr\Ordering::sortKeysBy() To sort the keys in the storage.
      */
-    public function sortKeysWith (callable $comparator):self {
+    public function sortKeysWith (callable $comparator, ?SortAlgorithm $algorithm = null):self {
+
+        if ($algorithm !== null)
+            return $this->sortUsing(
+                $algorithm,
+                $comparator
+            );
 
         $data = $this->state->data();
 
@@ -437,6 +488,57 @@ final class ArrHash implements Engine {
     private function isValidKey (mixed $key):bool {
 
         return Runtime\DataIs::int($key) || Runtime\DataIs::string($key);
+
+    }
+
+    /**
+     * ### Sorts hash keys using a sorting algorithm
+     *
+     * Sorts the keys representing the positional order of the hash and rebuilds the underlying hash according to the
+     * resulting order.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::size() To get the size of the hash.
+     * @uses \FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm::sort() To sort the keys.
+     * @uses \FireHub\Runtime\Arr\Access::keys() To get the keys of the hash.
+     * @uses \SebastianBergmann\GitState\State::data() To get the data of the hash.
+     *
+     * @param \FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm<TKey> $algorithm Sorting algorithm.
+     * @param callable(TKey, TKey):int $comparator Comparator used to order keys.
+     *
+     * @return self<TKey, TValue> Sorted hash.
+     */
+    private function sortUsing (SortAlgorithm $algorithm, callable $comparator):self {
+
+        $data = $this->state->data();
+        $keys = Runtime\Arr\Access::keys($data);
+
+        $algorithm->sort(
+            $this->size(),
+            static function (int $index) use (&$keys):mixed {
+
+                return $keys[$index]; // @phpstan-ignore offsetAccess.notFound
+
+            },
+            static function (int $first, int $second) use (&$keys):void {
+
+                $temporary = $keys[$first]; // @phpstan-ignore offsetAccess.notFound
+
+                $keys[$first] = $keys[$second]; // @phpstan-ignore offsetAccess.notFound
+                $keys[$second] = $temporary;
+
+            },
+            $comparator
+        );
+
+        $sorted = [];
+
+        foreach ($keys as $key)
+            $sorted[$key] = $data[$key]; // @phpstan-ignore offsetAccess.notFound
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($sorted)
+        ]);
 
     }
 

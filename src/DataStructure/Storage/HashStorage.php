@@ -20,6 +20,7 @@ use FireHub\Core\Boundary\Capability\ {
     Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Sortable,
     Cloneable, Forkable
 };
+use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, MutationOutcome
@@ -256,9 +257,9 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
      *
      * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sort() To sort the values in the storage.
      */
-    public function sort (Order $order = Order::ASC):self {
+    public function sort (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):self {
 
-        return new self($this->engine->sort($order));
+        return new self($this->engine->sort($order, $algorithm));
 
     }
 
@@ -269,9 +270,9 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
      *
      * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortKeys() To sort the values in the storage.
      */
-    public function sortKeys (Order $order = Order::ASC):self {
+    public function sortKeys (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):self {
 
-        return new self($this->engine->sortKeys($order));
+        return new self($this->engine->sortKeys($order, $algorithm));
 
     }
 
@@ -282,9 +283,9 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
      *
      * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortWith() To sort the values in the storage.
      */
-    public function sortWith (callable $comparator):self {
+    public function sortWith (callable $comparator, ?SortAlgorithm $algorithm = null):self {
 
-        return new self($this->engine->sortWith($comparator));
+        return new self($this->engine->sortWith($comparator, $algorithm));
 
     }
 
@@ -296,9 +297,9 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
      * @uses \FireHub\Core\Boundary\Capability\Transformation\KeySortable::sortKeysWith() To sort the keys in the
      * storage.
      */
-    public function sortKeysWith (callable $comparator):self {
+    public function sortKeysWith (callable $comparator, ?SortAlgorithm $algorithm = null):self {
 
-        return new self($this->engine->sortKeysWith($comparator));
+        return new self($this->engine->sortKeysWith($comparator, $algorithm));
 
     }
 
