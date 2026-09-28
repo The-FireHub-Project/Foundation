@@ -36,14 +36,14 @@ use FireHub\Foundation\DataStructure\Storage\Initialization\ {
     ArrayInit, EmptyInit
 };
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Groupable, Partitionable, Reversible, Shufflable, Skippable, Splittable, Takeable
+    Chunkable, Flippable, Groupable, Partitionable, Reversible, Shufflable, Skippable, Splittable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Split, Take
 };
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanCount,
-    Transformation\CanMultiplicity, Transformation\CanReject
+    Transformation\CanFlip, Transformation\CanMultiplicity, Transformation\CanReject
 };
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
@@ -78,6 +78,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Flippable<TKey, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<TKey, TValue>
@@ -92,7 +93,7 @@ use Traversable;
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
     Rejectable, Sortable, KeySortable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable, Reversible,
-    Shufflable {
+    Shufflable, Flippable {
 
     /**
      * ### Freeze state
@@ -123,6 +124,14 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanReject<TKey, TValue>
      */
     use CanReject;
+
+    /**
+     * ### Provides flipping capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanFlip<TKey, TValue>
+     */
+    use CanFlip;
 
     /**
      * ### Constructor

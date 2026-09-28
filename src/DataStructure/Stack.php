@@ -26,14 +26,14 @@ use FireHub\Core\Type\Maybe;
 use FireHub\Foundation\DataStructure\Storage\FixedStorage;
 use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Partitionable, Skippable, Takeable
+    Flippable, Partitionable, Skippable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Select, Skip, Take
 };
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanCount,
-    Transformation\CanMultiplicity, Transformation\CanReject
+    Transformation\CanFlip, Transformation\CanMultiplicity, Transformation\CanReject
 };
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
@@ -59,6 +59,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Flippable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -69,7 +70,7 @@ use Traversable;
  * )
  */
 class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable, BackMutation, Mappable, Rejectable,
-    Partitionable, Takeable, Skippable {
+    Partitionable, Takeable, Skippable, Flippable {
 
     /**
      * ### Freeze state
@@ -100,6 +101,14 @@ class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable,
      * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanReject<int, TValue>
      */
     use CanReject;
+
+    /**
+     * ### Provides flipping capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanFlip<int, TValue>
+     */
+    use CanFlip;
 
     /**
      * ### Constructor

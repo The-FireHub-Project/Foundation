@@ -38,14 +38,15 @@ use FireHub\Foundation\DataStructure\Storage\Initialization\ {
     ArrayInit, EmptyInit
 };
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
-    Chunkable, Groupable, Padable, Partitionable, Reversible, Shufflable, Skippable, Sliceable, Splittable, Takeable
+    Chunkable, Flippable, Groupable, Padable, Partitionable, Reversible, Shufflable, Skippable, Sliceable,
+    Splittable, Takeable
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Split, Take
 };
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanCount,
-    Transformation\CanMultiplicity, Transformation\CanReject
+    Transformation\CanFlip, Transformation\CanMultiplicity, Transformation\CanReject
 };
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
@@ -82,6 +83,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Padable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Flippable<int, TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -95,7 +97,7 @@ use Traversable;
  */
 class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable, DequeMutation, Mappable, Rejectable,
     Sortable, DistributionSortable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable, Sliceable,
-    Reversible, Shufflable, Padable {
+    Reversible, Shufflable, Padable, Flippable {
 
     /**
      * ### Freeze state
@@ -126,6 +128,14 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
      * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanReject<int, TValue>
      */
     use CanReject;
+
+    /**
+     * ### Provides flipping capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanFlip<int, TValue>
+     */
+    use CanFlip;
 
     /**
      * ### Constructor
