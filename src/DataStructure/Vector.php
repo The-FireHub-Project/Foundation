@@ -19,10 +19,13 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
-    Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable, Transformation\Sortable,
+    Transformation\DistributionSortable, Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
+    Transformation\Sortable,
     Cloneable, Forkable, Freezable, Thawable
 };
-use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
+use FireHub\Core\Boundary\Algorithm\Sorting\ {
+    DistributionSortAlgorithm, SortAlgorithm
+};
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, Side, MutationOutcome
@@ -70,6 +73,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\DistributionSortable<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Splittable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Groupable<int, TValue>
@@ -92,11 +96,12 @@ use Traversable;
  *     &DequeMutation<TValue>
  *     &IndexMutation<TValue>
  *     &Sortable<TValue>
+ *     &DistributionSortable<TValue>
  * )
  */
 class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DequeMutation,
-    IndexMutation, Mappable, Rejectable, Sortable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable,
-    Sliceable, Spliceable, Reversible, Shufflable, Padable {
+    IndexMutation, Mappable, Rejectable, Sortable, DistributionSortable, Chunkable, Splittable, Groupable,
+    Partitionable, Takeable, Skippable, Sliceable, Spliceable, Reversible, Shufflable, Padable {
 
     /**
      * ### Freeze state
@@ -140,7 +145,7 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
      */
     final public function __construct (
         protected Storage&Cloneable&Forkable&Metrics&BoundaryAccess&IndexAccess&DequeMutation&IndexMutation&Sortable
-        $storage
+        &DistributionSortable $storage
     ) {}
 
     /**
@@ -823,6 +828,20 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
     public function sortWith (callable $comparator, ?SortAlgorithm $algorithm = null):static {
 
         return new static($this->storage->sortWith($comparator, $algorithm));
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\DistributionSortable::distributionSort() To sort the
+     * values in the storage using a distribution sort algorithm.
+     */
+    public function distributionSort (DistributionSortAlgorithm $algorithm, callable $key):static {
+
+        return new static($this->storage->distributionSort($algorithm, $key));
 
     }
 

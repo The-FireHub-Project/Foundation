@@ -11,7 +11,7 @@
  * @package Foundation
  */
 
-namespace FireHub\Foundation\Algorithm\Sorting;
+namespace FireHub\Foundation\Algorithm\Sorting\Comparison;
 
 use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
 

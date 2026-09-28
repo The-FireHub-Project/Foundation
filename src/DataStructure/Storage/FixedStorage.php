@@ -17,10 +17,12 @@ use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Measurement\Capacity, Measurement\Metrics,
     Mutation\IndexMutation,
-    Transformation\Mappable, Transformation\Sortable,
+    Transformation\DistributionSortable, Transformation\Mappable, Transformation\Sortable,
     Cloneable, Forkable
 };
-use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
+use FireHub\Core\Boundary\Algorithm\Sorting\ {
+    DistributionSortAlgorithm, SortAlgorithm
+};
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, MutationOutcome
@@ -33,7 +35,7 @@ use FireHub\Foundation\Maybe\ {
 use FireHub\Foundation\State\ {
     HasCopyOnWriteState, SharedState
 };
-use FireHub\Foundation\Algorithm\Sorting\QuickSort;
+use FireHub\Foundation\Algorithm\Sorting\Comparison\QuickSort;
 use FireHub\Foundation\DataStructure\Exception\OverflowException;
 use FireHub\Runtime;
 use SplFixedArray;
@@ -59,11 +61,12 @@ use SplFixedArray;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\DistributionSortable<TValue>
  *
  * @phpstan-type State SplFixedArray<null|TValue>
  */
 final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capacity, BoundaryAccess, IndexAccess,
-    IndexMutation, Mappable, Sortable {
+    IndexMutation, Mappable, Sortable, DistributionSortable {
 
     /**
      * ### Copy-on-write state
@@ -471,6 +474,35 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
 
             },
             $comparator
+        );
+
+        return $sorted;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::pack() To pack the occupied values before sorting.
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::sort() To sort the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     */
+    public function distributionSort (DistributionSortAlgorithm $algorithm, callable $key):self {
+
+        $sorted = $this->pack();
+        $data = $sorted->state->data();
+
+        $algorithm->sort(
+            $sorted->size,
+            static fn (int $index):mixed => $data[$index], // @phpstan-ignore argument.type
+            static function (int $index, mixed $value) use ($data):void {
+
+                $data[$index] = $value;
+
+            },
+            $key
         );
 
         return $sorted;

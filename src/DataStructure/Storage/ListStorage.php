@@ -17,10 +17,12 @@ use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
-    Transformation\Filterable, Transformation\Mappable, Transformation\Sortable,
+    Transformation\DistributionSortable, Transformation\Filterable, Transformation\Mappable, Transformation\Sortable,
     Cloneable, Forkable
 };
-use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
+use FireHub\Core\Boundary\Algorithm\Sorting\ {
+    DistributionSortAlgorithm, SortAlgorithm
+};
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, MutationOutcome, Side
@@ -64,6 +66,7 @@ use FireHub\Runtime;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\DistributionSortable<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Spliceable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
@@ -73,7 +76,8 @@ use FireHub\Runtime;
  * @phpstan-type State list<TValue>
  */
 final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
-    IndexMutation, Mappable, Filterable, Sortable, Sliceable, Spliceable, Reversible, Shufflable, Padable {
+    IndexMutation, Mappable, Filterable, Sortable, DistributionSortable, Sliceable, Spliceable, Reversible,
+    Shufflable, Padable {
 
     /**
      * ### Copy-on-write state
@@ -514,6 +518,40 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
             );
 
         }
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($data)
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::sort() To sort the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::size() To get the size of the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     */
+    public function distributionSort (DistributionSortAlgorithm $algorithm, callable $key):self {
+
+        $data = $this->state->data();
+
+        $algorithm->sort(
+            $this->size(),
+            static function (int $index) use (&$data):mixed {
+
+                return $data[$index]; // @phpstan-ignore offsetAccess.notFound
+
+            },
+            static function (int $index, mixed $value) use (&$data):void {
+
+                $data[$index] = $value;
+
+            },
+            $key
+        );
 
         return clone($this, [ // @phpstan-ignore assign.propertyType
             'state' => new SharedState($data)
