@@ -44,7 +44,7 @@ use FireHub\Runtime;
  *
  * @template TElement
  *
- * @implements \FireHub\Core\Boundary\Algorithm\Sorting\DistributionSortAlgorithm<TElement>
+ * @implements \FireHub\Core\Boundary\Algorithm\Sorting\DistributionSortAlgorithm<TElement, int>
  */
 final readonly class RadixSort implements DistributionSortAlgorithm {
 

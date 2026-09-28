@@ -502,7 +502,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
                 $data[$index] = $value;
 
             },
-            $key
+            $key // @phpstan-ignore argument.type
         );
 
         return $sorted;

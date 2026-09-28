@@ -550,7 +550,7 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
                 $data[$index] = $value;
 
             },
-            $key
+            $key // @phpstan-ignore argument.type
         );
 
         return clone($this, [ // @phpstan-ignore assign.propertyType
