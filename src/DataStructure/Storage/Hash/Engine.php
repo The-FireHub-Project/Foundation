@@ -46,7 +46,7 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
  * @extends \FireHub\Core\Boundary\Capability\Transformation\KeySortable<TKey>
  * @extends \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<TKey, TValue>
  * @extends \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
- * @extends  \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
+ * @extends \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
  */
 interface Engine extends Cloneable, Forkable, Mappable, Filterable, Sortable, KeySortable, Sliceable, Reversible,
     Shufflable {
