@@ -33,6 +33,18 @@ use FireHub\Runtime;
  *
  * The average time complexity is O(n log n), while the worst-case time complexity remains O(n²). The algorithm is not
  * stable, meaning that elements considered equal by the comparator are not guaranteed to preserve their original order.
+ *
+ * ##### Recommended usage
+ *
+ * Quick sort is suitable as a general-purpose sorting algorithm for medium and large data sets when stable ordering
+ * of equal elements is not required. It is particularly useful when additional proportional storage should be avoided.
+ *
+ * For small or nearly ordered data sets, insertion sort may provide better performance. When stable ordering is
+ * required, a stable sorting algorithm should be preferred.
+ *
+ * The average time complexity is O(n log n), while the worst-case time complexity remains O(n²). The algorithm is not
+ * stable, meaning that elements considered equal by the comparator are not guaranteed to preserve their original
+ * order.
  * @since 1.0.0
  *
  * @template TElement
@@ -48,7 +60,7 @@ final readonly class QuickSort implements SortAlgorithm {
      *
      * @uses \FireHub\Foundation\Algorithm\Sorting\QuickSort::quickSort() To recursively sort the element range.
      */
-    public function sort (int $size, callable $element, callable $swap, callable $comparator):void {
+    public function sort (int $size, callable $element, callable $set, callable $swap, callable $comparator):void {
 
         if ($size < 2) return;
 

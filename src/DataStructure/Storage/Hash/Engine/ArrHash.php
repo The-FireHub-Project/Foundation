@@ -520,6 +520,11 @@ final class ArrHash implements Engine {
                 return $keys[$index]; // @phpstan-ignore offsetAccess.notFound
 
             },
+            static function (int $index, mixed $key) use (&$keys):void {
+
+                $keys[$index] = $key;
+
+            },
             static function (int $first, int $second) use (&$keys):void {
 
                 $temporary = $keys[$first]; // @phpstan-ignore offsetAccess.notFound

@@ -497,6 +497,11 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
                     return $data[$index]; // @phpstan-ignore offsetAccess.notFound
 
                 },
+                static function (int $index, mixed $value) use (&$data):void {
+
+                    $data[$index] = $value;
+
+                },
                 static function (int $first, int $second) use (&$data):void {
 
                     $temporary = $data[$first]; // @phpstan-ignore offsetAccess.notFound

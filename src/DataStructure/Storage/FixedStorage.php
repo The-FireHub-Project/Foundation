@@ -457,6 +457,11 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
         ($algorithm ?? new QuickSort())->sort(
             $sorted->size,
             static fn (int $index):mixed => $data[$index],
+            static function (int $index, mixed $value) use ($data):void {
+
+                $data[$index] = $value;
+
+            },
             static function (int $first, int $second) use ($data):void {
 
                 $temporary = $data[$first];
