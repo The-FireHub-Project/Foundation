@@ -13,8 +13,10 @@
 
 namespace FireHub\Foundation\DataStructure\Storage\Hash\Strategy;
 
-use FireHub\Foundation\DataStructure\Storage\Hash\Strategy;
-use FireHub\Foundation\DataStructure\Storage\Hash\ValueEncoder;
+use FireHub\Foundation\DataStructure\Storage\Hash\ {
+    Strategy, ValueEncoder
+};
+use FireHub\Foundation\DataStructure\Storage\Exception\InvalidHashValueTypeException;
 use FireHub\Runtime;
 
 /**
@@ -39,11 +41,21 @@ final readonly class IntHashStrategy implements Strategy {
      * @uses \FireHub\Runtime\Hash::hash() To hash the specified value.
      * @uses \FireHub\Runtime\Hash\Algorithm::XXH3 To use the XXH3 algorithm for hashing.
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\ValueEncoder::encode() To encode the specified value.
+     * @uses \FireHub\Runtime\DataIs::int() To check if the specified value is an integer.
+     * @uses \FireHub\Runtime\Data::getDebugType() To get the debug type of the specified value.
      *
      * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidHashValueTypeException If the specified
      * value is not a valid data type.
      */
     public function hash (mixed $value):string {
+
+        if (!Runtime\DataIs::int($value))
+            throw new InvalidHashValueTypeException(
+                "Invalid hash value type.",
+                [
+                    'type' => Runtime\Data::getDebugType($value),
+                ]
+            );
 
         return Runtime\Hash::hash(
             Runtime\Hash\Algorithm::XXH3,

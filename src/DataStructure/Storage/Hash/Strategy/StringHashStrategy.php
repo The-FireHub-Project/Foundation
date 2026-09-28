@@ -13,7 +13,9 @@
 
 namespace FireHub\Foundation\DataStructure\Storage\Hash\Strategy;
 
-use FireHub\Foundation\DataStructure\Storage\Hash\Strategy;
+use FireHub\Foundation\DataStructure\Storage\Hash\ {
+    Strategy, ValueEncoder
+};
 use FireHub\Foundation\DataStructure\Storage\Exception\InvalidHashValueTypeException;
 use FireHub\Runtime;
 
