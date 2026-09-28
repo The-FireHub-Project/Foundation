@@ -450,7 +450,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::pack() To pack the occupied values before sorting.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
-     * @uses \FireHub\Foundation\Algorithm\Sorting\QuickSort To sort the values.
+     * @uses \FireHub\Foundation\Algorithm\Sorting\Comparison\QuickSort To sort the values.
      */
     public function sortWith (callable $comparator, ?SortAlgorithm $algorithm = null):self {
 
@@ -473,7 +473,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
                 $data[$second] = $temporary;
 
             },
-            $comparator
+            $comparator // @phpstan-ignore argument.type
         );
 
         return $sorted;

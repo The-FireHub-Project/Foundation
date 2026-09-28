@@ -503,8 +503,12 @@ final class ArrHash implements Engine {
      * @uses \FireHub\Runtime\Arr\Access::keys() To get the keys of the hash.
      * @uses \SebastianBergmann\GitState\State::data() To get the data of the hash.
      *
-     * @param \FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm<TKey> $algorithm Sorting algorithm.
-     * @param callable(TKey, TKey):int $comparator Comparator used to order keys.
+     * @param \FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm<TKey> $algorithm<TKey> <p>
+     * Sorting algorithm.
+     * </p>
+     * @param callable(TKey, TKey):int $comparator <p>
+     * Comparator used to order keys.
+     * </p>
      *
      * @return self<TKey, TValue> Sorted hash.
      */
