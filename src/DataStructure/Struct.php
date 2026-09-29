@@ -21,8 +21,9 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable
 };
 use FireHub\Core\Type\Maybe;
-use FireHub\Foundation\DataStructure\Concern\Query\ {
-    CanFind, CanMatch
+use FireHub\Foundation\DataStructure\Concern\ {
+    Projection\CanExtractKeys, Projection\CanExtractValues,
+    Query\CanFind, Query\CanMatch
 };
 use FireHub\Runtime;
 use Traversable;
@@ -68,7 +69,7 @@ class Struct implements StructBoundary, Arrayable, Cloneable {
      * ### Provides matching query support
      * @since 1.0.0
      *
-     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanMatch<int, TValue>
+     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanMatch<TKey, TValue>
      */
     use CanMatch;
 
@@ -76,9 +77,25 @@ class Struct implements StructBoundary, Arrayable, Cloneable {
      * ### Provides finding query support
      * @since 1.0.0
      *
-     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<int, TValue>
+     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<TKey, TValue>
      */
     use CanFind;
+
+    /**
+     * ### Provides key extraction capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Projection\CanExtractKeys<TKey, TValue>
+     */
+    use CanExtractKeys;
+
+    /**
+     * ### Provides value extraction capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Projection\CanExtractValues<TKey, TValue>
+     */
+    use CanExtractValues;
 
     /**
      * ### Constructor

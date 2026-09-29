@@ -36,6 +36,7 @@ use FireHub\Foundation\DataStructure\Transformation\ {
 };
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanCount,
+    Projection\CanExtractKeys, Projection\CanExtractValues,
     Query\CanFind, Query\CanMatch,
     Transformation\CanFlip, Transformation\CanMultiplicity, Transformation\CanReject
 };
@@ -142,6 +143,22 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<TKey, TValue>
      */
     use CanFind;
+
+    /**
+     * ### Provides finding query support
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<TKey, TValue>
+     */
+    use CanFind;
+
+    /**
+     * ### Provides key extraction capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Projection\CanExtractKeys<TKey, TValue>
+     */
+    use CanExtractKeys;
 
     /**
      * ### Constructor
