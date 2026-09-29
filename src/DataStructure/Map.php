@@ -28,13 +28,6 @@ use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, MutationOutcome
 };
-use FireHub\Foundation\DataStructure\Storage\ {
-    FixedStorage, HashStorage
-};
-use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
-use FireHub\Foundation\DataStructure\Storage\Initialization\ {
-    ArrayInit, EmptyInit
-};
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Chunkable, Flippable, Groupable, Partitionable, Reversible, Shufflable, Skippable, Splittable, Takeable
 };
@@ -705,8 +698,7 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
 
         }
 
-        $result = new Map(new HashStorage(new ArrHash(new EmptyInit)));
-
+        $result = DS::map()->empty();
         foreach ($groups as $identity => $storage)
             $result->set($identity, new static($storage));
 
@@ -738,15 +730,10 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
 
         }
 
-        return new Tuple( // @phpstan-ignore return.type
-            new FixedStorage( // @phpstan-ignore argument.type
-                2,
-                new ArrayInit([
-                    new static($matched),
-                    new static($unmatched)
-                ])
-            )
-        );
+        return DS::tuple()->arr([ // @phpstan-ignore return.type
+            new static($matched),
+            new static($unmatched)
+        ]);
 
     }
 

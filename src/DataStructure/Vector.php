@@ -30,13 +30,6 @@ use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, Side, MutationOutcome
 };
-use FireHub\Foundation\DataStructure\Storage\ {
-    FixedStorage, HashStorage
-};
-use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
-use FireHub\Foundation\DataStructure\Storage\Initialization\ {
-    ArrayInit, EmptyInit
-};
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Chunkable, Flippable, Groupable, Padable, Partitionable, Reversible, Shufflable, Skippable, Sliceable, Spliceable,
     Splittable, Takeable
@@ -1019,8 +1012,7 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
 
         }
 
-        $result = new Map(new HashStorage(new ArrHash(new EmptyInit)));
-
+        $result = DS::map()->empty();
         foreach ($groups as $identity => $storage)
             $result->set($identity, new static($storage));
 
@@ -1053,15 +1045,10 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
 
         }
 
-        return new Tuple( // @phpstan-ignore return.type
-            new FixedStorage( // @phpstan-ignore argument.type
-                2,
-                new ArrayInit([
-                    new static($matched),
-                    new static($unmatched)
-                ])
-            )
-        );
+        return DS::tuple()->arr([ // @phpstan-ignore return.type
+            new static($matched),
+            new static($unmatched)
+        ]);
 
     }
 

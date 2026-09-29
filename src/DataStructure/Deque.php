@@ -24,13 +24,6 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\Side;
-use FireHub\Foundation\DataStructure\Storage\ {
-    FixedStorage, HashStorage
-};
-use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
-use FireHub\Foundation\DataStructure\Storage\Initialization\ {
-    ArrayInit, EmptyInit
-};
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Chunkable, Flippable, Groupable, Padable, Partitionable, Reversible, Shufflable, Skippable, Sliceable,
     Splittable, Takeable
@@ -814,8 +807,7 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
         }
 
-        $result = new Map(new HashStorage(new ArrHash(new EmptyInit)));
-
+        $result = DS::map()->empty();
         foreach ($groups as $identity => $storage)
             $result->set($identity, new static($storage));
 
@@ -848,15 +840,10 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
         }
 
-        return new Tuple( // @phpstan-ignore return.type
-            new FixedStorage( // @phpstan-ignore argument.type
-                2,
-                new ArrayInit([
-                    new static($matched),
-                    new static($unmatched)
-                ])
-            )
-        );
+        return DS::tuple()->arr([ // @phpstan-ignore return.type
+            new static($matched),
+            new static($unmatched)
+        ]);
 
     }
 

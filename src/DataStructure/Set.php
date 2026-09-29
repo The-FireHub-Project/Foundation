@@ -23,8 +23,6 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
-use FireHub\Foundation\DataStructure\Storage\FixedStorage;
-use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable;
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanCount, Transformation\CanReject
@@ -423,15 +421,10 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
 
         }
 
-        return new Tuple( // @phpstan-ignore return.type
-            new FixedStorage( // @phpstan-ignore argument.type
-                2,
-                new ArrayInit([
-                    new static($matched),
-                    new static($unmatched)
-                ])
-            )
-        );
+        return DS::tuple()->arr([ // @phpstan-ignore return.type
+            new static($matched),
+            new static($unmatched)
+        ]);
 
     }
 

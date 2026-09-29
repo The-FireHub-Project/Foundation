@@ -23,8 +23,6 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
-use FireHub\Foundation\DataStructure\Storage\FixedStorage;
-use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Flippable, Partitionable, Skippable, Takeable
 };
@@ -521,15 +519,10 @@ class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
         }
 
-        return new Tuple( // @phpstan-ignore return.type
-            new FixedStorage( // @phpstan-ignore argument.type
-                2,
-                new ArrayInit([
-                    new static($matched),
-                    new static($unmatched)
-                ])
-            )
-        );
+        return DS::tuple()->arr([ // @phpstan-ignore return.type
+            new static($matched),
+            new static($unmatched)
+        ]);
 
     }
 
