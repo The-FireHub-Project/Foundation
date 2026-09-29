@@ -55,7 +55,7 @@ use SplFixedArray;
  *
  * @template TValue
  *
- * @implements \FireHub\Foundation\DataStructure\Storage<int, null|TValue>
+ * @implements \FireHub\Foundation\DataStructure\Storage<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\BoundaryAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\IndexAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
@@ -138,6 +138,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      */
     public function emptyCopy ():self {
 
+        /** @var self<TValue> */
         return new self($this->capacity, new EmptyInit);
 
     }
@@ -173,7 +174,9 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
      */
     public function iterate ():iterable {
 
-        yield from $this->state->data();
+        foreach ($this->state->data() as $index => $value)
+            if ($value !== null)
+                yield $index => $value;
 
     }
 
