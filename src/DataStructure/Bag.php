@@ -24,7 +24,10 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable;
-use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
+use FireHub\Foundation\DataStructure\Concern\ {
+    Query\CanFind, Query\CanMatch,
+    Transformation\CanReject
+};
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
 use Traversable;
@@ -75,6 +78,22 @@ class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanReject<int, TValue>
      */
     use CanReject;
+
+    /**
+     * ### Provides matching query support
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanMatch<int, TValue>
+     */
+    use CanMatch;
+
+    /**
+     * ### Provides finding query support
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<int, TValue>
+     */
+    use CanFind;
 
     /**
      * ### Constructor

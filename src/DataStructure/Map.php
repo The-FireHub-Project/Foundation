@@ -36,6 +36,7 @@ use FireHub\Foundation\DataStructure\Transformation\ {
 };
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanCount,
+    Query\CanFind, Query\CanMatch,
     Transformation\CanFlip, Transformation\CanMultiplicity, Transformation\CanReject
 };
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
@@ -125,6 +126,22 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanFlip<TKey, TValue>
      */
     use CanFlip;
+
+    /**
+     * ### Provides matching query support
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanMatch<TKey, TValue>
+     */
+    use CanMatch;
+
+    /**
+     * ### Provides finding query support
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<TKey, TValue>
+     */
+    use CanFind;
 
     /**
      * ### Constructor
