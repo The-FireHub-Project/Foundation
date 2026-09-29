@@ -164,4 +164,70 @@ final readonly class Matches {
 
     }
 
+    /**
+     * ### Determines whether any element matches
+     *
+     * Determines whether at least one element in the enumerable satisfies the specified predicate.
+     * @since 1.0.0
+     *
+     * @param callable(TValue, TKey):bool $predicate <p>
+     * Predicate used to test each value and its key.
+     * </p>
+     *
+     * @return bool True if at least one element satisfies the predicate, false otherwise.
+     */
+    public function any (callable $predicate):bool {
+
+        foreach ($this->enumerable as $key => $value)
+            if ($predicate($value, $key))
+                return true;
+
+        return false;
+
+    }
+
+    /**
+     * ### Determines whether all elements match
+     *
+     * Determines whether every element in the enumerable satisfies the specified predicate.
+     * @since 1.0.0
+     *
+     * @param callable(TValue, TKey):bool $predicate <p>
+     * Predicate used to test each value and its key.
+     * </p>
+     *
+     * @return bool True if every element satisfies the predicate, false otherwise.
+     */
+    public function all (callable $predicate):bool {
+
+        foreach ($this->enumerable as $key => $value)
+            if (!$predicate($value, $key))
+                return false;
+
+        return true;
+
+    }
+
+    /**
+     * ### Determines whether no elements match
+     *
+     * Determines whether no element in the enumerable satisfies the specified predicate.
+     * @since 1.0.0
+     *
+     * @param callable(TValue, TKey):bool $predicate <p>
+     * Predicate used to test each value and its key.
+     * </p>
+     *
+     * @return bool True if no element satisfies the predicate, false otherwise.
+     */
+    public function none (callable $predicate):bool {
+
+        foreach ($this->enumerable as $key => $value)
+            if ($predicate($value, $key))
+                return false;
+
+        return true;
+
+    }
+
 }
