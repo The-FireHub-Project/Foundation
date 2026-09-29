@@ -34,7 +34,7 @@ use FireHub\Foundation\DataStructure\Transformation\ {
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanCount,
     Query\CanFind, Query\CanMatch,
-    Transformation\CanFlip, Transformation\CanMultiplicity, Transformation\CanReject
+    Transformation\CanCombine, Transformation\CanFlip, Transformation\CanMultiplicity, Transformation\CanReject
 };
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
@@ -136,6 +136,14 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
      * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<int, TValue>
      */
     use CanFind;
+
+    /**
+     * ### Provides combining capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanCombine<TValue>
+     */
+    use CanCombine;
 
     /**
      * ### Constructor

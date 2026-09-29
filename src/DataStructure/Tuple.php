@@ -21,8 +21,9 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable
 };
 use FireHub\Core\Type\Maybe;
-use FireHub\Foundation\DataStructure\Concern\Query\ {
-    CanFind, CanMatch
+use FireHub\Foundation\DataStructure\Concern\ {
+    Query\CanFind, Query\CanMatch,
+    Transformation\CanCombine
 };
 use FireHub\Runtime;
 use Traversable;
@@ -73,6 +74,14 @@ class Tuple implements TupleBoundary, Arrayable, Cloneable {
      * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<int, TValue>
      */
     use CanFind;
+
+    /**
+     * ### Provides combining capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanCombine<TValue>
+     */
+    use CanCombine;
 
     /**
      * ### Constructor
