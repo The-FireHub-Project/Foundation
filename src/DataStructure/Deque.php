@@ -19,17 +19,11 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\DequeMutation,
-    Transformation\DistributionSortable, Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
-    Transformation\Sortable,
+    Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
     Cloneable, Freezable, Thawable
 };
-use FireHub\Core\Boundary\Algorithm\Sorting\ {
-    DistributionSortAlgorithm, SortAlgorithm
-};
 use FireHub\Core\Type\Maybe;
-use FireHub\Core\Meta\Enum\ {
-    Order, Side
-};
+use FireHub\Core\Meta\Enum\Side;
 use FireHub\Foundation\DataStructure\Storage\ {
     FixedStorage, HashStorage
 };
@@ -71,8 +65,6 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
- * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
- * @implements \FireHub\Core\Boundary\Capability\Transformation\DistributionSortable<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Chunkable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Splittable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Groupable<int, TValue>
@@ -91,13 +83,11 @@ use Traversable;
  *     &Metrics
  *     &BoundaryAccess<TValue>
  *     &DequeMutation<TValue>
- *     &Sortable<TValue>
- *     &DistributionSortable<TValue>
  * )
  */
 class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable, DequeMutation, Mappable, Rejectable,
-    Sortable, DistributionSortable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable, Sliceable,
-    Reversible, Shufflable, Padable, Flippable {
+    Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable, Sliceable, Reversible, Shufflable, Padable,
+    Flippable {
 
     /**
      * ### Freeze state
@@ -148,7 +138,7 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
      * @return void
      */
     final public function __construct (
-        protected Storage&Cloneable&Metrics&BoundaryAccess&DequeMutation&Sortable&DistributionSortable $storage
+        protected Storage&Cloneable&Metrics&BoundaryAccess&DequeMutation $storage
     ) {}
 
     /**
@@ -656,46 +646,6 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
         /** @var Select<int, TValue, $this> */
         return new Select($this);
-
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sort() To sort the values in the storage.
-     */
-    public function sort (Order $order = Order::ASC, ?SortAlgorithm $algorithm = null):static {
-
-        return new static($this->storage->sort($order));
-
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Core\Boundary\Capability\Transformation\Sortable::sortWith() To sort the values in the storage.
-     */
-    public function sortWith (callable $comparator, ?SortAlgorithm $algorithm = null):static {
-
-        return new static($this->storage->sortWith($comparator));
-
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Core\Boundary\Capability\Transformation\DistributionSortable::distributionSort() To sort the
-     * values in the storage using a distribution sort algorithm.
-     */
-    public function distributionSort (DistributionSortAlgorithm $algorithm, callable $key):static {
-
-        return new static($this->storage->distributionSort($algorithm, $key));
 
     }
 
