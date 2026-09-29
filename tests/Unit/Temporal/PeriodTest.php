@@ -100,6 +100,60 @@ final class PeriodTest extends FireHubTestCase {
     /**
      * @since 1.0.0
      *
+     * @param non-empty-string $expected
+     * @param non-empty-string $start
+     * @param non-empty-string $end
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimestampException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimespanTicks
+     *
+     * @return void
+     */
+    #[TestWith(['2000-01-01 12:00:00.000000', '2000-01-01 12:00:00.000000', '2001-01-01 12:00:00.000000'])]
+    public function testStart (string $expected, string $start, string $end):void {
+
+        self::assertSame(
+            $expected,
+            new Period(
+                DateTime::from($start),
+                DateTime::from($end)
+            )->start()->value()
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param non-empty-string $expected
+     * @param non-empty-string $start
+     * @param non-empty-string $end
+     *
+     * @throws \FireHub\Core\Exception\FireHubException
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimestampException
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidTimespanTicks
+     *
+     * @return void
+     */
+    #[TestWith(['2001-01-01 12:00:00.000000', '2000-01-01 12:00:00.000000', '2001-01-01 12:00:00.000000'])]
+    public function testEnd (string $expected, string $start, string $end):void {
+
+        self::assertSame(
+            $expected,
+            new Period(
+                DateTime::from($start),
+                DateTime::from($end)
+            )->end()->value()
+        );
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
      * @param array $expected
      * @param non-empty-string $start
      * @param non-empty-string $end

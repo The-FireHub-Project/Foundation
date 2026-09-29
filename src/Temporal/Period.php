@@ -142,6 +142,56 @@ readonly class Period extends BasePeriod {
      * $datetime = new DateTime('2000-01-01 12:00:00.000000');
      * $datetime2 = new DateTime('2001-01-01 12:00:00.000000');
      *
+     * $datetime = new Period($datetime, $datetime2)->start();
+     *
+     * // '2000-01-01 12:00:00.000000'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\Temporal\DateTime<non-empty-string> The start of the period.
+     */
+    public function start ():DateTime {
+
+        return $this->start;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\Period;
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = new DateTime('2000-01-01 12:00:00.000000');
+     * $datetime2 = new DateTime('2001-01-01 12:00:00.000000');
+     *
+     * $datetime = new Period($datetime, $datetime2)->end();
+     *
+     * // '2001-01-01 12:00:00.000000'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\Temporal\DateTime<non-empty-string> The end of the period.
+     */
+    public function end ():DateTime {
+
+        return $this->end;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\Temporal\Period;
+     * use FireHub\Foundation\Temporal\DateTime;
+     *
+     * $datetime = new DateTime('2000-01-01 12:00:00.000000');
+     * $datetime2 = new DateTime('2001-01-01 12:00:00.000000');
+     *
      * $datetime = new Period($datetime, $datetime2)->duration()->components()->value();
      *
      * // ['days' => '366', 'hours' => 0, 'minutes' => 0, 'seconds' => 0, 'microseconds' => 0]
