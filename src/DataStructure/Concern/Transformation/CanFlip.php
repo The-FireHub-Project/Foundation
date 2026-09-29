@@ -7,17 +7,15 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.0
+ * @php-version >=7.0
  * @package Foundation
  */
 
 namespace FireHub\Foundation\DataStructure\Concern\Transformation;
 
-use FireHub\Foundation\DataStructure\Map;
-use FireHub\Foundation\DataStructure\Storage\HashStorage;
-use FireHub\Foundation\DataStructure\Storage\Hash\Engine\BucketHash;
-use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\MixedHashStrategy;
-use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
+use FireHub\Foundation\DataStructure\ {
+    DS, Map
+};
 
 /**
  * ### Provides flipping behavior
@@ -40,9 +38,7 @@ trait CanFlip {
      */
     public function flip ():Map {
 
-        $map = new Map(
-            new HashStorage(new BucketHash(new EmptyInit, new MixedHashStrategy))
-        );
+        $map = DS::map()->bucket()->empty();
 
         foreach ($this->storage->iterate() as $key => $value)
             $map->set($value, $key);
