@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.2
+ * @php-version >=8.5
  * @package Foundation
  */
 
@@ -35,7 +35,7 @@ readonly class DS extends NativeRuntime {
      */
     public static function vector ():VectorFactory {
 
-        return new VectorFactory();
+        return new VectorFactory;
 
     }
 
@@ -47,7 +47,7 @@ readonly class DS extends NativeRuntime {
      */
     public static function deque ():DequeFactory {
 
-        return new DequeFactory();
+        return new DequeFactory;
 
     }
 
@@ -59,7 +59,7 @@ readonly class DS extends NativeRuntime {
      */
     public static function stack ():StackFactory {
 
-        return new StackFactory();
+        return new StackFactory;
 
     }
 
@@ -71,7 +71,7 @@ readonly class DS extends NativeRuntime {
      */
     public static function queue ():QueueFactory {
 
-        return new QueueFactory();
+        return new QueueFactory;
 
     }
 
@@ -83,7 +83,7 @@ readonly class DS extends NativeRuntime {
      */
     public static function map ():MapFactory {
 
-        return new MapFactory();
+        return new MapFactory;
 
     }
 
@@ -95,7 +95,7 @@ readonly class DS extends NativeRuntime {
      */
     public static function set ():SetFactory {
 
-        return new SetFactory();
+        return new SetFactory;
 
     }
 
@@ -107,7 +107,7 @@ readonly class DS extends NativeRuntime {
      */
     public static function bag ():BagFactory {
 
-        return new BagFactory();
+        return new BagFactory;
 
     }
 
@@ -119,7 +119,7 @@ readonly class DS extends NativeRuntime {
      */
     public static function tuple ():TupleFactory {
 
-        return new TupleFactory();
+        return new TupleFactory;
 
     }
 
@@ -131,7 +131,7 @@ readonly class DS extends NativeRuntime {
      */
     public static function struct ():StructFactory {
 
-        return new StructFactory();
+        return new StructFactory;
 
     }
 
