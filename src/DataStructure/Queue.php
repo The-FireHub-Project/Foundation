@@ -19,7 +19,7 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\BackInsertion, Mutation\FrontRemoval,
-    Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
+    Transformation\Concatenable, Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
     Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
@@ -61,6 +61,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Flippable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Concatenable<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
@@ -73,7 +74,7 @@ use Traversable;
  * )
  */
 class Queue implements QueueBoundary, Arrayable, Cloneable, Freezable, Thawable, BackInsertion, FrontRemoval,
-    Mappable, Rejectable, Partitionable, Takeable, Skippable, Flippable, Reducible {
+    Mappable, Rejectable, Partitionable, Takeable, Skippable, Flippable, Concatenable, Reducible {
 
     /**
      * ### Freeze state
@@ -633,6 +634,33 @@ class Queue implements QueueBoundary, Arrayable, Cloneable, Freezable, Thawable,
 
         /** @var Skip<int, TValue, $this> */
         return new Skip($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::insertBack() To insert values at the back of the
+     * storage.
+     */
+    public function concat (iterable $values):static {
+
+        if ($this->storage instanceof Concatenable)
+            return new static($this->storage->concat($values));
+
+        $storage = $this->storage->emptyCopy();
+
+        foreach ($this->storage->iterate() as $value)
+            $storage->insertBack($value);
+
+        foreach ($values as $value)
+            $storage->insertBack($value);
+
+        return new static($storage);
 
     }
 

@@ -15,15 +15,15 @@ namespace FireHub\Foundation\DataStructure;
 
 use FireHub\Core\Boundary\Type\DataStructure\Stream as StreamBoundary;
 use FireHub\Core\Boundary\Capability\Transformation\ {
-    Mappable, Rejectable
+    Concatenable, Mappable, Rejectable
 };
 use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Skippable, Takeable
 };
 use FireHub\Foundation\DataStructure\Stream\ {
-    Source\FilterSource, Source\MapSource, Source\SkipSource, Source\TakeSource,
-    Source
+    Source\ConcatSource, Source\FilterSource, Source\IterableSource, Source\MapSource, Source\SkipSource,
+    Source\TakeSource, Source
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Select, Skip, Take
@@ -56,9 +56,10 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Concatenable<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  */
-readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable, Skippable, Reducible {
+readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable, Skippable, Concatenable, Reducible {
 
     /**
      * ### Provides rejection capabilities
@@ -191,6 +192,29 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
 
         /** @var Skip<TKey, TValue, $this> */
         return new Skip($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ConcatSource To create a new Stream instance with
+     * the concatenated elements.
+     *
+     * @param iterable<TKey, TValue> $values <p>
+     * The values to concatenate.
+     * </p>
+     */
+    public function concat (iterable $values):static {
+
+        return clone($this, [
+            'source' => new ConcatSource(
+                $this->source,
+                new IterableSource($values)
+            )
+        ]);
 
     }
 

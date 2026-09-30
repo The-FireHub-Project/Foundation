@@ -17,7 +17,8 @@ use FireHub\Core\Boundary\Capability\ {
     Access\KeyAccess,
     Measurement\Metrics,
     Mutation\KeyMutation,
-    Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Sortable,
+    Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Mergeable,
+    Transformation\Sortable,
     Cloneable, Forkable
 };
 use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
@@ -60,10 +61,11 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mergeable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  */
 final readonly class HashStorage implements Storage, Cloneable, Forkable, Metrics, KeyAccess, KeyMutation, Mappable,
-    Filterable, Sortable, KeySortable, Sliceable, Reversible, Shufflable, Reducible {
+    Filterable, Sortable, KeySortable, Sliceable, Reversible, Shufflable, Mergeable, Reducible {
 
     /**
      * ### Underlying hash engine
@@ -347,6 +349,21 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
 
         return new self(
             $this->engine->shuffle()
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::merge() To merge the hash engine.
+     */
+    public function merge (iterable $values):self {
+
+        return new self(
+            $this->engine->merge($values)
         );
 
     }

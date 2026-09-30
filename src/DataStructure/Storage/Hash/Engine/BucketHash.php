@@ -581,6 +581,31 @@ final class BucketHash implements Engine {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\State\SharedState::data() To get the engine state.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\BucketHash::initializeEntry() To merge an entry.
+     */
+    public function merge (iterable $values):self {
+
+        $data = $this->state->data();
+
+        foreach ($values as $key => $value)
+            $this->initializeEntry(
+                $data, // @phpstan-ignore argument.type
+                $key,
+                $value
+            );
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState($data)
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the engine state.
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\BucketHash::findEntry() To find an entry.
      */
     public function reduce (mixed $initial, callable $callback):mixed {

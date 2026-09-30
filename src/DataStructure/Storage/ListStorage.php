@@ -17,7 +17,8 @@ use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
-    Transformation\DistributionSortable, Transformation\Filterable, Transformation\Mappable, Transformation\Sortable,
+    Transformation\Concatenable, Transformation\DistributionSortable, Transformation\Filterable,
+    Transformation\Mappable, Transformation\Sortable,
     Cloneable, Forkable
 };
 use FireHub\Core\Boundary\Algorithm\Sorting\ {
@@ -73,13 +74,14 @@ use FireHub\Runtime;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Padable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Concatenable<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type State list<TValue>
  */
 final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
     IndexMutation, Mappable, Filterable, Sortable, DistributionSortable, Sliceable, Spliceable, Reversible,
-    Shufflable, Padable, Reducible {
+    Shufflable, Padable, Concatenable, Reducible {
 
     /**
      * ### Copy-on-write state
@@ -695,6 +697,28 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
 
         return clone($this, [ // @phpstan-ignore assign.propertyType
             'state' => new SharedState($data)
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Arr\Composition::merge() To merge the storage with the values.
+     * @uses \FireHub\Runtime\Iterator::toArray() To convert the values to an array.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     */
+    public function concat (iterable $values):self {
+
+        return clone($this, [ // @phpstan-ignore assign.propertyType
+            'state' => new SharedState(
+                Runtime\Arr\Composition::merge(
+                    $this->state->data(),
+                    Runtime\Iterator::toArray($values)
+                )
+            )
         ]);
 
     }

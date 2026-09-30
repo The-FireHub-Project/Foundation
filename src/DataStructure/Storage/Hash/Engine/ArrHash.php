@@ -480,6 +480,26 @@ final class ArrHash implements Engine {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     */
+    public function merge (iterable $values):self {
+
+        $data = $this->state->data();
+
+        foreach ($values as $key => $value)
+            $data[$key] = $value;
+
+        return clone($this, [
+            'state' => new SharedState($data)
+        ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      * @uses \FireHub\Runtime\Arr\Transform::reduce() To reduce the storage.
      */
     public function reduce (mixed $initial, callable $callback):mixed {

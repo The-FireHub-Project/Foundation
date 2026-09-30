@@ -19,8 +19,8 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
-    Transformation\DistributionSortable, Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
-    Transformation\Sortable,
+    Transformation\Concatenable, Transformation\DistributionSortable, Transformation\Filterable,
+    Transformation\Mappable, Transformation\Rejectable, Transformation\Sortable,
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Boundary\Algorithm\Sorting\ {
@@ -81,6 +81,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Padable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Flippable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Concatenable<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
@@ -98,7 +99,8 @@ use Traversable;
  */
 class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DequeMutation,
     IndexMutation, Mappable, Rejectable, Sortable, DistributionSortable, Chunkable, Splittable, Groupable,
-    Partitionable, Takeable, Skippable, Sliceable, Spliceable, Reversible, Shufflable, Padable, Flippable, Reducible {
+    Partitionable, Takeable, Skippable, Sliceable, Spliceable, Reversible, Shufflable, Padable, Flippable,
+    Concatenable, Reducible {
 
     /**
      * ### Freeze state
@@ -1369,8 +1371,7 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
 
         $storage = $this->storage->emptyCopy();
 
-        foreach ($values as $value)
-            $storage->insertBack($value);
+        $storage->insertBack(...$values);
 
         return new static($storage);
 
@@ -1412,6 +1413,33 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
             $storage->insertFront($value);
 
         while ($right-- > 0)
+            $storage->insertBack($value);
+
+        return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\BackInsertion::insertBack() To insert values at the back of the
+     * storage.
+     */
+    public function concat (iterable $values):static {
+
+        if ($this->storage instanceof Concatenable)
+            return new static($this->storage->concat($values));
+
+        $storage = $this->storage->emptyCopy();
+
+        foreach ($this->storage->iterate() as $value)
+            $storage->insertBack($value);
+
+        foreach ($values as $value)
             $storage->insertBack($value);
 
         return new static($storage);

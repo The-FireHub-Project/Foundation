@@ -19,7 +19,8 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\KeyMutation,
-    Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Rejectable,
+    Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Mergeable,
+    Transformation\Rejectable,
     Transformation\Sortable,
     Cloneable, Forkable, Freezable, Thawable
 };
@@ -75,6 +76,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Flippable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mergeable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
@@ -90,7 +92,7 @@ use Traversable;
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
     Rejectable, Sortable, KeySortable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable, Reversible,
-    Shufflable, Flippable, Reducible {
+    Shufflable, Flippable, Mergeable, Reducible {
 
     /**
      * ### Freeze state
@@ -928,6 +930,32 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
 
         foreach ($entries as $entry)
             $storage->set($entry['key'], $entry['value']);
+
+        return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\KeyMutation::set() To insert values into the storage.
+     */
+    public function merge (iterable $values):static {
+
+        if ($this->storage instanceof Mergeable)
+            return new static($this->storage->merge($values));
+
+        $storage = $this->storage->emptyCopy();
+
+        foreach ($this->storage->iterate() as $key => $value)
+            $storage->set($key, $value);
+
+        foreach ($values as $key => $value)
+            $storage->set($key, $value);
 
         return new static($storage);
 

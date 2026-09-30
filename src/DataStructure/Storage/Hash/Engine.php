@@ -14,7 +14,8 @@
 namespace FireHub\Foundation\DataStructure\Storage\Hash;
 
 use FireHub\Core\Boundary\Capability\ {
-    Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Sortable,
+    Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Mergeable,
+    Transformation\Sortable,
     Cloneable, Forkable
 };
 use FireHub\Core\Type\Maybe;
@@ -48,10 +49,11 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
  * @extends \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<TKey, TValue>
  * @extends \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
  * @extends \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
+ * @extends \FireHub\Core\Boundary\Capability\Transformation\Mergeable<TKey, TValue>
  * @extends \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  */
 interface Engine extends Cloneable, Forkable, Mappable, Filterable, Sortable, KeySortable, Sliceable, Reversible,
-    Shufflable, Reducible {
+    Shufflable, Mergeable, Reducible {
 
     /**
      * ### Returns a new empty copy of the hash engine
