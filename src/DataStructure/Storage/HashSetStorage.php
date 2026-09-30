@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.1
+ * @php-version >=8.2
  * @package Foundation
  */
 
@@ -21,28 +21,25 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
-use FireHub\Foundation\DataStructure\Storage\Hash\Strategy;
-use FireHub\Foundation\State\ {
-    HasCopyOnWriteState, SharedState
-};
-use FireHub\Runtime;
+use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
 
 /**
  * ### Provides a storage implementation for hash-based unique values
  *
- * Hash set storage maintains unique values using a hash-based representation, allowing values to be efficiently
- * stored, located, and removed according to the hashing and equality semantics defined by the configured hash
- * strategy.
+ * Hash set storage maintains unique values using a hash engine where each set value is represented as a hash key
+ * associated with a constant boolean marker.
  *
- * Values are organized into hash buckets according to their calculated hashes. Hash collisions are resolved
- * through equality comparison, ensuring that logically equal values occur at most once within the storage.
+ * The underlying hash engine defines how values are stored and resolved. Array-backed engines may provide native
+ * PHP array-key lookup for supported values, while bucket-based engines may provide hashing and equality semantics
+ * for arbitrary value types.
+ *
+ * Hash set storage adapts key-value hash engine operations to value-oriented set storage semantics. Values are
+ * exposed as sequentially indexed elements while uniqueness, lookup, and removal are delegated to the underlying
+ * hash engine.
  *
  * The implementation is designed as a general-purpose storage mechanism for unique values and does not impose the
  * public semantics of a particular data structure. Higher-level structures such as sets may use hash set storage
  * according to the capabilities they require.
- *
- * Hash set storage manages the underlying hash representation, uniqueness enforcement, and storage behavior while
- * the consuming data structure defines the public API and semantics exposed to its users.
  * @since 1.0.0
  *
  * @template TValue
@@ -50,55 +47,38 @@ use FireHub\Runtime;
  * @implements \FireHub\Foundation\DataStructure\Storage<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\ValueAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\ValueMutation<TValue>
- *
- * @phpstan-type State array{
- *     buckets: array<string, list<TValue>>,
- *     size: int
- * }
-
  */
-final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, ValueAccess, ValueMutation {
-
-    /**
-     * ### Copy-on-write state
-     * @since 1.0.0
-     *
-     * @use \FireHub\Foundation\State\HasCopyOnWriteState<State>
-     */
-    use HasCopyOnWriteState;
+final readonly class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, ValueAccess, ValueMutation {
 
     /**
      * ### Constructor
      * @since 1.0.0
      *
-     * @param \FireHub\Foundation\DataStructure\Storage\Hash\Strategy<TValue> $strategy <p>
-     * The hash strategy used to calculate hash values for values.
+     * @param \FireHub\Foundation\DataStructure\Storage\Hash\Engine<TValue, true> $engine <p>
+     * The hash engine used to store set values as hash keys.
      * </p>
      *
      * @return void
      */
     public function __construct (
-        private readonly Strategy $strategy
-    ) {
+        private Engine $engine
+    ) {}
 
-        /** @var State $state */
-        $state = [
-            'buckets' => [],
-            'size' => 0
-        ];
-
-        $this->state = new SharedState($state);
-
-    }
 
     /**
      * @inheritDoc
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::emptyCopy() To create an empty copy of the hash
+     * engine.
      */
     public function emptyCopy ():self {
 
-        return new self($this->strategy);
+        /** @var self<TValue> */
+        return new self(
+            $this->engine->emptyCopy()
+        );
 
     }
 
@@ -107,14 +87,13 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Runtime\Copy::deep() To deep copy the storage.
-     *
-     * @throws \FireHub\Runtime\Exception\CopyObjectException If the object's copying fails.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::copy() To create a copy of the hash engine.
      */
-    protected function copyData (mixed $data):array {
+    public function copy ():self {
 
-        /** @var State */
-        return Runtime\Copy::deep($data);
+        return new self(
+            $this->engine->copy()
+        );
 
     }
 
@@ -123,15 +102,28 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::fork() To create a fork of the hash engine.
+     */
+    public function fork ():self {
+
+        return new self(
+            $this->engine->fork()
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::iterate() To iterate over the hash engine.
      */
     public function iterate ():iterable {
 
         $index = 0;
-
-        foreach ($this->state->data()['buckets'] as $bucket)
-            foreach ($bucket as $value)
-                yield $index++ => $value;
+        foreach ($this->engine->iterate() as $value => $_)
+            yield $index++ => $value;
 
     }
 
@@ -153,12 +145,11 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::size() To get the size of the hash engine.
      */
     public function size ():int {
 
-        /** @var non-negative-int */
-        return $this->state->data()['size'];
+        return $this->engine->size();
 
     }
 
@@ -167,25 +158,12 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To calculate the hash value of the
-     * specified value.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::equals() To compare the specified value
-     * with the stored values.
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::has() To determine whether the hash engine contains
+     * the specified value as a key.
      */
     public function contains (mixed $value):bool {
 
-        $hash = $this->strategy->hash($value);
-        $data = &$this->state->data();
-
-        if (!isset($data['buckets'][$hash]))
-            return false;
-
-        foreach ($data['buckets'][$hash] as $stored)
-            if ($this->strategy->equals($stored, $value))
-                return true;
-
-        return false;
+        return $this->engine->has($value);
 
     }
 
@@ -194,27 +172,16 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashSetStorage::detach() To detach the storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To calculate the hash value of the
-     * specified value.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::equals() To compare the specified value
-     * with the stored values.
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::has() To determine whether the value already
+     * exists.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::set() To store the value as a hash key.
      */
     public function add (mixed $value):MutationOutcome {
 
-        $hash = $this->strategy->hash($value);
+        if ($this->engine->has($value))
+            return MutationOutcome::ALREADY_EXISTS;
 
-        foreach ($this->state->data()['buckets'][$hash] ?? [] as $stored)
-            if ($this->strategy->equals($stored, $value))
-                return MutationOutcome::ALREADY_EXISTS;
-
-        $this->detach();
-
-        $data = &$this->state->data();
-
-        $data['buckets'][$hash][] = $value;
-        $data['size']++;
+        $this->engine->set($value, true);
 
         return MutationOutcome::CREATED;
 
@@ -225,42 +192,12 @@ final class HashSetStorage implements Storage, Cloneable, Forkable, Metrics, Val
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashSetStorage::detach() To detach the storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To calculate the hash value of the
-     * specified value.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::equals() To compare the specified value
-     * with the stored values.
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
-     * @uses \FireHub\Runtime\Arr\Structure::splice() To remove the specified value from the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::remove() To remove the specified value from the
+     * hash engine.
      */
     public function remove (mixed $value):MutationOutcome {
 
-        $hash = $this->strategy->hash($value);
-
-        if (!isset($this->state->data()['buckets'][$hash]))
-            return MutationOutcome::NOT_FOUND;
-
-        foreach ($this->state->data()['buckets'][$hash] as $index => $stored) {
-
-            if (!$this->strategy->equals($stored, $value))
-                continue;
-
-            $this->detach();
-
-            $data = &$this->state->data();
-
-            Runtime\Arr\Structure::splice($data['buckets'][$hash], $index, 1); // @phpstan-ignore offsetAccess.notFound
-
-            if ($data['buckets'][$hash] === [])
-                unset($data['buckets'][$hash]);
-
-            $data['size']--;
-
-            return MutationOutcome::REMOVED;
-
-        }
-
-        return MutationOutcome::NOT_FOUND;
+        return $this->engine->remove($value);
 
     }
 
