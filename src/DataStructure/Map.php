@@ -28,6 +28,7 @@ use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, MutationOutcome
 };
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Chunkable, Flippable, Groupable, Partitionable, Reversible, Shufflable, Skippable, Splittable, Takeable
 };
@@ -35,7 +36,7 @@ use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Split, Take
 };
 use FireHub\Foundation\DataStructure\Concern\ {
-    Aggregation\CanCount,
+    Aggregation\CanCount, Aggregation\CanReduce,
     Projection\CanExtractKeys, Projection\CanExtractValues,
     Query\CanFind, Query\CanMatch,
     Transformation\CanFlip, Transformation\CanMultiplicity, Transformation\CanReject
@@ -74,6 +75,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Flippable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<TKey, TValue>
@@ -88,7 +90,7 @@ use Traversable;
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
     Rejectable, Sortable, KeySortable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable, Reversible,
-    Shufflable, Flippable {
+    Shufflable, Flippable, Reducible {
 
     /**
      * ### Freeze state
@@ -159,6 +161,22 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @use \FireHub\Foundation\DataStructure\Concern\Projection\CanExtractKeys<TKey, TValue>
      */
     use CanExtractKeys;
+
+    /**
+     * ### Provides value extraction capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Projection\CanExtractValues<TKey, TValue>
+     */
+    use CanExtractValues;
+
+    /**
+     * ### Provides value reduction
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanReduce<TValue>
+     */
+    use CanReduce;
 
     /**
      * ### Constructor

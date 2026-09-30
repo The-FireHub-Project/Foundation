@@ -23,9 +23,10 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable;
 use FireHub\Foundation\DataStructure\Concern\ {
-    Aggregation\CanCount,
+    Aggregation\CanCount, Aggregation\CanReduce,
     Query\CanFind, Query\CanMatch,
     Transformation\CanReject
 };
@@ -50,6 +51,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -61,7 +63,7 @@ use Traversable;
  * )
  */
 class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, ValueMutation, Mappable,
-    Rejectable, Partitionable {
+    Rejectable, Partitionable, Reducible {
 
     /**
      * ### Freeze state
@@ -100,6 +102,14 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<int, TValue>
      */
     use CanFind;
+
+    /**
+     * ### Provides value reduction
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanReduce<TValue>
+     */
+    use CanReduce;
 
     /**
      * ### Constructor

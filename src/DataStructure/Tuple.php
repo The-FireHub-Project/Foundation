@@ -21,7 +21,9 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Concern\ {
+    Aggregation\CanReduce,
     Query\CanFind, Query\CanMatch,
     Transformation\CanCombine
 };
@@ -49,6 +51,7 @@ use Traversable;
  *
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Record\Tuple<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -57,7 +60,7 @@ use Traversable;
  *     &IndexAccess<TValue>
  * )
  */
-class Tuple implements TupleBoundary, Arrayable, Cloneable {
+class Tuple implements TupleBoundary, Arrayable, Cloneable, Reducible {
 
     /**
      * ### Provides matching query support
@@ -82,6 +85,14 @@ class Tuple implements TupleBoundary, Arrayable, Cloneable {
      * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanCombine<TValue>
      */
     use CanCombine;
+
+    /**
+     * ### Provides value reduction
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanReduce<TValue>
+     */
+    use CanReduce;
 
     /**
      * ### Constructor

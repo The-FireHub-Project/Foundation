@@ -29,6 +29,7 @@ use FireHub\Core\Meta\Enum\ {
 };
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Padable, Reversible, Shufflable, Sliceable, Spliceable
 };
@@ -72,12 +73,13 @@ use FireHub\Runtime;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Padable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type State list<TValue>
  */
 final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
     IndexMutation, Mappable, Filterable, Sortable, DistributionSortable, Sliceable, Spliceable, Reversible,
-    Shufflable, Padable {
+    Shufflable, Padable, Reducible {
 
     /**
      * ### Copy-on-write state
@@ -694,6 +696,24 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
         return clone($this, [ // @phpstan-ignore assign.propertyType
             'state' => new SharedState($data)
         ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Transform::reduce() To reduce the storage.
+     */
+    public function reduce (mixed $initial, callable $callback):mixed {
+
+        return Runtime\Arr\Transform::reduce( // @phpstan-ignore return.type
+            $this->state->data(),
+            $callback, // @phpstan-ignore argument.type
+            $initial
+        );
 
     }
 

@@ -475,6 +475,24 @@ final class ArrHash implements Engine {
     }
 
     /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Runtime\Arr\Transform::reduce() To reduce the storage.
+     */
+    public function reduce (mixed $initial, callable $callback):mixed {
+
+        return Runtime\Arr\Transform::reduce( // @phpstan-ignore return.type
+            $this->state->data(),
+            $callback, // @phpstan-ignore argument.type
+            $initial
+        );
+
+    }
+
+    /**
      * ### Checks if the key is valid
      * @since 1.0.0
      *

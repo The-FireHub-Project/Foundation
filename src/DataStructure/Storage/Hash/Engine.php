@@ -19,6 +19,7 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Reversible, Shufflable, Sliceable
 };
@@ -47,9 +48,10 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
  * @extends \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<TKey, TValue>
  * @extends \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
  * @extends \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
+ * @extends \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  */
 interface Engine extends Cloneable, Forkable, Mappable, Filterable, Sortable, KeySortable, Sliceable, Reversible,
-    Shufflable {
+    Shufflable, Reducible {
 
     /**
      * ### Returns a new empty copy of the hash engine

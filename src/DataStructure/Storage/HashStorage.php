@@ -27,6 +27,7 @@ use FireHub\Core\Meta\Enum\ {
 };
 use FireHub\Foundation\DataStructure\Storage;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Reversible, Shufflable, Sliceable
 };
@@ -59,9 +60,10 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Sliceable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Reversible<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  */
 final readonly class HashStorage implements Storage, Cloneable, Forkable, Metrics, KeyAccess, KeyMutation, Mappable,
-    Filterable, Sortable, KeySortable, Sliceable, Reversible, Shufflable {
+    Filterable, Sortable, KeySortable, Sliceable, Reversible, Shufflable, Reducible {
 
     /**
      * ### Underlying hash engine
@@ -346,6 +348,19 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
         return new self(
             $this->engine->shuffle()
         );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::reduce() To reduce the hash engine.
+     */
+    public function reduce (mixed $initial, callable $callback):mixed {
+
+        return $this->engine->reduce($initial, $callback);
 
     }
 

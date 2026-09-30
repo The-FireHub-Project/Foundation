@@ -17,6 +17,7 @@ use FireHub\Core\Boundary\Type\DataStructure\Stream as StreamBoundary;
 use FireHub\Core\Boundary\Capability\Transformation\ {
     Mappable, Rejectable
 };
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Skippable, Takeable
 };
@@ -55,8 +56,9 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  */
-readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable, Skippable {
+readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable, Skippable, Reducible {
 
     /**
      * ### Provides rejection capabilities
@@ -189,6 +191,24 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
 
         /** @var Skip<TKey, TValue, $this> */
         return new Skip($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source::iterate() To iterate over the Source elements.
+     */
+    public function reduce (mixed $initial, callable $callback):mixed {
+
+        $carry = $initial;
+
+        foreach ($this->source->iterate() as $value)
+            $carry = $callback($carry, $value);
+
+        return $carry;
 
     }
 

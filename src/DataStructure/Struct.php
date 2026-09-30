@@ -21,7 +21,9 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Concern\ {
+    Aggregation\CanReduce,
     Projection\CanExtractKeys, Projection\CanExtractValues,
     Query\CanFind, Query\CanMatch
 };
@@ -55,6 +57,7 @@ use Traversable;
  *
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Record\Struct<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<TKey, TValue>
@@ -63,7 +66,7 @@ use Traversable;
  *     &KeyAccess<TKey, TValue>
  * )
  */
-class Struct implements StructBoundary, Arrayable, Cloneable {
+class Struct implements StructBoundary, Arrayable, Cloneable, Reducible {
 
     /**
      * ### Provides matching query support
@@ -96,6 +99,14 @@ class Struct implements StructBoundary, Arrayable, Cloneable {
      * @use \FireHub\Foundation\DataStructure\Concern\Projection\CanExtractValues<TKey, TValue>
      */
     use CanExtractValues;
+
+    /**
+     * ### Provides value reduction
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanReduce<TValue>
+     */
+    use CanReduce;
 
     /**
      * ### Constructor

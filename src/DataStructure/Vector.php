@@ -30,6 +30,7 @@ use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\ {
     Order, Side, MutationOutcome
 };
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Chunkable, Flippable, Groupable, Padable, Partitionable, Reversible, Shufflable, Skippable, Sliceable, Spliceable,
     Splittable, Takeable
@@ -38,7 +39,7 @@ use FireHub\Foundation\DataStructure\Transformation\ {
     Chunk, Select, Skip, Split, Take
 };
 use FireHub\Foundation\DataStructure\Concern\ {
-    Aggregation\CanCount,
+    Aggregation\CanCount, Aggregation\CanReduce,
     Query\CanFind, Query\CanMatch,
     Transformation\CanCombine, Transformation\CanFlip, Transformation\CanMultiplicity, Transformation\CanReject
 };
@@ -80,6 +81,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Shufflable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Padable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Flippable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -96,7 +98,7 @@ use Traversable;
  */
 class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DequeMutation,
     IndexMutation, Mappable, Rejectable, Sortable, DistributionSortable, Chunkable, Splittable, Groupable,
-    Partitionable, Takeable, Skippable, Sliceable, Spliceable, Reversible, Shufflable, Padable, Flippable {
+    Partitionable, Takeable, Skippable, Sliceable, Spliceable, Reversible, Shufflable, Padable, Flippable, Reducible {
 
     /**
      * ### Freeze state
@@ -159,6 +161,14 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
      * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanCombine<TValue>
      */
     use CanCombine;
+
+    /**
+     * ### Provides value reduction
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanReduce<TValue>
+     */
+    use CanReduce;
 
     /**
      * ### Constructor

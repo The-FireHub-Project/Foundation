@@ -576,6 +576,31 @@ final class BucketHash implements Engine {
     }
 
     /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the engine state.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\BucketHash::findEntry() To find an entry.
+     */
+    public function reduce (mixed $initial, callable $callback):mixed {
+
+        $carry = $initial;
+
+        foreach ($this->state->data()['order'] as $key) {
+
+            $entry = $this->findEntry($key);
+
+            if ($entry !== null)
+                $carry = $callback($carry, $entry['value']);
+
+        }
+
+        return $carry;
+
+    }
+
+    /**
      * ### Finds an entry for the specified key
      * @since 1.0.0
      *

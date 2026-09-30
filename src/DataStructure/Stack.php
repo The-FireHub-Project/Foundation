@@ -23,6 +23,7 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Flippable, Partitionable, Skippable, Takeable
 };
@@ -30,7 +31,7 @@ use FireHub\Foundation\DataStructure\Transformation\ {
     Select, Skip, Take
 };
 use FireHub\Foundation\DataStructure\Concern\ {
-    Aggregation\CanCount,
+    Aggregation\CanCount, Aggregation\CanReduce,
     Query\CanFind, Query\CanMatch,
     Transformation\CanFlip, Transformation\CanMultiplicity, Transformation\CanReject
 };
@@ -59,6 +60,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Flippable<int, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -69,7 +71,7 @@ use Traversable;
  * )
  */
 class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable, BackMutation, Mappable, Rejectable,
-    Partitionable, Takeable, Skippable, Flippable {
+    Partitionable, Takeable, Skippable, Flippable, Reducible {
 
     /**
      * ### Freeze state
@@ -124,6 +126,14 @@ class Stack implements StackBoundary, Arrayable, Cloneable, Freezable, Thawable,
      * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<int, TValue>
      */
     use CanFind;
+
+    /**
+     * ### Provides value reduction
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanReduce<TValue>
+     */
+    use CanReduce;
 
     /**
      * ### Constructor
