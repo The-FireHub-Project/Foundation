@@ -15,8 +15,8 @@ namespace FireHub\Foundation\Temporal;
 
 use FireHub\Core\Type\Temporal\Interval as BaseInterval;
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\DataStructure\DS;
 use FireHub\Foundation\DataStructure\Stream;
-use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\Maybe\ {
     None, Some
 };
@@ -525,10 +525,8 @@ readonly class Interval extends BaseInterval {
      */
     public function stream ():Stream {
 
-        return new Stream(
-            new FactorySource(
-                fn ():iterable => $this->occurrences()
-            )
+        return DS::stream()->factory(
+            fn ():iterable => $this->occurrences()
         );
 
     }

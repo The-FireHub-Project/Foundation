@@ -15,8 +15,8 @@ namespace FireHub\Foundation\DataStructure;
 
 use FireHub\Core\Boundary\Runtime\NativeRuntime;
 use FireHub\Foundation\DataStructure\Factory\ {
-    BagFactory, DequeFactory, MapFactory, QueueFactory, SetFactory, StackFactory, StructFactory, TupleFactory,
-    VectorFactory
+    BagFactory, DequeFactory, MapFactory, QueueFactory, SetFactory, StackFactory, StreamFactory, StructFactory,
+    TupleFactory, VectorFactory
 };
 
 /**
@@ -132,6 +132,18 @@ readonly class DS extends NativeRuntime {
     public static function struct ():StructFactory {
 
         return new StructFactory;
+
+    }
+
+    /**
+     * ### Stream factory
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Factory\StreamFactory Stream factory.
+     */
+    public static function stream ():StreamFactory {
+
+        return new StreamFactory();
 
     }
 
