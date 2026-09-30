@@ -14,9 +14,8 @@
 namespace FireHub\Foundation\DataStructure\Aggregation;
 
 use FireHub\Core\Boundary\Type\Enumerable;
+use FireHub\Foundation\DataStructure\DS;
 use FireHub\Foundation\DataStructure\Bag;
-use FireHub\Foundation\DataStructure\Storage\HashBagStorage;
-use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\MixedHashStrategy;
 
 /**
  * ### Count aggregation
@@ -119,7 +118,7 @@ final readonly class Count {
      */
     public function by (callable $selector):Bag {
 
-        $bag = new Bag(new HashBagStorage(new MixedHashStrategy));
+        $bag = DS::bag()->bucket()->empty();
 
         foreach ($this->source as $key => $value)
             $bag->add($selector($value, $key));

@@ -546,7 +546,7 @@ class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
         $storage = $this->storage->emptyCopy();
         foreach ($this->storage->iterate() as $key => $value)
             if ($callback($value, $key))
-                $storage->add($key); // @phpstan-ignore argument.type
+                $storage->add($value);
 
         return new static($storage);
 

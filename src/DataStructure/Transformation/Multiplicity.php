@@ -15,9 +15,8 @@ namespace FireHub\Foundation\DataStructure\Transformation;
 
 use FireHub\Core\Boundary\Type\Enumerable;
 use FireHub\Core\Boundary\Capability\Transformation\Filterable;
+use FireHub\Foundation\DataStructure\DS;
 use FireHub\Foundation\DataStructure\Bag;
-use FireHub\Foundation\DataStructure\Storage\HashBagStorage;
-use FireHub\Foundation\DataStructure\Storage\Hash\Strategy\MixedHashStrategy;
 use FireHub\Foundation\DataStructure\Aggregation\Count;
 
 /**
@@ -97,8 +96,7 @@ final readonly class Multiplicity {
      */
     public function distinctBy (callable $selector):Filterable {
 
-        /** @var Bag<TIdentity> $seen */
-        $seen = new Bag(new HashBagStorage(new MixedHashStrategy));
+        $seen = DS::bag()->bucket()->empty();
 
         return $this->source->filter(
             static function (mixed $value, mixed $key = null) use ($selector, &$seen):bool {
@@ -221,8 +219,7 @@ final readonly class Multiplicity {
 
         $counts = new Count($this->source)->by($selector);
 
-        /** @var Bag<TIdentity> $selected */
-        $selected = new Bag(new HashBagStorage(new MixedHashStrategy));
+        $selected = DS::bag()->bucket()->empty();
 
         return $this->source->filter(
             static function (mixed $value, mixed $key = null) use ($selector, $counts, &$selected):bool {

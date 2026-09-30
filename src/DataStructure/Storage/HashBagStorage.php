@@ -21,27 +21,24 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Storage;
-use FireHub\Foundation\DataStructure\Storage\Hash\Strategy;
-use FireHub\Foundation\State\ {
-    HasCopyOnWriteState, SharedState
-};
 use FireHub\Foundation\DataStructure\Storage\Exception\InvalidOccurrencesException;
-use FireHub\Runtime;
+use FireHub\Foundation\DataStructure\Storage\Hash\Engine;
 
 /**
  * ### Provides a storage implementation for hash-based value multiplicities
  *
- * Hash bag storage maintains values together with the number of times each logically distinct value occurs,
- * allowing values to be efficiently stored, located, counted, and removed according to the hashing and equality
- * semantics defined by the configured hash strategy.
+ * Hash bag storage maintains values together with the number of times each logically distinct value occurs.
  *
- * Values are organized into hash buckets according to their calculated hashes. Hash collisions are resolved
- * through equality comparison, ensuring that logically equal values share the same occurrence count while
- * different values may coexist within the same hash bucket.
+ * Each distinct bag value is represented as a key within the underlying hash engine, while the associated engine
+ * value represents the number of occurrences of that value within the bag.
  *
- * The storage tracks both the total number of stored occurrences and the number of logically distinct values.
- * Adding an existing value increases its occurrence count, while removing a value decreases its occurrence count
- * and removes the corresponding entry when its final occurrence is removed.
+ * The underlying hash engine defines how values are stored and resolved. Array-backed engines may provide native
+ * PHP array-key lookup for supported values, while bucket-based engines may provide hashing and equality semantics
+ * for arbitrary value types.
+ *
+ * Hash bag storage adapts key-value hash engine operations to multiplicity-oriented storage semantics. The number
+ * of distinct values is provided by the underlying hash engine, while the total number of stored occurrences is
+ * tracked independently by the storage.
  *
  * The implementation is designed as a general-purpose storage mechanism for value multiplicities and does not
  * impose the public semantics of a particular data structure. Higher-level structures such as bags may use hash
@@ -53,57 +50,41 @@ use FireHub\Runtime;
  * @implements \FireHub\Foundation\DataStructure\Storage<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\MultiplicityAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\MultiplicityMutation<TValue>
- *
- * @phpstan-type State array{
- *     buckets: array<string, list<array{value: TValue, count: int}>>,
- *     size: int,
- *     distinct_size: int
- * }
  */
 final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetrics, MultiplicityAccess,
     MultiplicityMutation {
 
     /**
-     * ### Copy-on-write state
-     * @since 1.0.0
-     *
-     * @use \FireHub\Foundation\State\HasCopyOnWriteState<State>
-     */
-    use HasCopyOnWriteState;
-
-    /**
      * ### Constructor
      * @since 1.0.0
      *
-     * @param \FireHub\Foundation\DataStructure\Storage\Hash\Strategy<TValue> $strategy <p>
-     * The hash strategy used to calculate hash values for values.
+     * @param \FireHub\Foundation\DataStructure\Storage\Hash\Engine<TValue, positive-int> $engine <p>
+     * The hash engine used to store distinct bag values together with their occurrence counts.
+     * </p>
+     * @param non-negative-int $size [optional] <p>
+     * The total number of occurrences represented by the hash engine.
      * </p>
      *
      * @return void
      */
     public function __construct (
-        private readonly Strategy $strategy
-    ) {
-
-        /** @var State $state */
-        $state = [
-            'buckets' => [],
-            'size' => 0,
-            'distinct_size' => 0
-        ];
-
-        $this->state = new SharedState($state);
-
-    }
+        private readonly Engine $engine,
+        private int $size = 0
+    ) {}
 
     /**
      * @inheritDoc
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::emptyCopy() To create an empty copy of the hash
+     * engine.
      */
     public function emptyCopy ():self {
 
-        return new self($this->strategy);
+        return new self(
+            $this->engine->emptyCopy()
+        );
 
     }
 
@@ -112,32 +93,47 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Runtime\Copy::deep() To deep copy the storage.
-     *
-     * @throws \FireHub\Runtime\Exception\CopyObjectException If the object's copying fails.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::copy() To create a copy of the hash engine.
      */
-    protected function copyData (mixed $data):array {
+    public function copy ():self {
 
-        /** @var State */
-        return Runtime\Copy::deep($data);
+        return new self(
+            $this->engine->copy(),
+            $this->size
+        );
 
     }
 
-        /**
+    /**
      * @inheritDoc
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::fork() To create a fork of the hash engine.
+     */
+    public function fork ():self {
+
+        return new self(
+            $this->engine->fork(),
+            $this->size
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::iterate() To iterate over the hash engine.
      */
     public function iterate ():iterable {
 
         $index = 0;
 
-        foreach ($this->state->data()['buckets'] as $bucket)
-            foreach ($bucket as $entry)
-                for ($occurrence = 0; $occurrence < $entry['count']; $occurrence++)
-                    yield $index++ => $entry['value'];
+        foreach ($this->engine->iterate() as $value => $count)
+            for ($occurrence = 0; $occurrence < $count; $occurrence++)
+                yield $index++ => $value;
 
     }
 
@@ -163,8 +159,7 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
      */
     public function size ():int {
 
-        /** @var positive-int */
-        return $this->state->data()['size'];
+        return $this->size;
 
     }
 
@@ -173,12 +168,11 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::size() To get the size of the hash engine.
      */
     public function distinctSize ():int {
 
-        /** @var positive-int */
-        return $this->state->data()['distinct_size'];
+        return $this->engine->size();
 
     }
 
@@ -187,25 +181,12 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To calculate the hash value of the
-     * specified value.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::equals() To compare the specified value
-     * with the stored values.
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::has() To determine whether the hash engine contains
+     * the specified value as a key.
      */
     public function contains (mixed $value):bool {
 
-        $hash = $this->strategy->hash($value);
-        $data = &$this->state->data();
-
-        if (!isset($data['buckets'][$hash]))
-            return false;
-
-        foreach ($data['buckets'][$hash] as $entry)
-            if ($this->strategy->equals($entry['value'], $value))
-                return true;
-
-        return false;
+        return $this->engine->has($value);
 
     }
 
@@ -214,26 +195,19 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To calculate the hash value of the
-     * specified value.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::equals() To compare the specified value
-     * with the stored values.
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::get() To get the number of occurrences associated
+     * with the specified value.
+     * @uses \FireHub\Core\Type\Maybe::isSome() To check if the value is present in the hash engine.
+     * @uses \FireHub\Core\Type\Maybe::value() To get the number of occurrences associated with the value.
      */
     public function frequency (mixed $value):int {
 
-        $hash = $this->strategy->hash($value);
-        $data = &$this->state->data();
+        $frequency = $this->engine->get($value);
 
-        if (!isset($data['buckets'][$hash]))
-            return 0;
-
-        foreach ($data['buckets'][$hash] as $entry)
-            if ($this->strategy->equals($entry['value'], $value))
-                /** @var non-negative-int */
-                return $entry['count'];
-
-        return 0;
+        /** @var non-negative-int */
+        return $frequency->isSome()
+            ? $frequency->value()
+            : 0;
 
     }
 
@@ -242,12 +216,10 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashBagStorage::detach() To detach the storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To calculate the hash value of the
-     * specified value.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::equals() To compare the specified value
-     * with the stored values.
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::set() To set the number of occurrences associated
+     * with the specified value.
+     * @uses \FireHub\Core\Type\Maybe::isSome() To check if the value is already present in the hash engine.
+     * @uses \FireHub\Core\Type\Maybe::value() To get the number of occurrences associated with the value.
      *
      * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidOccurrencesException If the specified number
      * of occurrences is less than or equal to zero.
@@ -257,35 +229,27 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
         if ($count < 1)
             throw new InvalidOccurrencesException('The number of occurrences must be greater than zero.');
 
-        $hash = $this->strategy->hash($value);
+        $frequency = $this->engine->get($value);
 
-        foreach ($this->state->data()['buckets'][$hash] ?? [] as $index => $entry) {
+        if ($frequency->isSome()) {
 
-            if (!$this->strategy->equals($entry['value'], $value))
-                continue;
+            /** @var non-negative-int $frequency_value */
+            $frequency_value = $frequency->value();
 
-            $this->detach();
+            $this->engine->set(
+                $value,
+                $frequency_value + $count
+            );
 
-            $data = &$this->state->data();
-
-            $data['buckets'][$hash][$index]['count'] += $count; // @phpstan-ignore-line
-            $data['size'] += $count;
+            $this->size += $count;
 
             return MutationOutcome::UPDATED;
 
         }
 
-        $this->detach();
+        $this->engine->set($value, $count);
 
-        $data = &$this->state->data();
-
-        $data['buckets'][$hash][] = [
-            'value' => $value,
-            'count' => $count
-        ];
-
-        $data['size'] += $count;
-        $data['distinct_size']++;
+        $this->size += $count;
 
         return MutationOutcome::CREATED;
 
@@ -296,13 +260,12 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashBagStorage::detach() To detach the storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To calculate the hash value of the
-     * specified value.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::equals() To compare the specified value
-     * with the stored values.
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
-     * @uses \FireHub\Runtime\Arr\Structure::splice() To remove the specified value from the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::remove() To remove the specified value from the
+     * hash engine.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::get() To get the number of occurrences associated
+     * with the specified value.
+     * @uses \FireHub\Core\Type\Maybe::isNone() To check if the value is not present in the hash engine.
+     * @uses \FireHub\Core\Type\Maybe::value() To get the number of occurrences associated with the value.
      *
      * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidOccurrencesException If the specified number
      * of occurrences is less than or equal to zero.
@@ -312,46 +275,35 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
         if ($count < 1)
             throw new InvalidOccurrencesException('The number of occurrences must be greater than zero.');
 
-        $hash = $this->strategy->hash($value);
+        $frequency = $this->engine->get($value);
 
-        if (!isset($this->state->data()['buckets'][$hash]))
+        if ($frequency->isNone())
             return MutationOutcome::NOT_FOUND;
 
-        foreach ($this->state->data()['buckets'][$hash] as $index => $entry) {
+        /** @var positive-int $current */
+        $current = $frequency->value();
 
-            if (!$this->strategy->equals($entry['value'], $value))
-                continue;
+        if ($current > $count) {
 
-            $this->detach();
+            /** @var positive-int $current_count */
+            $current_count = $current - $count;
 
-            $data = &$this->state->data();
-
-            if ($entry['count'] > $count) {
-
-                $data['buckets'][$hash][$index]['count'] -= $count; // @phpstan-ignore-line
-                $data['size'] -= $count;
-
-                return MutationOutcome::UPDATED;
-
-            }
-
-            Runtime\Arr\Structure::splice(
-                $data['buckets'][$hash], // @phpstan-ignore offsetAccess.notFound
-                $index,
-                1
+            $this->engine->set(
+                $value,
+                $current_count
             );
 
-            if ($data['buckets'][$hash] === [])
-                unset($data['buckets'][$hash]);
+            $this->size -= $count; // @phpstan-ignore assign.propertyType
 
-            $data['size'] -= $entry['count'];
-            $data['distinct_size']--;
-
-            return MutationOutcome::REMOVED;
+            return MutationOutcome::UPDATED;
 
         }
 
-        return MutationOutcome::NOT_FOUND;
+        $this->engine->remove($value);
+
+        $this->size -= $current; // @phpstan-ignore assign.propertyType
+
+        return MutationOutcome::REMOVED;
 
     }
 
@@ -360,47 +312,23 @@ final class HashBagStorage implements Storage, Cloneable, Forkable, DistinctMetr
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashBagStorage::detach() To detach the storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To calculate the hash value of the
-     * specified value.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::equals() To compare the specified value
-     * with the stored values.
-     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
-     * @uses \FireHub\Runtime\Arr\Structure::splice() To remove the specified value from the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::remove() To remove all occurrences of the specified
+     * value from the hash engine.
+     * @uses \FireHub\Core\Type\Maybe::isNone() To check if the value is not present in the hash engine.
+     * @uses \FireHub\Core\Type\Maybe::value() To get the number of occurrences associated with the value.
      */
     public function removeAll (mixed $value):MutationOutcome {
 
-        $hash = $this->strategy->hash($value);
+        $frequency = $this->engine->get($value);
 
-        if (!isset($this->state->data()['buckets'][$hash]))
+        if ($frequency->isNone())
             return MutationOutcome::NOT_FOUND;
 
-        foreach ($this->state->data()['buckets'][$hash] as $index => $entry) {
+        $this->engine->remove($value);
 
-            if (!$this->strategy->equals($entry['value'], $value))
-                continue;
+        $this->size -= $frequency->value(); // @phpstan-ignore-line
 
-            $this->detach();
-
-            $data = &$this->state->data();
-
-            Runtime\Arr\Structure::splice(
-                $data['buckets'][$hash], // @phpstan-ignore offsetAccess.notFound
-                $index,
-                1
-            );
-
-            if ($data['buckets'][$hash] === [])
-                unset($data['buckets'][$hash]);
-
-            $data['size'] -= $entry['count'];
-            $data['distinct_size']--;
-
-            return MutationOutcome::REMOVED;
-
-        }
-
-        return MutationOutcome::NOT_FOUND;
+        return MutationOutcome::REMOVED;
 
     }
 
