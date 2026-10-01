@@ -615,6 +615,60 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
     }
 
     /**
+     * ### Rotates the deque
+     *
+     * Creates a new deque by rotating its values by the specified number of steps. Positive values rotate toward the
+     * front, while negative values rotate toward the back.
+     * @since 1.0.0
+     *
+     * @param int $steps <p>
+     * Number of positions to rotate. Positive values move values from the back to the front, while negative values move
+     * values from the front to the back.
+     * </p>
+     *
+     * @return static Rotated deque.
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Cloneable::copy() To copy the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Measurement\Metrics::size() To get the number of values.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\DequeMutation::removeFront() To remove a value from the front.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\DequeMutation::removeBack() To remove a value from the back.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\DequeMutation::insertFront() To insert a value at the front.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\DequeMutation::insertBack() To insert a value at the back.
+     * @uses \FireHub\Runtime\Math::abs() To get the absolute value of a number.
+     */
+    public function rotate (int $steps):static {
+
+        $storage = $this->storage->copy();
+        $size = $storage->size();
+
+        if ($size < 2) return new static($storage);
+
+        $steps %= $size;
+
+        if (Runtime\Math::abs($steps) > $size / 2)
+            $steps += $steps > 0 ? -$size : $size;
+
+        while ($steps > 0) {
+
+            $storage->insertFront($storage->removeBack()->value());
+
+            $steps--;
+
+        }
+
+        while ($steps < 0) {
+
+            $storage->insertBack($storage->removeFront()->value());
+
+            $steps++;
+
+        }
+
+        return new static($storage);
+
+    }
+
+    /**
      * @inheritDoc
      *
      * @since 1.0.0
