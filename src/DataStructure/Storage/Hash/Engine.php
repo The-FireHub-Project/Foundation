@@ -124,6 +124,25 @@ interface Engine extends Cloneable, Forkable, Mappable, Filterable, Sortable, Ke
     public function set (mixed $key, mixed $value):MutationOutcome;
 
     /**
+     * ### Replaces the value associated with the specified key
+     *
+     * Replaces the existing value associated with the specified key without creating a new key or otherwise
+     * changing the keyed structure.
+     * @since 1.0.0
+     *
+     * @param TKey $key <p>
+     * The key whose associated value should be replaced.
+     * </p>
+     * @param TValue $value <p>
+     * The replacement value.
+     * </p>
+     *
+     * @return \FireHub\Core\Meta\Enum\MutationOutcome The outcome of the replacement: UPDATED if the value was
+     * replaced, or NOT_FOUND if the key does not exist.
+     */
+    public function replace (mixed $key, mixed $value):MutationOutcome;
+
+    /**
      * ### Removes the value for the specified key
      *
      * Removes the value currently stored for the specified key. If the key does not exist, no mutation is

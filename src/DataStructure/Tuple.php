@@ -18,9 +18,11 @@ use FireHub\Core\Boundary\Capability\ {
     Access\IndexAccess,
     Conversion\Arrayable,
     Measurement\Metrics,
+    Mutation\IndexReplacement,
     Cloneable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanReduce,
@@ -38,11 +40,12 @@ use Traversable;
  * Elements are arranged in a defined linear order, where each position represents a distinct component of a single
  * composite value. The number and positions of elements remain fixed for the lifetime of the Tuple.
  *
- * The Tuple delegates element storage and access to an underlying Storage implementation that provides positional
- * access, boundary access, and measurement capabilities.
- *
  * Unlike dynamically sized Collections, a Tuple does not expose insertion or removal operations. Its structure is
- * established by the underlying Storage and remains unchanged throughout the lifetime of the Tuple.
+ * established during construction and cannot be extended, reduced, or reordered. Values associated with existing
+ * positions may be replaced without changing the Tuple's structure.
+ *
+ * The Tuple delegates element storage and access to an underlying Storage implementation that provides positional
+ * access, replacement, and measurement capabilities.
  *
  * Tuple elements may contain values of different types, represented collectively by the TValue template type.
  * @since 1.0.0
@@ -51,6 +54,7 @@ use Traversable;
  *
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Record\Tuple<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexReplacement<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
@@ -58,9 +62,10 @@ use Traversable;
  *     &Cloneable
  *     &Metrics
  *     &IndexAccess<TValue>
+ *     &IndexReplacement<TValue>
  * )
  */
-class Tuple implements TupleBoundary, Arrayable, Cloneable, Reducible {
+class Tuple implements TupleBoundary, Arrayable, Cloneable, IndexReplacement, Reducible {
 
     /**
      * ### Provides matching query support
@@ -105,7 +110,7 @@ class Tuple implements TupleBoundary, Arrayable, Cloneable, Reducible {
      * @return void
      */
     final public function __construct (
-        protected Storage&Cloneable&Metrics&IndexAccess $storage
+        protected Storage&Cloneable&Metrics&IndexAccess&IndexReplacement $storage
     ) {}
 
     /**
@@ -259,6 +264,20 @@ class Tuple implements TupleBoundary, Arrayable, Cloneable, Reducible {
     public function get (int $index):Maybe {
 
         return $this->storage->get($index);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\IndexReplacement::replace() To replace the value at the specified
+     * index.
+     */
+    public function replace (int $index, mixed $value):MutationOutcome {
+
+        return $this->storage->replace($index, $value);
 
     }
 

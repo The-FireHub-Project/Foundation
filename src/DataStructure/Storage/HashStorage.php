@@ -16,7 +16,7 @@ namespace FireHub\Foundation\DataStructure\Storage;
 use FireHub\Core\Boundary\Capability\ {
     Access\KeyAccess,
     Measurement\Metrics,
-    Mutation\KeyMutation,
+    Mutation\KeyMutation, Mutation\KeyReplacement,
     Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Mergeable,
     Transformation\Sortable,
     Cloneable, Forkable
@@ -54,6 +54,7 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
  * @implements \FireHub\Foundation\DataStructure\Storage<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\KeyAccess<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyReplacement<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
@@ -64,8 +65,9 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mergeable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  */
-final readonly class HashStorage implements Storage, Cloneable, Forkable, Metrics, KeyAccess, KeyMutation, Mappable,
-    Filterable, Sortable, KeySortable, Sliceable, Reversible, Shufflable, Mergeable, Reducible {
+final readonly class HashStorage implements Storage, Cloneable, Forkable, Metrics, KeyAccess, KeyMutation,
+    KeyReplacement, Mappable, Filterable, Sortable, KeySortable, Sliceable, Reversible, Shufflable, Mergeable,
+    Reducible {
 
     /**
      * ### Underlying hash engine
@@ -205,6 +207,20 @@ final readonly class HashStorage implements Storage, Cloneable, Forkable, Metric
     public function set (mixed $key, mixed $value):MutationOutcome {
 
         return $this->engine->set($key, $value);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine::replace() To replace the value associated with the
+     * specified key.
+     */
+    public function replace (mixed $key, mixed $value):MutationOutcome {
+
+        return $this->engine->replace($key, $value);
 
     }
 

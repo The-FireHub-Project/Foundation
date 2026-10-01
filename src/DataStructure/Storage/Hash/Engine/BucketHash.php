@@ -257,6 +257,37 @@ final class BucketHash implements Engine {
      *
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To hash the key.
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::equals() To compare the key.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\BucketHash::detach() To detach the engine state.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the engine state.
+     */
+    public function replace (mixed $key, mixed $value):MutationOutcome {
+
+        $hash = $this->strategy->hash($key);
+
+        foreach ($this->state->data()['buckets'][$hash] ?? [] as $index => $entry) {
+
+            if (!$this->strategy->equals($entry['key'], $key))
+                continue;
+
+            $this->detach();
+
+            $this->state->data()['buckets'][$hash][$index]['value'] = $value;
+
+            return MutationOutcome::UPDATED;
+
+        }
+
+        return MutationOutcome::NOT_FOUND;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::hash() To hash the key.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Strategy::equals() To compare the key.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the engine state.
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\BucketHash::detach() To detach the engine state.
      * @uses \FireHub\Runtime\Arr\Structure::splice() To splice the engine state.

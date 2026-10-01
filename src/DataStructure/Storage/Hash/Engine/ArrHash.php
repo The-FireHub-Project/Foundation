@@ -208,6 +208,29 @@ final class ArrHash implements Engine {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::isValidKey() To validate the key.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::has() To check if the key exists.
+     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::detach() To detach the engine state.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the engine state.
+     */
+    public function replace (mixed $key, mixed $value):MutationOutcome {
+
+        if (!$this->has($key))
+            return MutationOutcome::NOT_FOUND;
+
+        $this->detach();
+
+        $this->state->data()[$key] = $value;
+
+        return MutationOutcome::UPDATED;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::has() To check if the hash has a key.
      * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash::detach() To detach the storage.
      * @uses \FireHub\Foundation\State\SharedState::data() To get the underlying data.

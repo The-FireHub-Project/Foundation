@@ -16,7 +16,7 @@ namespace FireHub\Foundation\DataStructure\Storage;
 use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Measurement\Metrics,
-    Mutation\DequeMutation, Mutation\IndexMutation,
+    Mutation\DequeMutation, Mutation\IndexMutation, Mutation\IndexReplacement,
     Transformation\Concatenable, Transformation\DistributionSortable, Transformation\Filterable,
     Transformation\Mappable, Transformation\Sortable,
     Cloneable, Forkable
@@ -65,6 +65,7 @@ use FireHub\Runtime;
  * @implements \FireHub\Core\Boundary\Capability\Access\IndexAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexReplacement<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Filterable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
@@ -80,8 +81,8 @@ use FireHub\Runtime;
  * @phpstan-type State list<TValue>
  */
 final class ListStorage implements Storage, Cloneable, Forkable, Metrics, BoundaryAccess, IndexAccess, DequeMutation,
-    IndexMutation, Mappable, Filterable, Sortable, DistributionSortable, Sliceable, Spliceable, Reversible,
-    Shufflable, Padable, Concatenable, Reducible {
+    IndexMutation, IndexReplacement, Mappable, Filterable, Sortable, DistributionSortable, Sliceable, Spliceable,
+    Reversible, Shufflable, Padable, Concatenable, Reducible {
 
     /**
      * ### Copy-on-write state
@@ -363,6 +364,29 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      */
     public function set (int $index, mixed $value):MutationOutcome {
+
+        if (!$this->has($index))
+            return MutationOutcome::NOT_FOUND;
+
+        $this->detach();
+
+        $this->state->data()[$index] = $value;
+
+        return MutationOutcome::UPDATED;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::has() To check if the storage has a value at
+     * the specified index.
+     * @uses \FireHub\Foundation\DataStructure\Storage\ListStorage::detach() To detach the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     */
+    public function replace (int $index, mixed $value):MutationOutcome {
 
         if (!$this->has($index))
             return MutationOutcome::NOT_FOUND;

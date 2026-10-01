@@ -16,7 +16,7 @@ namespace FireHub\Foundation\DataStructure\Storage;
 use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Measurement\Capacity, Measurement\Metrics,
-    Mutation\IndexMutation,
+    Mutation\IndexMutation, Mutation\IndexReplacement,
     Transformation\DistributionSortable, Transformation\Mappable, Transformation\Sortable,
     Cloneable, Forkable
 };
@@ -59,6 +59,7 @@ use SplFixedArray;
  * @implements \FireHub\Core\Boundary\Capability\Access\BoundaryAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Access\IndexAccess<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexReplacement<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\DistributionSortable<TValue>
@@ -66,7 +67,7 @@ use SplFixedArray;
  * @phpstan-type State SplFixedArray<null|TValue>
  */
 final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capacity, BoundaryAccess, IndexAccess,
-    IndexMutation, Mappable, Sortable, DistributionSortable {
+    IndexMutation, IndexReplacement, Mappable, Sortable, DistributionSortable {
 
     /**
      * ### Copy-on-write state
@@ -343,9 +344,33 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
             $this->size++;
 
             return MutationOutcome::CREATED;
+
         }
 
         $data[$index] = $value;
+
+        return MutationOutcome::UPDATED;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::has() To check if the storage has a value at
+     * the specified index.
+     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage::detach() To detach the storage.
+     * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
+     */
+    public function replace (int $index, mixed $value):MutationOutcome {
+
+        if (!$this->has($index))
+            return MutationOutcome::NOT_FOUND;
+
+        $this->detach();
+
+        $this->state->data()[$index] = $value;
 
         return MutationOutcome::UPDATED;
 

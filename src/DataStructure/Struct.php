@@ -18,9 +18,11 @@ use FireHub\Core\Boundary\Capability\ {
     Access\KeyAccess,
     Conversion\Arrayable,
     Measurement\Metrics,
+    Mutation\KeyReplacement,
     Cloneable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanReduce,
@@ -39,12 +41,8 @@ use Traversable;
  * structure. The set of keys remains fixed for the lifetime of the Struct.
  *
  * Unlike a Map, which represents a dynamically changing collection of key-value associations, a Struct represents
- * a single structured value with a fixed set of keyed elements. Insertion and removal operations are therefore not
- * part of the Struct.
- *
- * The Struct provides keyed access to its elements while remaining immutable from the perspective of its public
- * interface. Existing elements cannot be replaced, and the defined structure cannot be extended or reduced after
- * construction.
+ * a single structured value with a fixed set of keyed elements. Keys cannot be added, removed, or replaced after
+ * construction, while values associated with existing keys may be replaced without changing the Struct's structure.
  *
  * The iteration order of the underlying Storage does not form part of the Struct's semantic structure. Elements are
  * identified by their keys rather than by their position within the iteration sequence.
@@ -57,6 +55,7 @@ use Traversable;
  *
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Record\Struct<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyReplacement<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
@@ -64,9 +63,10 @@ use Traversable;
  *     &Cloneable
  *     &Metrics
  *     &KeyAccess<TKey, TValue>
+ *     &KeyReplacement<TKey, TValue>
  * )
  */
-class Struct implements StructBoundary, Arrayable, Cloneable, Reducible {
+class Struct implements StructBoundary, Arrayable, Cloneable, KeyReplacement, Reducible {
 
     /**
      * ### Provides matching query support
@@ -119,7 +119,7 @@ class Struct implements StructBoundary, Arrayable, Cloneable, Reducible {
      * @return void
      */
     final public function __construct (
-        protected Storage&Cloneable&Metrics&KeyAccess $storage
+        protected Storage&Cloneable&Metrics&KeyAccess&KeyReplacement $storage
     ) {}
 
     /**
@@ -273,6 +273,20 @@ class Struct implements StructBoundary, Arrayable, Cloneable, Reducible {
     public function get (mixed $key):Maybe {
 
         return $this->storage->get($key);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\KeyReplacement::replace() To replace the value associated
+     * with thwspecified key.
+     */
+    public function replace (mixed $key, mixed $value):MutationOutcome {
+
+        return $this->storage->replace($key, $value);
 
     }
 
