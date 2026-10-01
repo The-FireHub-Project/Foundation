@@ -19,6 +19,7 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\KeyReplacement,
+    Transformation\Mappable,
     Cloneable
 };
 use FireHub\Core\Type\Maybe;
@@ -56,6 +57,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Record\Struct<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyReplacement<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  *
  * @phpstan-type StorageType = (
@@ -66,7 +68,7 @@ use Traversable;
  *     &KeyReplacement<TKey, TValue>
  * )
  */
-class Struct implements StructBoundary, Arrayable, Cloneable, KeyReplacement, Reducible {
+class Struct implements StructBoundary, Arrayable, Cloneable, KeyReplacement, Mappable, Reducible {
 
     /**
      * ### Provides matching query support
@@ -287,6 +289,29 @@ class Struct implements StructBoundary, Arrayable, Cloneable, KeyReplacement, Re
     public function replace (mixed $key, mixed $value):MutationOutcome {
 
         return $this->storage->replace($key, $value);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Transformation\Mappable::map() To map the storage values.
+     * @uses \FireHub\Core\Boundary\Capability\Cloneable::copy() To copy the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\KeyReplacement::replace() To replace mapped values.
+     */
+    public function map (callable $callback):static {
+
+        if ($this->storage instanceOf Mappable)
+            return new static($this->storage->map($callback)); // @phpstan-ignore argument.type
+
+        $storage = $this->storage->copy();
+        foreach ($this->storage->iterate() as $key => $value)
+            $storage->replace($key, $callback($value, $key));
+
+        return new static($storage);
 
     }
 
