@@ -24,6 +24,9 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
+use FireHub\Foundation\DataStructure\Boundary\Algebra\ {
+    SetAlgebra, SetRelations
+};
 use FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable;
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanCount, Aggregation\CanReduce,
@@ -52,6 +55,8 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Partitionable<int, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Algebra\SetAlgebra<TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Algebra\SetRelations<TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -63,7 +68,7 @@ use Traversable;
  * )
  */
 class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, ValueMutation, Mappable,
-    Rejectable, Partitionable, Reducible {
+    Rejectable, Partitionable, SetAlgebra, SetRelations, Reducible {
 
     /**
      * ### Freeze state
@@ -382,6 +387,135 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Storage::add() To add values into the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Set::contains() To check if the data structure contains.
+     * a value.
+     */
+    public function isSubsetOf (iterable $values):bool {
+
+        $other = $this->storage->emptyCopy();
+
+        foreach ($values as $value)
+            $other->add($value);
+
+        foreach ($this as $value)
+            if (!$other->contains($value))
+                return false;
+
+        return true;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Set::size() To get the size of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Storage::add() To add values into the data structure.
+     * @uses \FireHub\Runtime\FileSystem\Storage::size() To get the size of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Set::contains() To check if the data structure contains.
+     * a value.
+     */
+    public function isProperSubsetOf (iterable $values):bool {
+
+        $other = $this->storage->emptyCopy();
+
+        foreach ($values as $value)
+            $other->add($value);
+
+        if ($this->size() >= $other->size())
+            return false;
+
+        foreach ($this as $value)
+            if (!$other->contains($value))
+                return false;
+
+        return true;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Storage::add() To add values into the data structure.
+     * @uses \FireHub\Runtime\FileSystem\Storage::iterate() To iterate over the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Set::contains() To check if the data structure contains.
+     * a value.
+     */
+    public function isSupersetOf (iterable $values):bool {
+
+        $other = $this->storage->emptyCopy();
+
+        foreach ($values as $value)
+            $other->add($value);
+
+        foreach ($other->iterate() as $value)
+            if (!$this->contains($value))
+                return false;
+
+        return true;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Storage::add() To add values into the data structure.
+     * @uses \FireHub\Runtime\FileSystem\Storage::iterate() To iterate over the data structure.
+     * @uses \FireHub\Runtime\FileSystem\Storage::size() To get the size of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Set::size() To get the size of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Set::contains() To check if the data structure contains.
+     * a value.
+     */
+    public function isProperSupersetOf (iterable $values):bool {
+
+        $other = $this->storage->emptyCopy();
+
+        foreach ($values as $value)
+            $other->add($value);
+
+        if ($this->size() <= $other->size())
+            return false;
+
+        foreach ($other->iterate() as $value)
+            if (!$this->contains($value))
+                return false;
+
+        return true;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Set::contains() To check if the data structure contains a value.
+     */
+    public function isDisjointWith (iterable $values):bool {
+
+        foreach ($values as $value)
+            if ($this->contains($value))
+                return false;
+
+        return true;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
      * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
      * @uses \FireHub\Foundation\DataStructure\Storage::add() To add mapped values into the storage.
      * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
@@ -453,6 +587,112 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
             new static($matched),
             new static($unmatched)
         ]);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Set::emptyCopy() To create an empty copy of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Set::add() To add values into the data structure.
+     */
+    public function union (iterable $values):static {
+
+        $result = $this->fork();
+
+        foreach ($this->storage->iterate() as $value)
+            $result->add($value);
+
+        return $result;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Storage::add() To add values into the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Set::contains() To check if the data structure contains a value.
+     */
+    public function intersection (iterable $values):static {
+
+        $other = $this->storage->emptyCopy();
+
+        foreach ($values as $value)
+            $other->add($value);
+
+        $result = $this->storage->emptyCopy();
+
+        foreach ($this as $value)
+            if ($other->contains($value))
+                $result->add($value);
+
+        return new static($result);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Storage::add() To add values into the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Set::contains() To check if the data structure contains
+     * a value.
+     */
+    public function difference (iterable $values):static {
+
+        $other = $this->storage->emptyCopy();
+
+        foreach ($values as $value)
+            $other->add($value);
+
+        $result = $this->storage->emptyCopy();
+
+        foreach ($this as $value)
+            if (!$other->contains($value))
+                $result->add($value);
+
+        return new static($result);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Storage::add() To add values into the data structure.
+     * @uses \FireHub\Foundation\DataStructure\Set::contains() To check if the data structure contains
+     * a value.
+     */
+    public function symmetricDifference (iterable $values):static {
+
+        $other = $this->storage->emptyCopy();
+
+        foreach ($values as $value)
+            $other->add($value);
+
+        $result = $this->storage->emptyCopy();
+
+        foreach ($this as $value)
+            if (!$other->contains($value))
+                $result->add($value);
+
+        foreach ($other->iterate() as $value)
+            if (!$this->contains($value))
+                $result->add($value);
+
+        return new static($result);
 
     }
 
