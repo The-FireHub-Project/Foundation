@@ -782,6 +782,40 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
     }
 
     /**
+     * ### Removes and returns the value at the specified index
+     *
+     * Removes the value associated with the given index and returns it. If no value exists at the specified index,
+     * an empty Maybe is returned and the data structure remains unchanged.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Access\IndexAccess::get() To retrieve a value from the storage at the
+     * specified index.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\IndexMutation::remove() To remove a value from the storage
+     * at the specified index.
+     * @uses \FireHub\Core\Type\Maybe::isNone() To check if the value is none.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
+     *
+     * @param int $index Index to remove the value from.
+     *
+     * @return \FireHub\Core\Type\Maybe<TValue|mixed> Removed value if the index exists, otherwise an empty Maybe.
+     */
+    public function pull (int $index):Maybe {
+
+        $this->guardMutable();
+
+        $value = $this->storage->get($index);
+
+        if ($value->isNone()) return $value;
+
+        $this->storage->remove($index);
+
+        return $value;
+
+    }
+
+    /**
      * @inheritDoc
      *
      * @since 1.0.0
