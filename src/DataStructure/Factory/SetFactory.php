@@ -85,8 +85,7 @@ readonly class SetFactory {
         return $this->generator( // @phpstan-ignore argument.templateType
             static function () use ($values):Generator { // @phpstan-ignore argument.type
 
-                foreach ($values as $value)
-                    yield $value => true;
+                yield from $values;
 
             }
         );
