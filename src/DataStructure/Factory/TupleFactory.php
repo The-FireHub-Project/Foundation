@@ -33,28 +33,6 @@ use Closure, Generator;
 readonly class TupleFactory {
 
     /**
-     * ### Creates an empty tuple
-     *
-     * Creates a new tuple backed by fixed storage with zero capacity.
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit To initialize an empty storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\FixedStorage To provide fixed-size storage.
-     *
-     * @return \FireHub\Foundation\DataStructure\Tuple<mixed> An empty tuple.
-     */
-    public function empty ():Tuple {
-
-        return new Tuple(
-            new FixedStorage(
-                0,
-                new EmptyInit
-            )
-        );
-
-    }
-
-    /**
      * ### Creates a tuple from an array
      *
      * Creates a new tuple containing the values provided by the specified array.

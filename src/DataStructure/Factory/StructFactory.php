@@ -35,30 +35,6 @@ use Closure, Generator;
 readonly class StructFactory {
 
     /**
-     * ### Creates an empty struct
-     *
-     * Creates a new empty struct backed by native array hash storage.
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit To initialize an empty storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash To provide native array hash storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashStorage To provide keyed storage.
-     *
-     * @return \FireHub\Foundation\DataStructure\Struct<array-key, mixed> An empty struct.
-     */
-    public function empty ():Struct {
-
-        return new Struct(
-            new HashStorage(
-                new ArrHash(
-                    new EmptyInit
-                )
-            )
-        );
-
-    }
-
-    /**
      * ### Creates a struct from an array
      *
      * Creates a new struct containing the key-value associations provided by the specified array.
