@@ -16,7 +16,9 @@ namespace FireHub\Tests\Foundation\DataProviders;
 use FireHub\Foundation\DataStructure\Storage\ {
     FixedStorage, HashStorage, HashBagStorage, HashSetStorage, ListStorage
 };
-use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
+use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ {
+    ArrHash, BucketHash
+};
 use FireHub\Foundation\DataStructure\Storage\Initialization\ {
     ArrayInit, EmptyInit
 };
@@ -102,7 +104,7 @@ final class StorageDataProvider {
      */
     public static function hashSet ():array {
 
-        $set = new HashSetStorage(new StringHashStrategy());
+        $set = new HashSetStorage(new BucketHash(new EmptyInit(), new StringHashStrategy()));
 
         $set->add('John');
         $set->add('Jane');
@@ -123,7 +125,7 @@ final class StorageDataProvider {
      */
     public static function hashBag ():array {
 
-        $bag = new HashBagStorage(new StringHashStrategy());
+        $bag = new HashBagStorage(new BucketHash(new EmptyInit(), new StringHashStrategy()));
 
         $bag->add('John');
         $bag->add('John');
