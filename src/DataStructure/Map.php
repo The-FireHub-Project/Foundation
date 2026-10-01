@@ -19,9 +19,8 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\KeyMutation,
-    Transformation\Filterable, Transformation\KeySortable, Transformation\Mappable, Transformation\Mergeable,
-    Transformation\Rejectable,
-    Transformation\Sortable,
+    Transformation\Filterable, Transformation\KeyMappable, Transformation\KeySortable, Transformation\Mappable,
+    Transformation\Mergeable, Transformation\Rejectable, Transformation\Sortable,
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
@@ -64,6 +63,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, array{key: TKey, value: TValue}>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\KeyMutation<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\KeyMappable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Sortable<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\KeySortable<TKey>
@@ -91,8 +91,8 @@ use Traversable;
  * )
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
-    Rejectable, Sortable, KeySortable, Chunkable, Splittable, Groupable, Partitionable, Takeable, Skippable, Reversible,
-    Shufflable, Flippable, Mergeable, Reducible {
+    KeyMappable, Rejectable, Sortable, KeySortable, Chunkable, Splittable, Groupable, Partitionable, Takeable,
+    Skippable, Reversible, Shufflable, Flippable, Mergeable, Reducible {
 
     /**
      * ### Freeze state
@@ -491,6 +491,37 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
         $storage = $this->storage->emptyCopy();
         foreach ($this->storage->iterate() as $key => $value)
             $storage->set($key, $callback($value, $key));
+
+        return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::set() To insert mapped values into the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::mapKeys() To map the keys in the storage using the provided
+     * callback.
+     */
+    public function mapKeys (callable $callback):static {
+
+        if ($this->storage instanceof KeyMappable)
+            return new static($this->storage->mapKeys($callback));
+
+        $storage = $this->storage->emptyCopy();
+
+        foreach ($this->storage->iterate() as $key => $value) {
+
+            $storage->set(
+                $callback($key, $value),
+                $value
+            );
+
+        }
 
         return new static($storage);
 
