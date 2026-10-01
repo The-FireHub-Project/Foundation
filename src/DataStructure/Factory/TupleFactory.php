@@ -16,7 +16,7 @@ namespace FireHub\Foundation\DataStructure\Factory;
 use FireHub\Foundation\DataStructure\Tuple;
 use FireHub\Foundation\DataStructure\Storage\FixedStorage;
 use FireHub\Foundation\DataStructure\Storage\Initialization\ {
-    ArrayCallbackInit, ArrayInit, EmptyInit, FillInit, GeneratorCallbackInit, RangeInit
+    ArrayCallbackInit, ArrayInit, FillInit, GeneratorCallbackInit, RangeInit
 };
 use FireHub\Runtime;
 use Closure, Generator;

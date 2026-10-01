@@ -17,7 +17,7 @@ use FireHub\Foundation\DataStructure\Struct;
 use FireHub\Foundation\DataStructure\Storage\HashStorage;
 use FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash;
 use FireHub\Foundation\DataStructure\Storage\Initialization\ {
-    ArrayCallbackInit, ArrayInit, EmptyInit, FillInit, GeneratorCallbackInit, RangeInit
+    ArrayCallbackInit, ArrayInit, GeneratorCallbackInit
 };
 use Closure, Generator;
 
@@ -134,83 +134,6 @@ readonly class StructFactory {
             new HashStorage(
                 new ArrHash(
                     new GeneratorCallbackInit($callback)
-                )
-            )
-        );
-
-    }
-
-    /**
-     * ### Creates a struct filled with a value
-     *
-     * Creates a new struct containing the specified value repeated for the requested length.
-     *
-     * Integer keys starting from zero define the resulting Struct structure.
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Storage\Initialization\FillInit To initialize the storage with
-     * repeated values.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash To provide native array hash storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashStorage To provide keyed storage.
-     *
-     * @template TValue
-     *
-     * @param non-negative-int $length <p>
-     * The number of elements to initialize.
-     * </p>
-     * @param TValue $value <p>
-     * The value used to fill the struct.
-     * </p>
-     *
-     * @return \FireHub\Foundation\DataStructure\Struct<int, TValue> A struct filled with the specified value.
-     */
-    public function fill (
-        int $length,
-        mixed $value
-    ):Struct {
-
-        return new Struct(
-            new HashStorage(
-                new ArrHash(
-                    new FillInit($length, $value)
-                )
-            )
-        );
-
-    }
-
-    /**
-     * ### Creates a struct from a numeric range
-     *
-     * Creates a new struct containing the values produced by the specified numeric range.
-     *
-     * Integer keys starting from zero define the resulting Struct structure.
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Foundation\DataStructure\Storage\Initialization\RangeInit To initialize the storage with the
-     * numeric range.
-     * @uses \FireHub\Foundation\DataStructure\Storage\Hash\Engine\ArrHash To provide native array hash storage.
-     * @uses \FireHub\Foundation\DataStructure\Storage\HashStorage To provide keyed storage.
-     *
-     * @param int|float $start <p>
-     * The first value of the range.
-     * </p>
-     * @param int|float $end <p>
-     * The last value of the range.
-     * </p>
-     * @param int|float $step [optional] <p>
-     * The amount by which each subsequent value is incremented.
-     * </p>
-     *
-     * @return \FireHub\Foundation\DataStructure\Struct<int, int|float> A struct containing the generated numeric
-     * range.
-     */
-    public function range (int|float $start, int|float $end, int|float $step = 1):Struct {
-
-        return new Struct(
-            new HashStorage(
-                new ArrHash(
-                    new RangeInit($start, $end, $step)
                 )
             )
         );
