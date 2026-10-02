@@ -23,7 +23,8 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
 };
 use FireHub\Foundation\DataStructure\Stream\Source;
 use FireHub\Foundation\DataStructure\Stream\Source\ {
-    ConcatSource, FilterSource, FlatMapSource, IterableSource, MapSource, SkipSource, TakeSource, TapSource
+    ConcatSource, FilterSource, FlatMapSource, IterableSource, MapSource, ReindexSource, SkipSource, TakeSource,
+    TapSource, ZipSource
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Select, Skip, Take
@@ -107,6 +108,33 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
             new TapSource(
                 $this->source,
                 $callback(...)
+            )
+        );
+
+    }
+
+    /**
+     * ### Re-indexes Stream elements
+     *
+     * Creates a new Stream that replaces the existing keys with sequential integer keys while preserving the original
+     * values and iteration order.
+     * @since 1.0.0
+     *
+     * @param int $start <p>
+     * The starting index.
+     * </p>
+     *
+     * @return static<int, TValue> The reindexed Stream.
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ReindexSource To create a new Stream instance with
+     * sequential integer keys.
+     */
+    public function reindex (int $start = 0):static {
+
+        return new static(
+            new ReindexSource(
+                $this->source,
+                $start
             )
         );
 
@@ -274,6 +302,36 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
                 new IterableSource($values)
             )
         ]);
+
+    }
+
+    /**
+     * ### Zips Stream elements
+     *
+     * Creates a new Stream by pairing each Stream value with the corresponding value from the specified iterable.
+     *
+     * Both sequences are consumed lazily in parallel, and iteration stops as soon as either sequence is exhausted.
+     * @since 1.0.0
+     *
+     * @template TOtherValue
+     *
+     * @param iterable<mixed, TOtherValue> $values <p>
+     * The values to zip with the Stream elements.
+     * </p>
+     *
+     * @return static<TKey, array{TValue, TOtherValue}> The zipped Stream.
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ZipSource To create a new Stream instance with paired
+     * elements.
+     */
+    public function zip (iterable $values):static {
+
+        return new static(
+            new ZipSource(
+                $this->source,
+                $values
+            )
+        );
 
     }
 
