@@ -26,6 +26,7 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Boundary\Algorithm\Sorting\SortAlgorithm;
 use FireHub\Core\Type\Maybe;
+use FireHub\Core\Type\DataStructure\Map\Entry;
 use FireHub\Core\Meta\Enum\ {
     Order, MutationOutcome
 };
@@ -144,14 +145,6 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @use \FireHub\Foundation\DataStructure\Concern\Query\CanMatch<TKey, TValue>
      */
     use CanMatch;
-
-    /**
-     * ### Provides finding query support
-     * @since 1.0.0
-     *
-     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<TKey, TValue>
-     */
-    use CanFind;
 
     /**
      * ### Provides finding query support
@@ -1064,7 +1057,7 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
      * @uses \FireHub\Runtime\Random::number() To generate a random number.
      *
-     * @return \FireHub\Core\Type\Maybe<array{key: TKey, value: TValue}> The randomly selected entry, or none if this
+     * @return \FireHub\Core\Type\Maybe<Entry<TKey, TValue>> The randomly selected entry, or none if this
      * Map is empty.
      */
     public function randomEntry ():Maybe {
@@ -1079,7 +1072,7 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
 
         foreach ($this->storage->iterate() as $key => $value)
             if ($position++ === $random)
-                return new Some(['key' => $key, 'value' => $value]);
+                return new Some(new Entry($key, $value));
 
         return new None;
 
