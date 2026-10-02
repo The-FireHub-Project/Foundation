@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.1
+ * @php-version >=8.5
  * @package Foundation
  */
 
@@ -19,6 +19,7 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\KeyMutation,
+    Query\RandomSelectable,
     Transformation\Filterable, Transformation\KeyMappable, Transformation\KeySortable, Transformation\Mappable,
     Transformation\Mergeable, Transformation\Rejectable, Transformation\Sortable,
     Cloneable, Forkable, Freezable, Thawable
@@ -43,6 +44,9 @@ use FireHub\Foundation\DataStructure\Concern\ {
 };
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
+use FireHub\Foundation\Maybe\ {
+    None, Some
+};
 use FireHub\Runtime;
 use Traversable;
 
@@ -78,6 +82,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Flippable<TKey, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mergeable<TKey, TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Query\RandomSelectable<TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<TKey, TValue>
@@ -92,7 +97,7 @@ use Traversable;
  */
 class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, KeyMutation, Mappable,
     KeyMappable, Rejectable, Sortable, KeySortable, Chunkable, Splittable, Groupable, Partitionable, Takeable,
-    Skippable, Reversible, Shufflable, Flippable, Mergeable, Reducible {
+    Skippable, Reversible, Shufflable, Flippable, Mergeable, Reducible, RandomSelectable {
 
     /**
      * ### Freeze state
@@ -986,6 +991,143 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
             $storage->set($key, $value);
 
         foreach ($values as $key => $value)
+            $storage->set($key, $value);
+
+        return new static($storage);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::size() To get the size of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Runtime\Random::number() To generate a random number.
+     */
+    public function random ():Maybe {
+
+        $size = $this->storage->size();
+
+        if ($size === 0)
+            return new None;
+
+        $random = Runtime\Random::number(0, $size - 1);
+        $position = 0;
+
+        foreach ($this->storage->iterate() as $value)
+            if ($position++ === $random)
+                return new Some($value);
+
+        return new None;
+
+    }
+
+    /**
+     * ### Selects a random key
+     *
+     * Selects and returns one randomly chosen key from this Map without modifying its contents.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::size() To get the size of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Runtime\Random::number() To generate a random number.
+     *
+     * @return \FireHub\Core\Type\Maybe<TKey|mixed> The randomly selected key, or none if this Map is empty.
+     */
+    public function randomKey ():Maybe {
+
+        $size = $this->storage->size();
+
+        if ($size === 0)
+            return new None;
+
+        $random = Runtime\Random::number(0, $size - 1);
+        $position = 0;
+
+        foreach ($this->storage->iterate() as $key => $_)
+            if ($position++ === $random)
+                return new Some($key);
+
+        return new None;
+
+    }
+
+    /**
+     * ### Selects a random entry
+     *
+     * Selects and returns one randomly chosen key-value entry from this Map without modifying its contents.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::size() To get the size of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Runtime\Random::number() To generate a random number.
+     *
+     * @return \FireHub\Core\Type\Maybe<array{key: TKey, value: TValue}> The randomly selected entry, or none if this
+     * Map is empty.
+     */
+    public function randomEntry ():Maybe {
+
+        $size = $this->storage->size();
+
+        if ($size === 0)
+            return new None;
+
+        $random = Runtime\Random::number(0, $size - 1);
+        $position = 0;
+
+        foreach ($this->storage->iterate() as $key => $value)
+            if ($position++ === $random)
+                return new Some(['key' => $key, 'value' => $value]);
+
+        return new None;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::size() To get the size of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\KeyMutation::set() To insert values into the storage.
+     * @uses \FireHub\Runtime\Math::min() To get the minimum of two values.
+     * @uses \FireHub\Runtime\Random::number() To generate a random number
+     */
+    public function sample (int $size):static {
+
+        $size = Runtime\Math::min($size, $this->storage->size());
+
+        $storage = $this->storage->emptyCopy();
+
+        if ($size === 0)
+            return new static($storage);
+
+        $sample = [];
+
+        $position = 0;
+
+        foreach ($this->storage->iterate() as $key => $value) {
+
+            if ($position < $size)
+                $sample[$position] = [$key, $value];
+            else {
+
+                $random = Runtime\Random::number(0, $position);
+
+                if ($random < $size)
+                    $sample[$random] = [$key, $value];
+
+            }
+
+            $position++;
+
+        }
+
+        foreach ($sample as [$key, $value])
             $storage->set($key, $value);
 
         return new static($storage);

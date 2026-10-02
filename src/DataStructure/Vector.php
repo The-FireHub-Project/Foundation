@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.1
+ * @php-version >=8.5
  * @package Foundation
  */
 
@@ -19,6 +19,7 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\DequeMutation, Mutation\IndexMutation,
+    Query\RandomSelectable,
     Transformation\Concatenable, Transformation\DistributionSortable, Transformation\Filterable,
     Transformation\Mappable, Transformation\Rejectable, Transformation\Sortable,
     Cloneable, Forkable, Freezable, Thawable
@@ -46,6 +47,7 @@ use FireHub\Foundation\DataStructure\Concern\ {
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Foundation\DataStructure\Exception\InvalidRangeLength;
+use FireHub\Foundation\Maybe\None;
 use FireHub\Runtime;
 use Traversable;
 
@@ -83,6 +85,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Flippable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Concatenable<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Query\RandomSelectable<TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -100,7 +103,7 @@ use Traversable;
 class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DequeMutation,
     IndexMutation, Mappable, Rejectable, Sortable, DistributionSortable, Chunkable, Splittable, Groupable,
     Partitionable, Takeable, Skippable, Sliceable, Spliceable, Reversible, Shufflable, Padable, Flippable,
-    Concatenable, Reducible {
+    Concatenable, Reducible, RandomSelectable {
 
     /**
      * ### Freeze state
@@ -1475,6 +1478,77 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
 
         foreach ($values as $value)
             $storage->insertBack($value);
+
+        return new static($storage);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Vector::isEmpty() To check if the vector is empty.
+     * @uses \FireHub\Foundation\DataStructure\Vector::size() To get the size of the vector.
+     * @uses \FireHub\Foundation\DataStructure\Vector::get() To get a value from the vector.
+     * @uses \FireHub\Runtime\Random::number() To generate a random number.
+     */
+    public function random ():Maybe {
+
+        if ($this->isEmpty())
+            return new None;
+
+        /** @var positive-int $size */
+        $size = $this->size();
+
+        return $this->get(
+            Runtime\Random::number(0, $size - 1)
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::size() To get the size of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::get() To get a value from the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::insertBack() To insert values at the back of the storage.
+     * @uses Runtime\Math::min() To clamp the sample size to the size of the storage.
+     * @uses Runtime\Math::number() To generate a random integer.
+     */
+    public function sample (int $size):static {
+
+        $count = $this->storage->size();
+
+        $size = Runtime\Math::min($size, $count);
+
+        $storage = $this->storage->emptyCopy();
+
+        if ($size === 0)
+            return new static($storage);
+
+        $indexes = [];
+
+        for ($index = $count - $size; $index < $count; $index++) {
+
+            /** @var positive-int $index */
+            $random = Runtime\Random::number(0, $index);
+
+            $selected = isset($indexes[$random])
+                ? $index
+                : $random;
+
+            $indexes[$selected] = true;
+
+        }
+
+        foreach ($indexes as $index => $_)
+            $storage->insertBack(
+                $this->storage->get($index)->value()
+            );
 
         return new static($storage);
 

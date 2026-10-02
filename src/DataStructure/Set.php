@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.1
+ * @php-version >=8.5
  * @package Foundation
  */
 
@@ -19,9 +19,11 @@ use FireHub\Core\Boundary\Capability\ {
     Conversion\Arrayable,
     Measurement\Metrics,
     Mutation\ValueMutation,
+    Query\RandomSelectable,
     Transformation\Filterable, Transformation\Mappable, Transformation\Rejectable,
     Cloneable, Forkable, Freezable, Thawable
 };
+use FireHub\Core\Type\Maybe;
 use FireHub\Core\Meta\Enum\MutationOutcome;
 use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Boundary\Algebra\ {
@@ -34,6 +36,9 @@ use FireHub\Foundation\DataStructure\Concern\ {
     Transformation\CanReject
 };
 use FireHub\Foundation\State\HasFreezeState;
+use FireHub\Foundation\Maybe\ {
+    None, Some
+};
 use FireHub\Runtime;
 use Traversable;
 
@@ -57,6 +62,7 @@ use Traversable;
  * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Algebra\SetAlgebra<TValue>
  * @implements \FireHub\Foundation\DataStructure\Boundary\Algebra\SetRelations<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Query\RandomSelectable<TValue>
  *
  * @phpstan-type StorageType = (
  *     Storage<int, TValue>
@@ -68,7 +74,7 @@ use Traversable;
  * )
  */
 class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, ValueMutation, Mappable,
-    Rejectable, Partitionable, SetAlgebra, SetRelations, Reducible {
+    Rejectable, Partitionable, SetAlgebra, SetRelations, Reducible, RandomSelectable {
 
     /**
      * ### Freeze state
@@ -693,6 +699,82 @@ class Set implements SetBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
                 $result->add($value);
 
         return new static($result);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::size() To get the size of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Runtime\Random::number() To generate a random number.
+     */
+    public function random ():Maybe {
+
+        $size = $this->storage->size();
+
+        if ($size === 0)
+            return new None;
+
+        $random = Runtime\Random::number(0, $size - 1);
+        $position = 0;
+
+        foreach ($this->storage->iterate() as $value)
+            if ($position++ === $random)
+                return new Some($value);
+
+        return new None;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Storage::size() To get the size of the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::iterate() To iterate over the storage.
+     * @uses \FireHub\Foundation\DataStructure\Storage::emptyCopy() To create an empty copy of the storage.
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\ValueMutation::add() To add selected values to the storage.
+     * @uses \FireHub\Runtime\Math::min() To get the minimum of two values.
+     * @uses \FireHub\Runtime\Random::number() To generate a random number
+     */
+    public function sample (int $size):static {
+
+        $size = Runtime\Math::min($size, $this->storage->size());
+
+        $storage = $this->storage->emptyCopy();
+
+        if ($size === 0)
+            return new static($storage);
+
+        $sample = [];
+
+        $position = 0;
+
+        foreach ($this->storage->iterate() as $value) {
+
+            if ($position < $size)
+                $sample[$position] = $value;
+            else {
+
+                $random = Runtime\Random::number(0, $position);
+
+                if ($random < $size)
+                    $sample[$random] = $value;
+
+            }
+
+            $position++;
+
+        }
+
+        foreach ($sample as $value)
+            $storage->add($value);
+
+        return new static($storage);
 
     }
 
