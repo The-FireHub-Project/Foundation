@@ -23,8 +23,8 @@ use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
 };
 use FireHub\Foundation\DataStructure\Stream\Source;
 use FireHub\Foundation\DataStructure\Stream\Source\ {
-    ConcatSource, FilterSource, FlatMapSource, IterableSource, MapSource, ReindexSource, SkipSource, TakeSource,
-    TapSource, ZipSource
+    ChunkSource, ConcatSource, FilterSource, FlatMapSource, IterableSource, MapSource, ReindexSource, SkipSource,
+    TakeSource, TapSource, ZipSource
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Select, Skip, Take
@@ -93,14 +93,14 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
      * The callback is executed lazily and may be used to perform side effects without modifying the Stream elements.
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\TapSource To create a new Stream instance that observes
+     * elements.
+     *
      * @param callable(TValue, TKey=):void $callback <p>
      * The callback invoked for each consumed element.
      * </p>
      *
      * @return static Stream with element observation.
-     *
-     * @uses \FireHub\Foundation\DataStructure\Stream\Source\TapSource To create a new Stream instance that observes
-     * elements.
      */
     public function tap (callable $callback):static {
 
@@ -120,14 +120,14 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
      * values and iteration order.
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ReindexSource To create a new Stream instance with
+     * sequential integer keys.
+     *
      * @param int $start <p>
      * The starting index.
      * </p>
      *
      * @return static<int, TValue> The reindexed Stream.
-     *
-     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ReindexSource To create a new Stream instance with
-     * sequential integer keys.
      */
     public function reindex (int $start = 0):static {
 
@@ -163,6 +163,9 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
      * lazy sequence.
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\FlatMapSource To create a new Stream instance with the
+     * flat mapped elements.
+     *
      * @template TNewKey
      * @template TNewValue
      *
@@ -171,9 +174,6 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
      * </p>
      *
      * @return static<TNewKey, TNewValue> The flat mapped Stream.
-     *
-     * @uses \FireHub\Foundation\DataStructure\Stream\Source\FlatMapSource To create a new Stream instance with the
-     * flat mapped elements,
      */
     public function flatMap (callable $callback):static {
 
@@ -283,6 +283,40 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
     }
 
     /**
+     * ### Chunks Stream values
+     *
+     * Creates a new Stream that lazily groups consecutive values into chunks containing at most the specified number of
+     * elements.
+     *
+     * Original Stream keys are not preserved. Values within each chunk are indexed sequentially starting from zero,
+     * while chunks are also indexed sequentially starting from zero. The final chunk may contain fewer elements when
+     * the Stream is exhausted before the specified chunk size is reached.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ChunkSource To create a new Stream instance with chunked
+     * values.
+     *
+     * @param positive-int $size <p>
+     * The maximum number of values in each chunk.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\DataStructure\Exception\ChunkSizeException If the specified chunk size is less
+     * than one.
+     *
+     * @return static<int, list<TValue>> The chunked Stream.
+     */
+    public function chunk (int $size):static {
+
+        return new static(
+            new ChunkSource(
+                $this->source,
+                $size
+            )
+        );
+
+    }
+
+    /**
      * @inheritDoc
      *
      * @since 1.0.0
@@ -313,6 +347,9 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
      * Both sequences are consumed lazily in parallel, and iteration stops as soon as either sequence is exhausted.
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ZipSource To create a new Stream instance with paired
+     * elements.
+     *
      * @template TOtherValue
      *
      * @param iterable<mixed, TOtherValue> $values <p>
@@ -320,9 +357,6 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
      * </p>
      *
      * @return static<TKey, array{TValue, TOtherValue}> The zipped Stream.
-     *
-     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ZipSource To create a new Stream instance with paired
-     * elements.
      */
     public function zip (iterable $values):static {
 
