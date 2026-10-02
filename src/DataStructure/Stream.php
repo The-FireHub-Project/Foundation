@@ -85,6 +85,29 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
     ) {}
 
     /**
+     * ### Executes a callback for each Stream element
+     *
+     * Consumes the Stream and invokes the specified callback for each element in iteration order.
+     *
+     * Unlike tap(), this operation is terminal and begins consuming the Stream immediately.
+     * @since 1.0.0
+     *
+     * @param callable(TValue, TKey=):void $callback <p>
+     * The callback invoked for each Stream element.
+     * </p>
+     *
+     * @return void
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source::iterate() To iterate over the Source elements.
+     */
+    public function each (callable $callback):void {
+
+        foreach ($this->source->iterate() as $key => $value)
+            $callback($value, $key);
+
+    }
+
+    /**
      * ### Observes Stream elements
      *
      * Creates a new Stream that invokes the specified callback for each element as it is consumed while preserving the
