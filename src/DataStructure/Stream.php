@@ -21,9 +21,9 @@ use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
 use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
     Skippable, Takeable
 };
-use FireHub\Foundation\DataStructure\Stream\ {
-    Source\ConcatSource, Source\FilterSource, Source\IterableSource, Source\MapSource, Source\SkipSource,
-    Source\TakeSource, Source
+use FireHub\Foundation\DataStructure\Stream\Source;
+use FireHub\Foundation\DataStructure\Stream\Source\ {
+    ConcatSource, FilterSource, FlatMapSource, IterableSource, MapSource, SkipSource, TakeSource, TapSource
 };
 use FireHub\Foundation\DataStructure\Transformation\ {
     Select, Skip, Take
@@ -84,6 +84,35 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
     ) {}
 
     /**
+     * ### Observes Stream elements
+     *
+     * Creates a new Stream that invokes the specified callback for each element as it is consumed while preserving the
+     * original keys and values.
+     *
+     * The callback is executed lazily and may be used to perform side effects without modifying the Stream elements.
+     * @since 1.0.0
+     *
+     * @param callable(TValue, TKey=):void $callback <p>
+     * The callback invoked for each consumed element.
+     * </p>
+     *
+     * @return static Stream with element observation.
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\TapSource To create a new Stream instance that observes
+     * elements.
+     */
+    public function tap (callable $callback):static {
+
+        return new static(
+            new TapSource(
+                $this->source,
+                $callback(...)
+            )
+        );
+
+    }
+
+    /**
      * @inheritDoc
      *
      * @since 1.0.0
@@ -95,6 +124,36 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
 
         return new static(
             new MapSource($this->source, $callback(...))
+        );
+
+    }
+
+    /**
+     * ### Flat maps the Stream
+     *
+     * Creates a new Stream by mapping each element to the iterable and flattening the produced iterables into a single
+     * lazy sequence.
+     * @since 1.0.0
+     *
+     * @template TNewKey
+     * @template TNewValue
+     *
+     * @param callable(TValue, TKey=):iterable<TNewKey, TNewValue> $callback <p>
+     * The mapping function used to produce values for each Stream element.
+     * </p>
+     *
+     * @return static<TNewKey, TNewValue> The flat mapped Stream.
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\FlatMapSource To create a new Stream instance with the
+     * flat mapped elements,
+     */
+    public function flatMap (callable $callback):static {
+
+        return new static(
+            new FlatMapSource(
+                $this->source,
+                $callback(...)
+            )
         );
 
     }
