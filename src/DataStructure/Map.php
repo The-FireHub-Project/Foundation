@@ -39,7 +39,7 @@ use FireHub\Foundation\DataStructure\Transformation\ {
 };
 use FireHub\Foundation\DataStructure\Concern\ {
     Aggregation\CanCount, Aggregation\CanReduce,
-    Projection\CanExtractKeys, Projection\CanExtractValues,
+    Projection\CanExtractEntries, Projection\CanExtractKeys, Projection\CanExtractValues,
     Query\CanFind, Query\CanMatch,
     Transformation\CanFlip, Transformation\CanMultiplicity, Transformation\CanReject
 };
@@ -169,6 +169,14 @@ class Map implements MapBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
      * @use \FireHub\Foundation\DataStructure\Concern\Projection\CanExtractValues<TKey, TValue>
      */
     use CanExtractValues;
+
+    /**
+     * ### Provides entry extraction capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Projection\CanExtractEntries<TKey, TValue>
+     */
+    use CanExtractEntries;
 
     /**
      * ### Provides value reduction
