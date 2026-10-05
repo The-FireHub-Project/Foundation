@@ -611,7 +611,7 @@ class Bag implements BagBoundary, Arrayable, Cloneable, Forkable, Freezable, Tha
             if ($position++ === $random)
                 return new Some($value);
 
-        return new None();
+        return new None;
 
     }
 

@@ -202,7 +202,7 @@ final class BucketHash implements Engine {
         $entry = $this->findEntry($key);
 
         return $entry === null
-            ? new None()
+            ? new None
             : new Some($entry['value']);
 
     }

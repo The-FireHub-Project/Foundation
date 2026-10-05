@@ -257,7 +257,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
             if ($value !== null)
                 return new Some($value);
 
-        return new None();
+        return new None;
 
     }
 
@@ -278,7 +278,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
             if ($data[$index] !== null)
                 return new Some($data[$index]);
 
-        return new None();
+        return new None;
 
     }
 
@@ -317,7 +317,7 @@ final class FixedStorage implements Storage, Cloneable, Forkable, Metrics, Capac
         /** @var \FireHub\Foundation\Maybe\Some<TValue>|\FireHub\Foundation\Maybe\None */
         return $this->has($index) // @phpstan-ignore varTag.type
             ? new Some($data[$index])
-            : new None();
+            : new None;
 
     }
 

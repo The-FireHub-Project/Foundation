@@ -170,7 +170,7 @@ final class ArrHash implements Engine {
         if ($this->has($key))
             return new Some($this->state->data()[$key]); // @phpstan-ignore offsetAccess.notFound
 
-        return new None();
+        return new None;
 
     }
 

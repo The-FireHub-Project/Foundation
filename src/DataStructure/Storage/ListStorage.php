@@ -200,7 +200,7 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
      */
     public function first ():Maybe {
 
-        if ($this->isEmpty()) return new None();
+        if ($this->isEmpty()) return new None;
 
         /** @var TValue $first */
         $first = Runtime\Arr\Access::first($this->state->data());
@@ -222,7 +222,7 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
      */
     public function last ():Maybe {
 
-        if ($this->isEmpty()) return new None();
+        if ($this->isEmpty()) return new None;
 
         /** @var TValue $last */
         $last = Runtime\Arr\Access::last($this->state->data());
@@ -283,7 +283,7 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
      */
     public function removeFront ():Maybe {
 
-        if ($this->isEmpty()) return new None();
+        if ($this->isEmpty()) return new None;
 
         $this->detach();
 
@@ -308,7 +308,7 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
      */
     public function removeBack ():Maybe {
 
-        if ($this->isEmpty()) return new None();
+        if ($this->isEmpty()) return new None;
 
         $this->detach();
 
@@ -349,7 +349,7 @@ final class ListStorage implements Storage, Cloneable, Forkable, Metrics, Bounda
         if ($this->has($index))
             return new Some($this->state->data()[$index]); // @phpstan-ignore offsetAccess.notFound
 
-        return new None();
+        return new None;
 
     }
 
