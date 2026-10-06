@@ -28,7 +28,7 @@ use FireHub\Foundation\State\ {
     HasCopyOnWriteState, SharedState
 };
 use FireHub\Foundation\DataStructure\Storage\Exception\ {
-    InvalidHashKeyException, InvalidRangeLength
+    InvalidHashKeyException, InvalidRangeLengthException
 };
 use FireHub\Runtime;
 
@@ -430,13 +430,13 @@ final class ArrHash implements Engine {
      * @uses \FireHub\Foundation\State\SharedState::data() To get the data of the storage.
      * @uses \FireHub\Runtime\Arr\Structure::slice() To slice the storage.
      *
-     * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidRangeLength If the range length is less
-     * than zero.
+     * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidRangeLengthException If the range length is
+     * less than zero.
      */
     public function slice (int $offset, ?int $length = null):self {
 
         if ($length !== null && $length < 0)
-            throw new InvalidRangeLength(
+            throw new InvalidRangeLengthException(
                 'Range length must be greater than or equal to zero.'
             );
 

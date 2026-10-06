@@ -5,13 +5,13 @@
  *
  * @author Danijel Galić <danijel.galic@outlook.com>
  * @copyright 2026-present The FireHub Project - All rights reserved
- * @license Proprietary
+ * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
  * @php-version >=8.3
- * @package Capability
+ * @package Foundation
  */
 
-namespace FireHub\Foundation\DataStructure\Storage\Exception;
+namespace FireHub\Foundation\DataStructure\Exception;
 
 use FireHub\Core\Exception\Runtime\InvalidArgumentException;
 
@@ -19,7 +19,7 @@ use FireHub\Core\Exception\Runtime\InvalidArgumentException;
  * ### Represents an attempt to create a range with an invalid length
  * @since 1.0.0
  */
-final class InvalidRangeLength extends InvalidArgumentException {
+final class InvalidRangeLengthException extends InvalidArgumentException {
 
     protected const string DEFAULT_MESSAGE = 'The range length is invalid';
 

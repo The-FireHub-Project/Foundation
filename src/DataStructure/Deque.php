@@ -39,7 +39,7 @@ use FireHub\Foundation\DataStructure\Concern\ {
 };
 use FireHub\Foundation\DataStructure\Stream\Source\FactorySource;
 use FireHub\Foundation\State\HasFreezeState;
-use FireHub\Foundation\DataStructure\Exception\InvalidRangeLength;
+use FireHub\Foundation\DataStructure\Exception\InvalidRangeLengthException;
 use FireHub\Runtime;
 use Traversable;
 
@@ -1041,12 +1041,13 @@ class Deque implements DequeBoundary, Arrayable, Cloneable, Freezable, Thawable,
      * @uses \FireHub\Runtime\Math::max() To clamp the end index to the size of the source storage.
 
      *
-     * @throws \FireHub\Foundation\DataStructure\Exception\InvalidRangeLength If the range length is less than zero.
+     * @throws \FireHub\Foundation\DataStructure\Exception\InvalidRangeLengthException If the range length is less
+     * than zero.
      */
     public function slice (int $offset, ?int $length = null):static {
 
         if ($length !== null && $length < 0)
-            throw new InvalidRangeLength(
+            throw new InvalidRangeLengthException(
                 'Range length must be greater than or equal to zero.'
             );
 

@@ -29,7 +29,7 @@ use FireHub\Foundation\Maybe\ {
 use FireHub\Foundation\State\ {
     HasCopyOnWriteState, SharedState
 };
-use FireHub\Foundation\DataStructure\Storage\Exception\InvalidRangeLength;
+use FireHub\Foundation\DataStructure\Storage\Exception\InvalidRangeLengthException;
 use FireHub\Runtime;
 
 /**
@@ -544,13 +544,13 @@ final class BucketHash implements Engine {
      * entries.
      * @uses \FireHub\Runtime\Arr\Structure::slice() To slice the entries.
      *
-     * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidRangeLength If the range length is less
-     * than zero.
+     * @throws \FireHub\Foundation\DataStructure\Storage\Exception\InvalidRangeLengthException If the range length is
+     * less than zero.
      */
     public function slice (int $offset, ?int $length = null):self {
 
         if ($length !== null && $length < 0)
-            throw new InvalidRangeLength(
+            throw new InvalidRangeLengthException(
                 'Range length must be greater than or equal to zero.'
             );
 
