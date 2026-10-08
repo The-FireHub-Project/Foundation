@@ -40,13 +40,19 @@ readonly class Ascii extends Str {
      * @uses \FireHub\Core\Type\ValueObject::guard() As a guard.
      * @uses \FireHub\Foundation\Str\Ascii::pattern() To check valid ASCII pattern.
      *
-     * @throws \FireHub\Foundation\Str\Exception\InvalidAsciiException If string is not valid ASCII.
+     * @throws \FireHub\Foundation\Str\Exception\InvalidAsciiException If string is not valid ASCII or encoding is
+     * not ASCII.
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
      * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
      */
-    public function __construct (string $value, Encoding $encoding = self::DEFAULT_ENCODING) {
+    public function __construct (string $value, Encoding $encoding = Encoding::ASCII) {
 
-        parent::__construct($value, $encoding);
+        parent::__construct($value, Encoding::ASCII);
+
+        $this->guard(
+            fn() => $encoding === Encoding::ASCII,
+            fn() => new InvalidAsciiException('ASCII strings must use ASCII encoding.')
+        );
 
         $this->guard(
             fn() => $this->pattern()->match()->is()->ascii() === true,
