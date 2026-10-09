@@ -14,6 +14,7 @@
 namespace FireHub\Foundation;
 
 use FireHub\Core\Type\Str\Encoding;
+use FireHub\Runtime;
 
 /**
  * ### Provides the base implementation for string-based Value Objects
@@ -116,15 +117,33 @@ trait StringValue {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Runtime\Str\MB\Transform::convertEncoding() To convert the string to the specified encoding.
+     *
      * @param \FireHub\Core\Type\Str\Encoding $encoding<p>
      * The encoding to set.
      * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\EncodingConversionFailedException If the conversion fails.
      *
      * @return static The new instance with provided encoding.
      */
     public function withEncoding (Encoding $encoding):static {
 
-        return new static($this->value, $encoding);
+        if ($this->encoding === $encoding)
+            return $this;
+
+        /** @var TValue $string */
+        $string = Runtime\Str\MB\Transform::convertEncoding(
+            $this->value,
+            $encoding,
+            $this->encoding
+        );
+
+        /** @var static<TValue> */
+        return new static(
+            $string,
+            $encoding
+        );
 
     }
 
