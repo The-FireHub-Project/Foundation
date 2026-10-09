@@ -51,7 +51,7 @@ readonly class Utf8 extends Str {
 
         $this->guard(
             fn() => $encoding === Encoding::UTF_8,
-            fn() => new InvalidUtf8Exception('ASCII strings must use UTF-8 encoding.')
+            fn() => new InvalidUtf8Exception('Strings must use UTF-8 encoding.')
         );
 
         $this->guard(
