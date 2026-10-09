@@ -16,11 +16,11 @@ namespace FireHub\Foundation\Str\Exception;
 use FireHub\Core\Exception\DomainException;
 
 /**
- * ### Represents an invalid UTF-8 string provided to an operation that requires a valid UTF-8 string
+ * ### Represents an invalid string encoding
  * @since 1.0.0
  */
-final class InvalidUtf8Exception extends DomainException {
+final class InvalidEncodingException extends DomainException {
 
-    protected const string DEFAULT_MESSAGE = 'Invalid UTF-8 string';
+    protected const string DEFAULT_MESSAGE = 'Invalid string encoding';
 
 }

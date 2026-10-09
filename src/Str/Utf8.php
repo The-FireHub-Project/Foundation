@@ -15,7 +15,7 @@ namespace FireHub\Foundation\Str;
 
 use FireHub\Foundation\Str;
 use FireHub\Core\Type\Str\Encoding;
-use FireHub\Foundation\Str\Exception\InvalidUtf8Exception;
+use FireHub\Foundation\Str\Exception\InvalidEncodingException;
 use FireHub\Runtime;
 
 /**
@@ -40,7 +40,7 @@ readonly class Utf8 extends Str {
      * @uses \FireHub\Core\Type\ValueObject::guard() As a guard.
      * @uses \FireHub\Foundation\Str\Ascii::pattern() To check valid UTF-8 pattern.
      *
-     * @throws \FireHub\Foundation\Str\Exception\InvalidUtf8Exception If string is not valid UTF-8 or encoding is
+     * @throws \FireHub\Foundation\Str\Exception\InvalidEncodingException If string is not valid UTF-8 or encoding is
      * not UTF-8.
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
      * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
@@ -51,12 +51,12 @@ readonly class Utf8 extends Str {
 
         $this->guard(
             fn() => $encoding === Encoding::UTF_8,
-            fn() => new InvalidUtf8Exception('Strings must use UTF-8 encoding.')
+            fn() => new InvalidEncodingException('Strings must use UTF-8 encoding.')
         );
 
         $this->guard(
             fn() => Runtime\Str\MB\Inspection::checkEncoding($value, Encoding::UTF_8) === true,
-            fn() => new InvalidUtf8Exception('String must be valid UTF-8.')
+            fn() => new InvalidEncodingException('String must be valid UTF-8.')
         );
 
     }
