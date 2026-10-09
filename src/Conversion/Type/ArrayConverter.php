@@ -52,6 +52,7 @@ final readonly class ArrayConverter extends Type {
      */
     public function convert ():?array {
 
+        /** @var null|array<array-key, mixed> */
         return match (true) {
             Runtime\DataIs::array($this->value) => $this->value,
             $this->value instanceof Traversable => Runtime\Iterator::toArray($this->value),

@@ -54,6 +54,7 @@ final readonly class StringConverter extends Type {
      */
     public function convert ():?string {
 
+        /** @var null|string */
         return match (true) {
             Runtime\DataIs::string($this->value) => $this->value,
             Runtime\DataIs::scalar($this->value) => (string)$this->value,

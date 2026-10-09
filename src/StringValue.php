@@ -140,7 +140,7 @@ trait StringValue {
         );
 
         /** @var static<TValue> */
-        return new static($string, $encoding);
+        return new static($string, $encoding); // @phpstan-ignore varTag.nativeType
 
     }
 

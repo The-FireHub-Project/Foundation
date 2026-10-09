@@ -354,7 +354,7 @@ final class BucketHash implements Engine {
         $data = $this->state->data();
 
         foreach ($data['buckets'] as &$bucket)
-            foreach ($bucket as &$entry)
+            foreach ($bucket as &$entry) // @phpstan-ignore foreach.valueOverwrite
                 $entry['value'] = $callback(
                     $entry['value'],
                     $entry['key']

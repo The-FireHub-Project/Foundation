@@ -91,6 +91,7 @@ readonly class BucketMapFactory {
      */
     public function generator (Closure $callback):Map {
 
+        /** @var \FireHub\Foundation\DataStructure\Map<TKey, TValue> */
         return new Map(
             new HashStorage(
                 new BucketHash(

@@ -201,6 +201,7 @@ readonly class TupleFactory {
             ? Runtime\Math::floor(($end - $start) / $step) + 1
             : 0;
 
+        /** @var \FireHub\Foundation\DataStructure\Tuple<int|float> */
         return new Tuple(
             new FixedStorage(
                 $capacity,
