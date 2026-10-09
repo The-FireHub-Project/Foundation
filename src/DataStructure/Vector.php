@@ -18,7 +18,7 @@ use FireHub\Core\Boundary\Capability\ {
     Access\BoundaryAccess, Access\IndexAccess,
     Conversion\Arrayable,
     Measurement\Metrics,
-    Mutation\DequeMutation, Mutation\IndexMutation,
+    Mutation\DequeMutation, Mutation\IndexInsertion, Mutation\IndexMutation,
     Query\RandomSelectable,
     Transformation\Concatenable, Transformation\DistributionSortable, Transformation\Filterable,
     Transformation\Mappable, Transformation\Rejectable, Transformation\Sortable,
@@ -66,6 +66,7 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Collection\Vector<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\DequeMutation<TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexInsertion<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\IndexMutation<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<int, TValue>
@@ -95,14 +96,15 @@ use Traversable;
  *     &BoundaryAccess<TValue>
  *     &IndexAccess<TValue>
  *     &DequeMutation<TValue>
+ *     &IndexInsertion<TValue>
  *     &IndexMutation<TValue>
  *     &Sortable<TValue>
  *     &DistributionSortable<TValue>
  * )
  */
 class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, DequeMutation,
-    IndexMutation, Mappable, Rejectable, Sortable, DistributionSortable, Chunkable, Splittable, Groupable,
-    Partitionable, Takeable, Skippable, Sliceable, Spliceable, Reversible, Shufflable, Padable, Flippable,
+    IndexInsertion, IndexMutation, Mappable, Rejectable, Sortable, DistributionSortable, Chunkable, Splittable,
+    Groupable, Partitionable, Takeable, Skippable, Sliceable, Spliceable, Reversible, Shufflable, Padable, Flippable,
     Concatenable, Reducible, RandomSelectable {
 
     /**
@@ -186,8 +188,8 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
      * @return void
      */
     final public function __construct (
-        protected Storage&Cloneable&Forkable&Metrics&BoundaryAccess&IndexAccess&DequeMutation&IndexMutation&Sortable
-        &DistributionSortable $storage
+        protected Storage&Cloneable&Forkable&Metrics&BoundaryAccess&IndexAccess&DequeMutation&IndexInsertion
+        &IndexMutation&Sortable&DistributionSortable $storage
     ) {}
 
     /**
@@ -571,6 +573,37 @@ class Vector implements VectorBoundary, Arrayable, Cloneable, Forkable, Freezabl
         $this->insertBack(...$values);
 
         return $this;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * use FireHub\Foundation\DataStructure\Vector;
+     * use FireHub\Foundation\DataStructure\Storage\ListStorage;
+     * use FireHub\Foundation\DataStructure\Storage\Initialization\ArrayInit;
+     *
+     * $vector = new Vector(new ListStorage(new ArrayInit([1, 2, 3])));
+     *
+     * $vector->insertAt(1, 'x');
+     *
+     * // [1, 'x', 2, 3]
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\Capability\Mutation\IndexInsertion::insertAt() To insert a value at a specific
+     * index in the storage.
+     * @uses \FireHub\Foundation\State\HasFreezeState::guardMutable() To check if the data structure is mutable.
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException If the data structure is frozen.
+     */
+    public function insertAt (int $index, mixed $value):MutationOutcome {
+
+        $this->guardMutable();
+
+        return $this->storage->insertAt($index, $value);
 
     }
 

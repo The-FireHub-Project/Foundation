@@ -262,6 +262,26 @@ final class VectorTest extends FireHubTestCase {
      * @return void
      */
     #[DataProviderExternal(StorageDataProvider::class, 'list')]
+    public function testInsertAt (ListStorage $storage):void {
+
+        $vector = new Vector($storage);
+
+        $vector->insertAt(1, 'x');
+
+        self::assertSame([1, 'x', 2, 3], $vector->toArray());
+
+    }
+
+    /**
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\DataStructure\Storage\ListStorage $storage
+     *
+     * @throws \FireHub\Foundation\State\Exception\FrozenStateException
+     *
+     * @return void
+     */
+    #[DataProviderExternal(StorageDataProvider::class, 'list')]
     public function testShift (ListStorage $storage):void {
 
         $vector = new Vector($storage);
