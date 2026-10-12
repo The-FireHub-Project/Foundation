@@ -15,8 +15,8 @@ namespace FireHub\Foundation\DataStructure;
 
 use FireHub\Core\Boundary\Runtime\NativeRuntime;
 use FireHub\Foundation\DataStructure\Factory\ {
-    BagFactory, DequeFactory, MapFactory, QueueFactory, SetFactory, StackFactory, StreamFactory, StructFactory,
-    TupleFactory, VectorFactory
+    BagFactory, DequeFactory, HeapFactory, MapFactory, PriorityQueueFactory, QueueFactory, SetFactory, StackFactory,
+    StreamFactory, StructFactory, TupleFactory, VectorFactory
 };
 
 /**
@@ -72,6 +72,30 @@ readonly class DS extends NativeRuntime {
     public static function queue ():QueueFactory {
 
         return new QueueFactory;
+
+    }
+
+    /**
+     * ### Priority Queue factory
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Factory\PriorityQueueFactory The Priority Queue factory.
+     */
+    public static function priorityQueue ():PriorityQueueFactory {
+
+        return new PriorityQueueFactory;
+
+    }
+
+    /**
+     * ### Heap factory
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Factory\HeapFactory The Heap factory.
+     */
+    public static function heap ():HeapFactory {
+
+        return new HeapFactory;
 
     }
 
