@@ -21,6 +21,11 @@ use FireHub\Core\Boundary\Capability\ {
 };
 use FireHub\Core\Type\Maybe;
 use FireHub\Core\Type\DataStructure\PriorityQueue\Entry;
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
+use FireHub\Foundation\DataStructure\Concern\ {
+    Aggregation\CanCount, Aggregation\CanReduce,
+    Query\CanFind, Query\CanMatch
+};
 use FireHub\Foundation\DataStructure\Storage\BinaryHeapStorage;
 use FireHub\Foundation\DataStructure\Storage\Initialization\EmptyInit;
 use FireHub\Foundation\State\HasFreezeState;
@@ -47,19 +52,53 @@ use Closure, Traversable;
  * @implements \FireHub\Core\Boundary\Type\DataStructure\Collection\PriorityQueue<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, StorageEntry>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\FrontRemoval<TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<StorageEntry>
  *
  * @phpstan-type StorageEntry array{
  *     entry: \FireHub\Core\Type\DataStructure\PriorityQueue\Entry<TPriority, TValue>,
  *     sequence: non-negative-int
  * }
  */
-class PriorityQueue implements PriorityQueueBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, FrontRemoval {
+class PriorityQueue implements PriorityQueueBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable,
+    FrontRemoval, Reducible {
 
     /**
      * ### Freeze state
      * @since 1.0.0
      */
     use HasFreezeState;
+
+    /**
+     * ### Provides countable capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanCount<int, TValue>
+     */
+    use CanCount;
+
+    /**
+     * ### Provides matching query support
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanMatch<int, TValue>
+     */
+    use CanMatch;
+
+    /**
+     * ### Provides finding query support
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<int, TValue>
+     */
+    use CanFind;
+
+    /**
+     * ### Provides value reduction
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanReduce<TValue>
+     */
+    use CanReduce;
 
     /**
      * ### Binary heap storage

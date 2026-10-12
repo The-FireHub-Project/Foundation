@@ -20,6 +20,11 @@ use FireHub\Core\Boundary\Capability\ {
     Cloneable, Forkable, Freezable, Thawable
 };
 use FireHub\Core\Type\Maybe;
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
+use FireHub\Foundation\DataStructure\Concern\ {
+    Aggregation\CanCount, Aggregation\CanReduce,
+    Query\CanFind, Query\CanMatch
+};
 use FireHub\Foundation\DataStructure\Storage\BinaryHeapStorage;
 use FireHub\Foundation\State\HasFreezeState;
 use FireHub\Runtime;
@@ -43,14 +48,48 @@ use Traversable;
  * @implements \FireHub\Core\Boundary\Capability\Conversion\Arrayable<int, TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\FrontRemoval<TValue>
  * @implements \FireHub\Core\Boundary\Capability\Mutation\Insertion<TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
  */
-class Heap implements HeapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, FrontRemoval, Insertion {
+class Heap implements HeapBoundary, Arrayable, Cloneable, Forkable, Freezable, Thawable, FrontRemoval, Insertion,
+    Reducible {
 
     /**
      * ### Freeze state
      * @since 1.0.0
      */
     use HasFreezeState;
+
+    /**
+     * ### Provides countable capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanCount<int, TValue>
+     */
+    use CanCount;
+
+    /**
+     * ### Provides matching query support
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanMatch<int, TValue>
+     */
+    use CanMatch;
+
+    /**
+     * ### Provides finding query support
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Query\CanFind<int, TValue>
+     */
+    use CanFind;
+
+    /**
+     * ### Provides value reduction
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Aggregation\CanReduce<TValue>
+     */
+    use CanReduce;
 
     /**
      * ### Constructor
