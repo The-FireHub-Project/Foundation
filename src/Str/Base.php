@@ -1164,8 +1164,10 @@ abstract readonly class Base extends Str {
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Str\MB\Inspection::length() To get the length of the string.
-     * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To join array elements with a string.
-     * @uses \FireHub\Foundation\Str\Tokenizer::words() To get the words of the string.
+     * @uses \FireHub\Runtime\Str\MB\Access::part() To get the part of the string.
+     * @uses \FireHub\Runtime\Str\MB\Regex::match() To match the string against a regular expression.
+     * @uses \FireHub\Runtime\Str\MB\Regex::replace() To replace the string with a regular expression.
+     * @uses \FireHub\Runtime\Str\MB\Transform::trim() To trim the string.
      * @uses \FireHub\Foundation\Str\Base::append() To append the string to the truncated string.
      *
      * @param int $length <p>
@@ -1183,34 +1185,69 @@ abstract readonly class Base extends Str {
      */
     public function truncateSafe (int $length, string $with = '...'):static {
 
+        if ($this->length() <= $length)
+            return new static($this->value, $this->encoding); // @phpstan-ignore return.type
+
         $with_length = Runtime\Str\MB\Inspection::length(
             $with,
             $this->encoding
         );
 
-        $result = [];
-        $words = new Tokenizer($this->value, $this->encoding)->words();
-        foreach ($words as $word) {
+        $available = $length - $with_length;
 
-            $candidate = Runtime\Str\SB\Delimiter::implode(
-                [...$result, $word],
-                ' '
+        if ($available <= 0)
+            return new static(
+                Runtime\Str\MB\Access::part(
+                    $with,
+                    0,
+                    $length,
+                    $this->encoding
+                ),
+                $this->encoding
             );
 
-            if (Runtime\Str\MB\Inspection::length(
-                    $candidate,
-                    $this->encoding
-                ) + $with_length > $length
-            ) break;
+        $prefix = Runtime\Str\MB\Access::part(
+            $this->value,
+            0,
+            $available,
+            $this->encoding
+        );
 
-            $result[] = $word;
+        $next = Runtime\Str\MB\Access::part(
+            $this->value,
+            $available,
+            1,
+            $this->encoding
+        );
+
+        if (
+            Runtime\Str\MB\Regex::match('[[:space:]]$', $prefix)
+            || Runtime\Str\MB\Regex::match('^[[:space:]]', $next)
+        ) {
+
+            return new static(
+                Runtime\Str\MB\Transform::trim(
+                    $prefix,
+                    encoding: $this->encoding
+                ).$with,
+                $this->encoding
+            );
 
         }
 
+        $prefix = Runtime\Str\MB\Regex::replace(
+            '[^[:space:]]+$',
+            '',
+            $prefix
+        );
+
         return new static(
-            Runtime\Str\SB\Delimiter::implode($result, ' '),
+            Runtime\Str\MB\Transform::trim(
+                $prefix,
+                encoding: $this->encoding
+            ).$with,
             $this->encoding
-        )->append($with);
+        );
 
     }
 
