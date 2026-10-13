@@ -22,87 +22,74 @@
   /></a>
 </h1>
 
-[![PHPStan](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPStan.yml/badge.svg?branch=feature%2Fphpunit-integration-and-initial-tests)](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPStan.yml)
-[![PHPUnit](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPUnit.yml/badge.svg?branch=feature%2Fphpunit-integration-and-initial-tests)](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPUnit.yml)
-[![Codecov](https://codecov.io/gh/The-FireHub-Project/Foundation/branch/feature%2Fphpunit-integration-and-initial-tests/graph/badge.svg?token=XW2YEONF51)](https://app.codecov.io/gh/The-FireHub-Project/Foundation/tree/feature%2Fphpunit-integration-and-initial-tests)
+[![PHPStan](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPStan.yml/badge.svg?branch=develop)](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPStan.yml)
+[![PHPUnit](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPUnit.yml/badge.svg?branch=develop)](https://github.com/The-FireHub-Project/Foundation/actions/workflows/PHPUnit.yml)
+[![Codecov](https://codecov.io/gh/The-FireHub-Project/Foundation/branch/develop/graph/badge.svg?token=XW2YEONF51)](https://app.codecov.io/gh/The-FireHub-Project/Foundation/tree/develop)
 
 <p>
-  <a href="https://github.com/The-FireHub-Project/Foundation/commits/feature/phpunit-integration-and-initial-tests/">
+  <a href="https://github.com/The-FireHub-Project/Foundation/commits/develop/">
     <img
-      src="https://img.shields.io/github/last-commit/The-FireHub-Project/Foundation/feature/phpunit-integration-and-initial-tests?style=flat&logo=github&logoColor=959da5&label=last%20commit%20(branch)&labelColor=31373e"
+      src="https://img.shields.io/github/last-commit/The-FireHub-Project/Foundation/develop?style=flat&logo=github&logoColor=959da5&label=last%20commit%20(branch)&labelColor=31373e"
       alt="GitHub last commit (branch)"
   /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/commits/feature/phpunit-integration-and-initial-tests/">
+  <a href="https://github.com/The-FireHub-Project/Foundation/commits/develop/">
     <img
-      src="https://img.shields.io/github/commit-activity/m/The-FireHub-Project/Foundation/feature/phpunit-integration-and-initial-tests?style=flat&logo=github&logoColor=959da5&label=commit%20activity%20(branch)&labelColor=31373e"
+      src="https://img.shields.io/github/commit-activity/m/The-FireHub-Project/Foundation/develop?style=flat&logo=github&logoColor=959da5&label=commit%20activity%20(branch)&labelColor=31373e"
       alt="GitHub activity (branch)"
   /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/compare/develop...feature/phpunit-integration-and-initial-tests/">
+  <a href="https://github.com/The-FireHub-Project/Foundation/compare/master...develop/">
     <img
-      src="https://img.shields.io/github/commits-difference/The-FireHub-Project/Foundation?base=develop&head=feature/phpunit-integration-and-initial-tests&style=flat&logo=github&logoColor=959da5&label=ahead%20develop&labelColor=31373e"
+      src="https://img.shields.io/github/commits-difference/The-FireHub-Project/Foundation?base=master&head=develop&style=flat&logo=github&logoColor=959da5&label=ahead%20master&labelColor=31373e"
       alt="GitHub commit difference between two branches"
   /></a>
 </p>
 
-Provides the high-level foundation layer of the FireHub ecosystem. This repository contains developer-focused APIs and reusable building blocks that simplify common programming tasks while maintaining consistency, type safety, and architectural principles across FireHub applications.
-
-The Foundation layer is built on top of the Runtime layer and transforms low-level execution primitives into expressive object-oriented APIs. It provides commonly used components such as string manipulation, date and time handling, mathematical utilities, and other essential application-level abstractions.
-
-This repository represents the developer-facing layer between the FireHub Runtime and application code, enabling clean, readable, and maintainable PHP development.
+The essential PHP core for building domain-driven, clean architecture applications.  
+Standard provides the base classes, kernel, domain layer, and minimal runtime utilities needed to start any FireHub project.
 
 ---
 
-## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Testcase Base – Development Branch
+## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Development Branch
 
-⚠️ **This is the `development` branch**
+⚠️ **This is the `develop` branch**
 
 - Unstable
 - APIs may change without notice
 - Not intended for production use
 
-### Related
-
-- Target Release: **v0.0.0**
-- Repository: FireHub Foundation
-
-### Pull request
-
-<p>
-  <a href="https://github.com/The-FireHub-Project/Foundation/pull/2/">
-    <img
-      src="https://img.shields.io/github/pulls/detail/title/The-FireHub-Project/Foundation/2?style=flat&logo=github&logoColor=959da5&label=title&labelColor=31373e"
-      alt="GitHub pull request title"
-  /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/pull/2/">
-    <img
-      src="https://img.shields.io/github/pulls/detail/author/The-FireHub-Project/Foundation/2?style=flat&logo=github&logoColor=959da5&labelColor=31373e"
-      alt="GitHub pull request author"
-  /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/pull/2/">
-    <img
-      src="https://img.shields.io/github/pulls/detail/age/The-FireHub-Project/Foundation/2?style=flat&logo=github&logoColor=959da5&labelColor=31373e"
-      alt="GitHub pull request created"
-  /></a>
-  <a href="https://github.com/The-FireHub-Project/Foundation/pull/2/">
-    <img
-      src="https://img.shields.io/github/pulls/detail/comments/The-FireHub-Project/Foundation/2?style=flat&logo=github&logoColor=959da5&labelColor=31373e"
-      alt="GitHub pull request comments"
-  /></a>
-</p>
-
 ## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Branch Purpose
 
-Introduce the first high-level string API in the FireHub Foundation layer, providing an expressive and object-oriented interface for string manipulation while abstracting away low-level Runtime string operations.
+The `develop` branch is the **primary integration branch** for all ongoing development.
 
-## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Architectural Goal
+It serves as the staging area where:
+- Feature branches are merged
+- Bug fixes are integrated
+- Experimental work is stabilized
+- Code is prepared for upcoming releases
 
-Establish the Foundation layer pattern by transforming Runtime primitives into developer-facing APIs. The Str component should demonstrate how high-level objects are built on top of stable Runtime functionality while preserving type safety, consistency, and separation of concerns across the FireHub architecture.
+All **release branches** are created **from `develop`**.
 
-## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Core Concept
+## Stability Guarantee
 
-The Str API represents an immutable, object-oriented string abstraction designed for readable and fluent string operations.
+❌ No backward compatibility guarantee  
+❌ APIs may change without notice  
+❌ Behavior may be incomplete or inconsistent  
+❌ Breaking changes are expected
 
-Instead of exposing procedural string functions directly, Foundation provides a domain-friendly object that encapsulates string behavior, validation, transformation, and common operations while delegating low-level execution to the Runtime layer.
+This branch is intended **only for contributors and advanced testers**.
+
+## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Composer Usage (Not Recommended)
+
+For internal testing only:
+
+```json
+{
+  "require": {
+    "the-firehub-project/foundation": "dev-develop"
+  }
+}
+```
+⚠️ Never use dev-develop in production.
 
 ## <img src="https://raw.githubusercontent.com/The-FireHub-Project/the-firehub-project.github.io/master/resources/graphics/icons/firehub.svg" width="15" alt="FireHub Icon"> Authors and Contributors
 
