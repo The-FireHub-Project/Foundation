@@ -55,7 +55,7 @@ abstract readonly class Name extends Identifier implements Stringable {
      * @return void
      */
     public function __construct (
-        private string $value
+        protected string $value
     ) {
 
         $this->guard(
