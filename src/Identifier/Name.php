@@ -59,7 +59,7 @@ abstract readonly class Name extends Identifier implements Stringable {
     ) {
 
         $this->guard(
-            fn() => Runtime\Str\SB\Transform::trim($value),
+            fn() => Runtime\Str\SB\Transform::trim($value) !== '',
             fn() => new InvalidIdentifierValueException(
                 'Identifier name cannot be empty.'
             )
