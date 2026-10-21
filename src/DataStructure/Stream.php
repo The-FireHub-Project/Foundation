@@ -1,0 +1,426 @@
+<?php declare(strict_types = 1);
+
+/**
+ * This file is part of the FireHub Project ecosystem
+ *
+ * @author Danijel Galić <danijel.galic@outlook.com>
+ * @copyright 2026-present The FireHub Project - All rights reserved
+ * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
+ *
+ * @php-version >=8.2
+ * @package Foundation
+ */
+
+namespace FireHub\Foundation\DataStructure;
+
+use FireHub\Core\Boundary\Type\DataStructure\Stream as StreamBoundary;
+use FireHub\Core\Boundary\Capability\Transformation\ {
+    Concatenable, Mappable, Rejectable
+};
+use FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible;
+use FireHub\Foundation\DataStructure\Boundary\Transformation\ {
+    Skippable, Takeable
+};
+use FireHub\Foundation\DataStructure\Stream\Source;
+use FireHub\Foundation\DataStructure\Stream\Source\ {
+    ChunkSource, ConcatSource, FilterSource, FlatMapSource, IterableSource, MapSource, ReindexSource, SkipSource,
+    TakeSource, TapSource, ZipSource
+};
+use FireHub\Foundation\DataStructure\Transformation\ {
+    Select, Skip, Take
+};
+use FireHub\Foundation\DataStructure\Concern\Transformation\CanReject;
+use Traversable;
+
+/**
+ * ### Stream data structure
+ *
+ * Represents a sequence of key-value pairs that may be produced lazily as they are consumed.
+ *
+ * Stream gets its elements from an underlying Source and does not require the complete sequence to be
+ * materialized in memory before iteration begins. This allows finite, unbounded, dynamically generated, and
+ * externally produced sequences to be processed through a common data structure abstraction.
+ *
+ * The Stream delegates element production to its Source while defining the public data structure semantics exposed
+ * to consumers. Whether the Stream can be consumed multiple times depends on the replayability characteristics of
+ * the underlying Source.
+ *
+ * Stream processing operations may create new Stream instances backed by decorated Sources, allowing transformations
+ * to be composed into a lazy pipeline without executing them until the resulting Stream is consumed.
+ * @since 1.0.0
+ *
+ * @template TKey
+ * @template TValue
+ *
+ * @implements \FireHub\Core\Boundary\Type\DataStructure\Stream<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Mappable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Rejectable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Takeable<TKey, TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Transformation\Skippable<TKey, TValue>
+ * @implements \FireHub\Core\Boundary\Capability\Transformation\Concatenable<TValue>
+ * @implements \FireHub\Foundation\DataStructure\Boundary\Aggregation\Reducible<TValue>
+ */
+readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable, Skippable, Concatenable, Reducible {
+
+    /**
+     * ### Provides rejection capabilities
+     * @since 1.0.0
+     *
+     * @use \FireHub\Foundation\DataStructure\Concern\Transformation\CanReject<TKey, TValue>
+     */
+    use CanReject;
+
+    /**
+     * ### Constructor
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\DataStructure\Stream\Source<TKey, TValue> $source <p>
+     * The Source used to produce Stream elements.
+     * </p>
+     *
+     * @return void
+     */
+    final public function __construct (
+        protected Source $source
+    ) {}
+
+    /**
+     * ### Executes a callback for each Stream element
+     *
+     * Consumes the Stream and invokes the specified callback for each element in iteration order.
+     *
+     * Unlike tap(), this operation is terminal and begins consuming the Stream immediately.
+     * @since 1.0.0
+     *
+     * @param callable(TValue, TKey=):void $callback <p>
+     * The callback invoked for each Stream element.
+     * </p>
+     *
+     * @return void
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source::iterate() To iterate over the Source elements.
+     */
+    public function each (callable $callback):void {
+
+        foreach ($this->source->iterate() as $key => $value)
+            $callback($value, $key);
+
+    }
+
+    /**
+     * ### Observes Stream elements
+     *
+     * Creates a new Stream that invokes the specified callback for each element as it is consumed while preserving the
+     * original keys and values.
+     *
+     * The callback is executed lazily and may be used to perform side effects without modifying the Stream elements.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\TapSource To create a new Stream instance that observes
+     * elements.
+     *
+     * @param callable(TValue, TKey=):void $callback <p>
+     * The callback invoked for each consumed element.
+     * </p>
+     *
+     * @return static Stream with element observation.
+     */
+    public function tap (callable $callback):static {
+
+        return new static(
+            new TapSource(
+                $this->source,
+                $callback(...)
+            )
+        );
+
+    }
+
+    /**
+     * ### Re-indexes Stream elements
+     *
+     * Creates a new Stream that replaces the existing keys with sequential integer keys while preserving the original
+     * values and iteration order.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ReindexSource To create a new Stream instance with
+     * sequential integer keys.
+     *
+     * @param int $start <p>
+     * The starting index.
+     * </p>
+     *
+     * @return static<int, TValue> The reindexed Stream.
+     */
+    public function reindex (int $start = 0):static {
+
+        return new static(
+            new ReindexSource(
+                $this->source,
+                $start
+            )
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\MapSource To create a new Stream instance with the
+     * mapped elements.
+     */
+    public function map (callable $callback):static {
+
+        return new static(
+            new MapSource($this->source, $callback(...))
+        );
+
+    }
+
+    /**
+     * ### Flat maps the Stream
+     *
+     * Creates a new Stream by mapping each element to the iterable and flattening the produced iterables into a single
+     * lazy sequence.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\FlatMapSource To create a new Stream instance with the
+     * flat mapped elements.
+     *
+     * @template TNewKey
+     * @template TNewValue
+     *
+     * @param callable(TValue, TKey=):iterable<TNewKey, TNewValue> $callback <p>
+     * The mapping function used to produce values for each Stream element.
+     * </p>
+     *
+     * @return static<TNewKey, TNewValue> The flat mapped Stream.
+     */
+    public function flatMap (callable $callback):static {
+
+        return new static(
+            new FlatMapSource(
+                $this->source,
+                $callback(...)
+            )
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\FilterSource To create a new Stream instance with the
+     * filtered elements.
+     */
+    public function filter (callable $callback):static {
+
+        return new static(
+            new FilterSource($this->source, $callback(...))
+        );
+
+    }
+
+    /**
+     * ### Creates a Select instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Select<int, TValue, $this> A select transformation of
+     * the data structure.
+     */
+    public function select ():Select {
+
+        /** @var Select<int, TValue, $this> */
+        return new Select($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\TakeSource To create a new Stream instance with the
+     * limited number of elements.
+     */
+    public function takeWhile (callable $callback):static {
+
+        return new static(
+            new TakeSource(
+                $this->source,
+                $callback(...)
+            )
+        );
+
+    }
+
+    /**
+     * ### Creates a Take instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Take<TKey, TValue, $this> A take transformation of the
+     * data structure.
+     */
+    public function take ():Take {
+
+        /** @var Take<TKey, TValue, $this> */
+        return new Take($this);
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\SkipSource To create a new Stream instance with the
+     * skipped elements.
+     */
+    public function skipWhile (callable $callback):static {
+
+        return new static(
+            new SkipSource(
+                $this->source,
+                $callback(...)
+            )
+        );
+
+    }
+
+    /**
+     * ### Creates a Skip instance
+     * @since 1.0.0
+     *
+     * @return \FireHub\Foundation\DataStructure\Transformation\Skip<TKey, TValue, $this> A skip transformation of the
+     * data structure.
+     */
+    public function skip ():Skip {
+
+        /** @var Skip<TKey, TValue, $this> */
+        return new Skip($this);
+
+    }
+
+    /**
+     * ### Chunks Stream values
+     *
+     * Creates a new Stream that lazily groups consecutive values into chunks containing at most the specified number of
+     * elements.
+     *
+     * Original Stream keys are not preserved. Values within each chunk are indexed sequentially starting from zero,
+     * while chunks are also indexed sequentially starting from zero. The final chunk may contain fewer elements when
+     * the Stream is exhausted before the specified chunk size is reached.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ChunkSource To create a new Stream instance with chunked
+     * values.
+     *
+     * @param positive-int $size <p>
+     * The maximum number of values in each chunk.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\DataStructure\Exception\ChunkSizeException If the specified chunk size is less
+     * than one.
+     *
+     * @return static<int, list<TValue>> The chunked Stream.
+     */
+    public function chunk (int $size):static {
+
+        return new static(
+            new ChunkSource(
+                $this->source,
+                $size
+            )
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ConcatSource To create a new Stream instance with
+     * the concatenated elements.
+     *
+     * @param iterable<TKey, TValue> $values <p>
+     * The values to concatenate.
+     * </p>
+     */
+    public function concat (iterable $values):static {
+
+        return clone($this, [
+            'source' => new ConcatSource(
+                $this->source,
+                new IterableSource($values)
+            )
+        ]);
+
+    }
+
+    /**
+     * ### Zips Stream elements
+     *
+     * Creates a new Stream by pairing each Stream value with the corresponding value from the specified iterable.
+     *
+     * Both sequences are consumed lazily in parallel, and iteration stops as soon as either sequence is exhausted.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source\ZipSource To create a new Stream instance with paired
+     * elements.
+     *
+     * @template TOtherValue
+     *
+     * @param iterable<mixed, TOtherValue> $values <p>
+     * The values to zip with the Stream elements.
+     * </p>
+     *
+     * @return static<TKey, array{TValue, TOtherValue}> The zipped Stream.
+     */
+    public function zip (iterable $values):static {
+
+        return new static(
+            new ZipSource(
+                $this->source,
+                $values
+            )
+        );
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source::iterate() To iterate over the Source elements.
+     */
+    public function reduce (mixed $initial, callable $callback):mixed {
+
+        $carry = $initial;
+
+        foreach ($this->source->iterate() as $value)
+            $carry = $callback($carry, $value);
+
+        return $carry;
+
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\DataStructure\Stream\Source::iterate() To iterate over the Source elements.
+     */
+    public function getIterator ():Traversable {
+
+        yield from $this->source->iterate();
+
+    }
+
+}
