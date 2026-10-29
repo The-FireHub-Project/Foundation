@@ -62,7 +62,7 @@ final readonly class FillInit implements Initializer {
 
         for ($key = 0; $key < $this->length; $key++)
             /** @var TKey $key */
-            yield $key => $this->value;
+            yield $key => $this->value; // @phpstan-ignore varTag.nativeType
 
     }
 

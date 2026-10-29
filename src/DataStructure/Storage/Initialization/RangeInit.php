@@ -74,7 +74,7 @@ final readonly class RangeInit implements Initializer {
              * @var TKey $key
              * @var TValue $value
              */
-            yield $key++ => $value;
+            yield $key++ => $value; // @phpstan-ignore varTag.nativeType
 
             $value += $this->step;
 
