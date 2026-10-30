@@ -14,6 +14,7 @@
 namespace FireHub\Foundation\Uri\Component;
 
 use FireHub\Core\Type\ValueObject;
+use FireHub\Foundation\Uri\Encoding\Percent;
 use FireHub\Foundation\Uri\Exception\InvalidPathException;
 use FireHub\Runtime;
 
@@ -57,6 +58,42 @@ final readonly class Path extends ValueObject {
                 ),
             fn() => new InvalidPathException
         );
+
+    }
+
+    /**
+     * ### Creates a URI path from a decoded string
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::encodePath() To encode the path.
+     *
+     * @param string $path <p>
+     * Decoded URI path.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidPathException If path has invalid pattern.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self<string> Encoded URI path.
+     */
+    public static function fromDecoded (string $path):self {
+
+        return new self(Percent::encodePath($path));
+
+    }
+
+    /**
+     * ### Gets the decoded URI path
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\PercentEncoder::decode() To decode the path.
+     *
+     * @return string Decoded URI path.
+     */
+    public function decoded ():string {
+
+        return Percent::decode($this->path);
 
     }
 

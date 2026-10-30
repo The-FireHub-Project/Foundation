@@ -14,6 +14,7 @@
 namespace FireHub\Foundation\Uri\Component;
 
 use FireHub\Core\Type\ValueObject;
+use FireHub\Foundation\Uri\Encoding\Percent;
 use FireHub\Foundation\Uri\Exception\InvalidFragmentException;
 use FireHub\Runtime;
 
@@ -55,6 +56,42 @@ final readonly class Fragment extends ValueObject {
                 ),
             fn() => new InvalidFragmentException
         );
+
+    }
+
+    /**
+     * ### Creates a URI fragment from a decoded string
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::encodeQuery() To encode the fragment.
+     *
+     * @param string $fragment <p>
+     * Decoded URI fragment.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidFragmentException If fragment has invalid pattern.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self<string> Encoded URI fragment.
+     */
+    public static function fromDecoded (string $fragment):self {
+
+        return new self(Percent::encodeQuery($fragment));
+
+    }
+
+    /**
+     * ### Gets the decoded URI fragment
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\PercentEncoder::decode() To decode the fragment.
+     *
+     * @return string Decoded URI fragment.
+     */
+    public function decoded ():string {
+
+        return Percent::decode($this->fragment);
 
     }
 

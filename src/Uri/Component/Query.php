@@ -14,6 +14,7 @@
 namespace FireHub\Foundation\Uri\Component;
 
 use FireHub\Core\Type\ValueObject;
+use FireHub\Foundation\Uri\Encoding\Percent;
 use FireHub\Foundation\Uri\Exception\InvalidQueryException;
 use FireHub\Runtime;
 
@@ -57,6 +58,42 @@ final readonly class Query extends ValueObject {
                 ),
             fn() => new InvalidQueryException
         );
+
+    }
+
+    /**
+     * ### Creates a URI query from a decoded string
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::encodeQuery() To encode the query.
+     *
+     * @param string $query <p>
+     * Decoded URI query.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidQueryException If query has invalid pattern.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self<string> Encoded URI query.
+     */
+    public static function fromDecoded (string $query):self {
+
+        return new self(Percent::encodeQuery($query));
+
+    }
+
+    /**
+     * ### Gets the decoded URI query
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\PercentEncoder::decode() To decode the query.
+     *
+     * @return string Decoded URI query.
+     */
+    public function decoded ():string {
+
+        return Percent::decode($this->query);
 
     }
 

@@ -14,6 +14,7 @@
 namespace FireHub\Foundation\Uri\Component;
 
 use FireHub\Core\Type\ValueObject;
+use FireHub\Foundation\Uri\Encoding\Percent;
 use FireHub\Foundation\Uri\Exception\InvalidUserInfoException;
 use FireHub\Runtime;
 
@@ -55,6 +56,42 @@ final readonly class UserInfo extends ValueObject {
                 ),
             fn() => new InvalidUserInfoException
         );
+
+    }
+
+    /**
+     * ### Creates a URI user info from a decoded string
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::encodeQuery() To encode the user info.
+     *
+     * @param string $user_info <p>
+     * Decoded URI user info.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidUserInfoException If userinfo has invalid pattern.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self<string> Encoded URI user info.
+     */
+    public static function fromDecoded (string $user_info):self {
+
+        return new self(Percent::encodeQuery($user_info));
+
+    }
+
+    /**
+     * ### Gets the decoded URI user info
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\PercentEncoder::decode() To decode the user info.
+     *
+     * @return string Decoded URI user info.
+     */
+    public function decoded ():string {
+
+        return Percent::decode($this->user_info);
 
     }
 
