@@ -62,12 +62,38 @@ final readonly class Host extends ValueObject {
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Str\SB\Casing::toLower() To convert the host to lowercase.
+     * @uses \FireHub\Runtime\Str\SB\Casing::toUpper() To convert the host to uppercase.
+     * @uses \FireHub\Runtime\Str\SB\Regex::match() To validate the host.
+     * @uses \FireHub\Runtime\Str\SB\Regex::replaceUsing() To replace the host with the normalized version.
+     * @uses \FireHub\Runtime\Char\SB::chr() To get the character at the specified position.
+     * @uses \FireHub\Runtime\Number::baseConverter() To convert the hexadecimal value to decimal.
      *
      * @return lowercase-string Normalized host.
      */
     public function normalized ():string {
 
-        return Runtime\Str\SB\Casing::toLower($this->host);
+        if ($this->host === '')
+            return '';
+
+        if ($this->host[0] === '[')
+            return Runtime\Str\SB\Casing::toLower($this->host);
+
+        $normalized = Runtime\Str\SB\Regex::replaceUsing(
+            '/%([A-Fa-f0-9]{2})/',
+            static function (array $matches):string {
+
+                $character = Runtime\Char\SB::chr((int)Runtime\Number::baseConverter($matches[1], 16, 10)); // @phpstan-ignore-line
+
+                if (Runtime\Str\SB\Regex::match('/\A[A-Za-z0-9._~-]\z/', $character))
+                    return $character;
+
+                return '%'.Runtime\Str\SB\Casing::toUpper($matches[1]); // @phpstan-ignore offsetAccess.notFound
+
+            },
+            $this->host
+        );
+
+        return Runtime\Str\SB\Casing::toLower($normalized);
 
     }
 
@@ -118,18 +144,23 @@ final readonly class Host extends ValueObject {
 
             $address = Runtime\Str\SB\Access::part($host, 1, -1);
 
-            return Runtime\Filter::value(
-                    $address,
-                    FILTER_VALIDATE_IP,
-                    FILTER_FLAG_IPV6
-                ) !== false;
+            if (Runtime\Filter::value(
+                $address,
+                FILTER_VALIDATE_IP,
+                FILTER_FLAG_IPV6
+                ) !== false) return true;
+
+            return Runtime\Str\SB\Regex::match(
+                '/\Av[0-9A-Fa-f]+\.[A-Za-z0-9._~!$&\'()*+,;=:-]+\z/i',
+                $address
+            );
 
         }
 
         return Runtime\Str\SB\Regex::match(
-                '/\A(?:[A-Za-z0-9._~!$&\'()*+,;=-]|%[A-Fa-f0-9]{2})*\z/',
-                $host
-            );
+            '/\A(?:[A-Za-z0-9._~!$&\'()*+,;=-]|%[A-Fa-f0-9]{2})*\z/',
+            $host
+        );
 
     }
 

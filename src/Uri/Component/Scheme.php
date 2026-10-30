@@ -90,7 +90,7 @@ final readonly class Scheme extends ValueObject {
      * ### Compares schemes case-insensitively
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Uri\Internal\Scheme::normalized() To get the normalized scheme.
+     * @uses \FireHub\Foundation\Uri\Component\Scheme::normalized() To get the normalized scheme.
      *
      * @return non-empty-string Normalized scheme.
      */
