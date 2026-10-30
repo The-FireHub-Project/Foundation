@@ -68,32 +68,40 @@ final readonly class Host extends ValueObject {
      * @uses \FireHub\Runtime\Char\SB::chr() To get the character at the specified position.
      * @uses \FireHub\Runtime\Number::baseConverter() To convert the hexadecimal value to decimal.
      *
-     * @return lowercase-string Normalized host.
+     * @return string Normalized host.
      */
     public function normalized ():string {
 
         if ($this->host === '')
             return '';
 
-        if ($this->host[0] === '[')
+        if ($this->host[0] === '[') {
+
+            if ($this->host[1] === 'v' || $this->host[1] === 'V')
+                return $this->host;
+
             return Runtime\Str\SB\Casing::toLower($this->host);
 
-        $normalized = Runtime\Str\SB\Regex::replaceUsing(
-            '/%([A-Fa-f0-9]{2})/',
+        }
+
+        $normalized = Runtime\Str\SB\Casing::toLower($this->host);
+
+        return Runtime\Str\SB\Regex::replaceUsing(
+            '/%([a-f0-9]{2})/',
             static function (array $matches):string {
 
-                $character = Runtime\Char\SB::chr((int)Runtime\Number::baseConverter($matches[1], 16, 10)); // @phpstan-ignore-line
+                $character = Runtime\Char\SB::chr(
+                    (int) Runtime\Number::baseConverter($matches[1], 16, 10) // @phpstan-ignore-line
+                );
 
                 if (Runtime\Str\SB\Regex::match('/\A[A-Za-z0-9._~-]\z/', $character))
-                    return $character;
+                    return Runtime\Str\SB\Casing::toLower($character);
 
                 return '%'.Runtime\Str\SB\Casing::toUpper($matches[1]); // @phpstan-ignore offsetAccess.notFound
 
             },
-            $this->host
+            $normalized
         );
-
-        return Runtime\Str\SB\Casing::toLower($normalized);
 
     }
 

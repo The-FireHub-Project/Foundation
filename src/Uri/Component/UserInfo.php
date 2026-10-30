@@ -21,7 +21,7 @@ use FireHub\Runtime;
  * ### Represents URI user information
  * @since 1.0.0
  *
- * @template TValue of non-empty-string
+ * @template TValue of string
  *
  * @extends \FireHub\Core\Type\ValueObject<TValue>
  */
