@@ -13,7 +13,7 @@
 
 namespace FireHub\Foundation;
 
-use FireHub\Core\Type\ValueObject;
+use FireHub\Core\Type\Uri as BaseUri;
 use FireHub\Foundation\Uri\Component\ {
     Authority, Fragment, Path, Query, Scheme
 };
@@ -28,9 +28,9 @@ use FireHub\Runtime;
  * Supports both absolute URIs and relative references.
  * @since 1.0.0
  *
- * @extends \FireHub\Core\Type\ValueObject<string>
+ * @extends \FireHub\Core\Type\Uri<string>
  */
-final readonly class Uri extends ValueObject {
+final readonly class Uri extends BaseUri {
 
     /**
      * ### Constructor
