@@ -58,6 +58,18 @@ final readonly class Host extends ValueObject {
     }
 
     /**
+     * ### Checks whether the host is empty
+     * @since 1.0.0
+     *
+     * @return bool True if the host is empty, false otherwise.
+     */
+    public function isEmpty ():bool {
+
+        return $this->host === '';
+
+    }
+
+    /**
      * ### Returns the normalized host
      * @since 1.0.0
      *

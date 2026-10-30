@@ -52,7 +52,7 @@ final readonly class Query extends ValueObject {
 
         $this->guard(
             fn() => Runtime\Str\SB\Regex::match(
-                    '/\A(?:[A-Za-z0-9._~!$&\'()*+,;=:@\/?-]|%[A-Fa-f0-9]{2})*\z/D',
+                    '/\A(?:[A-Za-z0-9._~!$&\'()*+,;=:@\/?-]|%[A-Fa-f0-9]{2})*\z/',
                     $query
                 ),
             fn() => new InvalidQueryException

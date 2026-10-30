@@ -61,6 +61,18 @@ final readonly class Path extends ValueObject {
     }
 
     /**
+     * ### Checks whether the path represents the root
+     * @since 1.0.0
+     *
+     * @return bool True if the path is exactly "/", false otherwise.
+     */
+    public function isRoot ():bool {
+
+        return $this->path === '/';
+
+    }
+
+    /**
      * ### Checks whether the path is absolute
      * @since 1.0.0
      *

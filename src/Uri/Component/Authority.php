@@ -32,10 +32,10 @@ final readonly class Authority extends ValueObject {
      * @param \FireHub\Foundation\Uri\Component\Host<string> $host <p>
      * URI host.
      * </p>
-     * @param null|\FireHub\Foundation\Uri\Component\Port<int >$port [optional] <p>
+     * @param null|\FireHub\Foundation\Uri\Component\Port<int> $port [optional] <p>
      * Network port.
      * </p>
-     * @param null|\FireHub\Foundation\Uri\Component\UserInfo<non-empty-string> $user_info [optional] <p>
+     * @param null|\FireHub\Foundation\Uri\Component\UserInfo<string> $user_info [optional] <p>
      * User information.
      * </p>
      *
@@ -75,11 +75,27 @@ final readonly class Authority extends ValueObject {
      * ### Gets the user information
      * @since 1.0.0
      *
-     * @return null|\FireHub\Foundation\Uri\Component\UserInfo<non-empty-string> The user information.
+     * @return null|\FireHub\Foundation\Uri\Component\UserInfo<string> The user information.
      */
     public function userInfo ():?UserInfo {
 
         return $this->user_info;
+
+    }
+
+    /**
+     * ### Checks whether the authority is empty
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Component\Host::isEmpty() To check if the host is empty.
+     *
+     * @return bool True if the authority is empty, false otherwise.
+     */
+    public function isEmpty ():bool {
+
+        return $this->host->isEmpty()
+            && $this->port === null
+            && $this->user_info === null;
 
     }
 

@@ -50,11 +50,23 @@ final readonly class Fragment extends ValueObject {
 
         $this->guard(
             fn() => Runtime\Str\SB\Regex::match(
-                    '/\A(?:[A-Za-z0-9._~!$&\'()*+,;=:@\/?-]|%[A-Fa-f0-9]{2})*\z/D',
+                    '/\A(?:[A-Za-z0-9._~!$&\'()*+,;=:@\/?-]|%[A-Fa-f0-9]{2})*\z/',
                     $fragment
                 ),
             fn() => new InvalidFragmentException
         );
+
+    }
+
+    /**
+     * ### Checks whether the fragment is empty
+     * @since 1.0.0
+     *
+     * @return bool True if the fragment is empty, false otherwise.
+     */
+    public function isEmpty ():bool {
+
+        return $this->fragment === '';
 
     }
 

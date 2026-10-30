@@ -34,7 +34,7 @@ final readonly class UserInfo extends ValueObject {
      * @uses \FireHub\Core\Type\ValueObject::guard() As a guard.
      * @uses \FireHub\Runtime\Str\SB\Regex::match() To validate the userinfo.
      *
-     * @param TValue $userinfo <p>
+     * @param TValue $user_info <p>
      * Raw URI user information.
      * </p>
      *
@@ -45,16 +45,28 @@ final readonly class UserInfo extends ValueObject {
      * @return void
      */
     public function __construct (
-        private string $userinfo
+        private string $user_info
     ) {
 
         $this->guard(
             fn() => Runtime\Str\SB\Regex::match(
                     '/\A(?:[A-Za-z0-9._~!$&\'()*+,;=:-]|%[A-Fa-f0-9]{2})*\z/',
-                    $userinfo
+                    $user_info
                 ),
             fn() => new InvalidUserInfoException
         );
+
+    }
+
+    /**
+     * ### Checks whether the user information is empty
+     * @since 1.0.0
+     *
+     * @return bool True if the user information is empty, false otherwise.
+     */
+    public function isEmpty(): bool {
+
+        return $this->user_info === '';
 
     }
 
@@ -65,7 +77,7 @@ final readonly class UserInfo extends ValueObject {
      */
     public function value ():string {
 
-        return $this->userinfo;
+        return $this->user_info;
 
     }
 
