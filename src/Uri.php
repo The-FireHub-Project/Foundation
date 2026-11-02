@@ -131,6 +131,136 @@ final readonly class Uri extends BaseUri {
     }
 
     /**
+     * Returns a URI with the specified scheme.
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\Uri\Component\Scheme<non-empty-string> $scheme <p>
+     * URI scheme.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidUriException If the URI component combination is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self New URI with the specified scheme.
+     */
+    public function withScheme (Scheme $scheme):self {
+
+        return new self(
+            $scheme,
+            $this->authority,
+            $this->path,
+            $this->query,
+            $this->fragment
+        );
+
+    }
+
+    /**
+     * Returns a URI with the specified authority.
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\Uri\Component\Authority $authority <p>
+     * URI authority.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidUriException If the URI component combination is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self New URI with the specified authortity.
+     */
+    public function withAuthority (Authority $authority):self {
+
+        return new self(
+            $this->scheme,
+            $authority,
+            $this->path,
+            $this->query,
+            $this->fragment
+        );
+
+    }
+
+    /**
+     * Returns a URI with the specified path.
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\Uri\Component\Path<string> $path <p>
+     * URI path.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidUriException If the URI component combination is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self New URI with the specified path.
+     */
+    public function withPath (Path $path):self {
+
+        return new self(
+            $this->scheme,
+            $this->authority,
+            $path,
+            $this->query,
+            $this->fragment
+        );
+
+    }
+
+    /**
+     * Returns a URI with the specified query.
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\Uri\Component\Query<string> $query <p>
+     * URI query.
+     *  </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidUriException If the URI component combination is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self New URI with the specified query.
+     */
+    public function withQuery (Query $query):self {
+
+        return new self(
+            $this->scheme,
+            $this->authority,
+            $this->path,
+            $query,
+            $this->fragment
+        );
+
+    }
+
+    /**
+     * Returns a URI with the specified fragment.
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\Uri\Component\Fragment<string> $fragment [optional] <p>
+     * URI fragment.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidUriException If the URI component combination is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self New URI with the specified fragment.
+     */
+    public function withFragment (Fragment $fragment):self {
+
+        return new self(
+            $this->scheme,
+            $this->authority,
+            $this->path,
+            $this->query,
+            $fragment
+        );
+
+    }
+
+    /**
      * ### Gets the scheme
      * @since 1.0.0
      *

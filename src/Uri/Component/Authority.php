@@ -133,6 +133,66 @@ final readonly class Authority extends ValueObject {
     }
 
     /**
+     * Returns an authority with the specified host.
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\Uri\Component\Host<string> $host <p>
+     * Host information.
+     * </p>
+     *
+     * @return self New authority with the specified host information.
+     */
+    public function withHost (Host $host):self {
+
+        return new self(
+            $host,
+            $this->port,
+            $this->user_info
+        );
+
+    }
+
+    /**
+     * Returns an authority with the specified port.
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\Uri\Component\Port<int> $port <p>
+     * Port information.
+     * </p>
+     *
+     * @return self New authority with the specified port information.
+     */
+    public function withPort (Port $port):self {
+
+        return new self(
+            $this->host,
+            $port,
+            $this->user_info
+        );
+
+    }
+
+    /**
+     * Returns an authority with the specified user information.
+     * @since 1.0.0
+     *
+     * @param \FireHub\Foundation\Uri\Component\UserInfo<string> $user_info <p>
+     * User information.
+     * </p>
+     *
+     * @return self New authority with the specified user information.
+     */
+    public function withUserInfo (UserInfo $user_info):self {
+
+        return new self(
+            $this->host,
+            $this->port,
+            $user_info
+        );
+
+    }
+
+    /**
      * ### Gets the host
      * @since 1.0.0
      *
