@@ -63,7 +63,7 @@ final readonly class UserInfo extends ValueObject {
      * ### Creates a URI user info from a decoded string
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Uri\Encoding\Percent::encodeQuery() To encode the user info.
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::encodeUserInfo() To encode the user info.
      *
      * @param string $user_info <p>
      * Decoded URI user info.
@@ -77,7 +77,7 @@ final readonly class UserInfo extends ValueObject {
      */
     public static function fromDecoded (string $user_info):self {
 
-        return new self(Percent::encodeQuery($user_info));
+        return new self(Percent::encodeUserInfo($user_info));
 
     }
 

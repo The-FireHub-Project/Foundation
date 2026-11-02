@@ -63,7 +63,7 @@ final readonly class Fragment extends ValueObject {
      * ### Creates a URI fragment from a decoded string
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Uri\Encoding\Percent::encodeQuery() To encode the fragment.
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::encodeFragment() To encode the fragment.
      *
      * @param string $fragment <p>
      * Decoded URI fragment.
@@ -77,7 +77,7 @@ final readonly class Fragment extends ValueObject {
      */
     public static function fromDecoded (string $fragment):self {
 
-        return new self(Percent::encodeQuery($fragment));
+        return new self(Percent::encodeFragment($fragment));
 
     }
 
