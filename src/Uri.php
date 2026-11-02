@@ -15,7 +15,7 @@ namespace FireHub\Foundation;
 
 use FireHub\Core\Type\Uri as BaseUri;
 use FireHub\Foundation\Uri\Component\ {
-    Authority, Fragment, Path, Query, Scheme
+    Authority, Fragment, Host, Path, Query, Scheme, UserInfo
 };
 use FireHub\Foundation\Uri\Exception\InvalidUriException;
 use FireHub\Runtime;
@@ -213,6 +213,68 @@ final readonly class Uri extends BaseUri {
     public function isRelative ():bool {
 
         return $this->scheme === null;
+
+    }
+
+    /**
+     * ### Normalizes the URI
+     *
+     * Applies syntax-based normalization according to RFC 3986 and removes default ports for supported schemes.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Component\Scheme::normalized() To normalize the scheme.
+     * @uses \FireHub\Foundation\Uri\Component\Authority::normalized() To normalize the authority.
+     * @uses \FireHub\Foundation\Uri\Component\Path::normalized() To normalize the path.
+     * @uses \FireHub\Foundation\Uri\Component\Query::normalized() To normalize the query.
+     * @uses \FireHub\Foundation\Uri\Component\Fragment::normalized() To normalize the fragment.
+     * @uses \FireHub\Foundation\Uri\Component\Path::removeDotSegments() To remove dot segments.
+     *
+     * @return self Normalized URI.
+     */
+    public function normalize ():self {
+
+        $scheme = $this->scheme !== null
+            ? new Scheme($this->scheme->normalized())
+            : null;
+
+        $authority = null;
+
+        if ($this->authority !== null) {
+
+            $host = new Host(
+                $this->authority->host()->normalized()
+            );
+
+            $port = $this->authority->port();
+
+            $user_info = $this->authority->userInfo();
+
+            $authority = new Authority(
+                $host,
+                $port,
+                $user_info !== null
+                    ? new UserInfo($user_info->normalized())
+                    : null
+            );
+
+        }
+
+        $path = new Path($this->path->normalized());
+
+        if ($scheme !== null || $authority !== null)
+            $path = $path->removeDotSegments();
+
+        return new self(
+            $scheme,
+            $authority,
+            $path,
+            $this->query !== null
+                ? new Query($this->query->normalized())
+                : null,
+            $this->fragment !== null
+                ? new Fragment($this->fragment->normalized())
+                : null
+        );
 
     }
 

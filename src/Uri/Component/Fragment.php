@@ -108,6 +108,20 @@ final readonly class Fragment extends ValueObject {
     }
 
     /**
+     * ### Gets the normalized fragment
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::normalize() To normalize the fragment.
+     *
+     * @return string Normalized fragment.
+     */
+    public function normalized ():string {
+
+        return Percent::normalize($this->fragment);
+
+    }
+
+    /**
      * @inheritdoc
      *
      * @since 1.0.0

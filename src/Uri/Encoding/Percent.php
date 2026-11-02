@@ -137,6 +137,45 @@ final readonly class Percent {
     }
 
     /**
+     * ### Normalizes percent-encoded sequences
+     *
+     * Decodes unreserved characters and converts remaining percent-encoded hexadecimal digits to uppercase.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Regex::replaceUsing() To replace percent-encoded sequences.
+     * @uses \FireHub\Runtime\Str\SB\Regex::match() To check if a character is unreserved.
+     * @uses \FireHub\Runtime\Str\SB\Casing::toUpper() To convert hexadecimal digits to uppercase.
+     * @uses \FireHub\Runtime\Encoding::rawUrlDecode() To decode percent-encoded octets.
+     *
+     * @param string $value <p>
+     * URI component.
+     * </p>
+     *
+     * @return string Normalized URI component.
+     */
+    public static function normalize (string $value):string {
+
+        return Runtime\Str\SB\Regex::replaceUsing(
+            '/%([0-9A-Fa-f]{2})/',
+            static function (array $matches):string {
+
+                $character = Runtime\Encoding::rawUrlDecode($matches[0]); // @phpstan-ignore offsetAccess.notFound
+
+                if (Runtime\Str\SB\Regex::match(
+                    '/\A[A-Za-z0-9._~-]\z/',
+                    $character
+                ))
+                    return $character;
+
+                return '%'.Runtime\Str\SB\Casing::toUpper($matches[1]); // @phpstan-ignore offsetAccess.notFound
+
+            },
+            $value
+        );
+
+    }
+
+    /**
      * ### Percent-encodes disallowed bytes
      *
      * Preserves only bytes explicitly listed in the allowed character set.

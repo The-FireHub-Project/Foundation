@@ -14,6 +14,7 @@
 namespace FireHub\Foundation\Uri\Component;
 
 use FireHub\Core\Type\ValueObject;
+use FireHub\Foundation\Uri\Encoding\Percent;
 use FireHub\Foundation\Uri\Exception\InvalidHostException;
 use FireHub\Runtime;
 
@@ -74,11 +75,7 @@ final readonly class Host extends ValueObject {
      * @since 1.0.0
      *
      * @uses \FireHub\Runtime\Str\SB\Casing::toLower() To convert the host to lowercase.
-     * @uses \FireHub\Runtime\Str\SB\Casing::toUpper() To convert the host to uppercase.
-     * @uses \FireHub\Runtime\Str\SB\Regex::match() To validate the host.
-     * @uses \FireHub\Runtime\Str\SB\Regex::replaceUsing() To replace the host with the normalized version.
-     * @uses \FireHub\Runtime\Char\SB::chr() To get the character at the specified position.
-     * @uses \FireHub\Runtime\Number::baseConverter() To convert the hexadecimal value to decimal.
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::normalize() To normalize the host.
      *
      * @return string Normalized host.
      */
@@ -87,32 +84,11 @@ final readonly class Host extends ValueObject {
         if ($this->host === '')
             return '';
 
-        if ($this->host[0] === '[') {
-
-            if ($this->host[1] === 'v' || $this->host[1] === 'V')
-                return $this->host;
-
+        if ($this->host[0] === '[')
             return Runtime\Str\SB\Casing::toLower($this->host);
 
-        }
-
-        $normalized = Runtime\Str\SB\Casing::toLower($this->host);
-
-        return Runtime\Str\SB\Regex::replaceUsing(
-            '/%([a-f0-9]{2})/',
-            static function (array $matches):string {
-
-                $character = Runtime\Char\SB::chr(
-                    (int) Runtime\Number::baseConverter($matches[1], 16, 10) // @phpstan-ignore-line
-                );
-
-                if (Runtime\Str\SB\Regex::match('/\A[A-Za-z0-9._~-]\z/', $character))
-                    return Runtime\Str\SB\Casing::toLower($character);
-
-                return '%'.Runtime\Str\SB\Casing::toUpper($matches[1]); // @phpstan-ignore offsetAccess.notFound
-
-            },
-            $normalized
+        return Runtime\Str\SB\Casing::toLower(
+            Percent::normalize($this->host)
         );
 
     }

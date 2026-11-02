@@ -108,6 +108,20 @@ final readonly class UserInfo extends ValueObject {
     }
 
     /**
+     * ### Gets the normalized user information
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::normalize() To normalize the user information.
+     *
+     * @return string Normalized user information.
+     */
+    public function normalized ():string {
+
+        return Percent::normalize($this->user_info);
+
+    }
+
+    /**
      * @inheritdoc
      *
      * @since 1.0.0

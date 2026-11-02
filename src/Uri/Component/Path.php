@@ -136,6 +136,22 @@ final readonly class Path extends ValueObject {
     }
 
     /**
+     * ### Gets the normalized path
+     *
+     * Normalizes percent-encoded sequences without changing the path segment structure.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::normalize() To normalize the path.
+     *
+     * @return string Normalized path.
+     */
+    public function normalized ():string {
+
+        return Percent::normalize($this->path);
+
+    }
+
+    /**
      * @inheritdoc
      *
      * @since 1.0.0
@@ -143,6 +159,76 @@ final readonly class Path extends ValueObject {
     public function value ():string {
 
         return $this->path;
+
+    }
+
+    /**
+     * ### Removes dot segments
+     *
+     * Removes "." and ".." segments according to RFC 3986 Section 5.2.4.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Search::startsWith() To check if a segment starts with charaters.
+     * @uses \FireHub\Runtime\Str\SB\Access::part() To get a part of a string.
+     * @uses \FireHub\Runtime\Str\SB\Regex::replace() To replace a substring.
+     * @uses \FireHub\Runtime\Str\SB\Search::firstPosition() To find the first occurrence of a character.
+     *
+     * @return self<string> Path without dot segments.
+     */
+    public function removeDotSegments ():self {
+
+        $input = $this->path; $output = '';
+        while ($input !== '') {
+
+            if (Runtime\Str\SB\Search::startsWith('../', $input))
+                $input = Runtime\Str\SB\Access::part($input, 3);
+
+            else if (Runtime\Str\SB\Search::startsWith('./', $input))
+                $input = Runtime\Str\SB\Access::part($input, 2);
+
+            else if (Runtime\Str\SB\Search::startsWith('/./', $input))
+                $input = Runtime\Str\SB\Access::part($input, 2);
+
+            else if ($input === '/.')
+                $input = '/';
+
+            else if (Runtime\Str\SB\Search::startsWith('/../', $input)) {
+
+                $input = Runtime\Str\SB\Access::part($input, 3);
+                $output = Runtime\Str\SB\Regex::replace('~/[^/]*$~', '', $output);
+
+            } else if ($input === '/..') {
+
+                $input = '/';
+                $output = Runtime\Str\SB\Regex::replace('~/[^/]*$~', '', $output);
+
+            } else if ($input === '.' || $input === '..') {
+
+                $input = '';
+
+            } else {
+
+                $position = $input[0] === '/'
+                    ? Runtime\Str\SB\Search::firstPosition('/', $input, offset: 1)
+                    : Runtime\Str\SB\Search::firstPosition('/', $input);
+
+                if ($position === false) {
+
+                    $output .= $input;
+                    $input = '';
+
+                } else {
+
+                    $output .= Runtime\Str\SB\Access::part($input, 0, $position);
+                    $input = Runtime\Str\SB\Access::part($input, $position);
+
+                }
+
+            }
+
+        }
+
+        return new self($output);
 
     }
 

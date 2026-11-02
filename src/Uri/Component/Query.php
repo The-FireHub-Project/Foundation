@@ -110,6 +110,22 @@ final readonly class Query extends ValueObject {
     }
 
     /**
+     * ### Gets the normalized query
+     *
+     * Normalizes percent-encoded sequences without changing query parameter ordering or interpretation.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::normalize() To normalize the query.
+     *
+     * @return string Normalized query.
+     */
+    public function normalized ():string {
+
+        return Percent::normalize($this->query);
+
+    }
+
+    /**
      * @inheritDoc
      *
      * @since 1.0.0
