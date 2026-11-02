@@ -157,6 +157,28 @@ final readonly class Uri extends BaseUri {
     }
 
     /**
+     * Returns a URI without the scheme.
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidUriException If the URI component combination is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self New URI without the scheme.
+     */
+    public function withoutScheme ():self {
+
+        return new self(
+            null,
+            $this->authority,
+            $this->path,
+            $this->query,
+            $this->fragment
+        );
+
+    }
+
+    /**
      * Returns a URI with the specified authority.
      * @since 1.0.0
      *
@@ -175,6 +197,28 @@ final readonly class Uri extends BaseUri {
         return new self(
             $this->scheme,
             $authority,
+            $this->path,
+            $this->query,
+            $this->fragment
+        );
+
+    }
+
+    /**
+     * Returns a URI without the authority.
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidUriException If the URI component combination is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self New URI without the authority.
+     */
+    public function withoutAuthority ():self {
+
+        return new self(
+            $this->scheme,
+            null,
             $this->path,
             $this->query,
             $this->fragment
@@ -235,6 +279,28 @@ final readonly class Uri extends BaseUri {
     }
 
     /**
+     * Returns a URI without the query.
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidUriException If the URI component combination is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self New URI without the query.
+     */
+    public function withoutQuery ():self {
+
+        return new self(
+            $this->scheme,
+            $this->authority,
+            $this->path,
+            null,
+            $this->fragment
+        );
+
+    }
+
+    /**
      * Returns a URI with the specified fragment.
      * @since 1.0.0
      *
@@ -256,6 +322,28 @@ final readonly class Uri extends BaseUri {
             $this->path,
             $this->query,
             $fragment
+        );
+
+    }
+
+    /**
+     * Returns a URI without the fragment.
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidUriException If the URI component combination is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self New URI without the fragment.
+     */
+    public function withoutFragment ():self {
+
+        return new self(
+            $this->scheme,
+            $this->authority,
+            $this->path,
+            $this->query,
+            null
         );
 
     }

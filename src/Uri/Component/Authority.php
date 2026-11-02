@@ -173,6 +173,22 @@ final readonly class Authority extends ValueObject {
     }
 
     /**
+     * Returns an authority without the port.
+     * @since 1.0.0
+     *
+     * @return self New authority without the port.
+     */
+    public function withoutPort ():self {
+
+        return new self(
+            $this->host,
+            null,
+            $this->user_info
+        );
+
+    }
+
+    /**
      * Returns an authority with the specified user information.
      * @since 1.0.0
      *
@@ -188,6 +204,22 @@ final readonly class Authority extends ValueObject {
             $this->host,
             $this->port,
             $user_info
+        );
+
+    }
+
+    /**
+     * Returns an authority without the user information.
+     * @since 1.0.0.
+     *
+     * @return self New authority without the user information.
+     */
+    public function withoutUserInfo ():self {
+
+        return new self(
+            $this->host,
+            $this->port,
+            null
         );
 
     }
