@@ -326,16 +326,17 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
      * @throws \FireHub\Foundation\DataStructure\Exception\ChunkSizeException If the specified chunk size is less
      * than one.
      *
-     * @return static<int, list<TValue>> The chunked Stream.
+     * @return static<int, list<list<TValue>>> The chunked Stream.
      */
     public function chunk (int $size):static {
 
-        return new static(
-            new ChunkSource(
-                $this->source,
-                $size
-            )
+        /** @var \FireHub\Foundation\DataStructure\Stream\Source\ChunkSource<int, list<TValue>> $source*/
+        $source = new ChunkSource(
+            $this->source,
+            $size
         );
+
+        return new static($source);
 
     }
 
@@ -384,7 +385,7 @@ readonly class Stream implements StreamBoundary, Mappable, Rejectable, Takeable,
     public function zip (iterable $values):static {
 
         return new static(
-            new ZipSource(
+            new ZipSource( // @phpstan-ignore argument.type
                 $this->source,
                 $values
             )

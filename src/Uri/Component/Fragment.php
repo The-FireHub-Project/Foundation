@@ -1,0 +1,135 @@
+<?php declare(strict_types = 1);
+
+/**
+ * This file is part of the FireHub Project ecosystem
+ *
+ * @author Danijel Galić <danijel.galic@outlook.com>
+ * @copyright 2026-present The FireHub Project - All rights reserved
+ * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
+ *
+ * @php-version >=8.5
+ * @package Foundation
+ */
+
+namespace FireHub\Foundation\Uri\Component;
+
+use FireHub\Core\Type\ValueObject;
+use FireHub\Foundation\Uri\Encoding\Percent;
+use FireHub\Foundation\Uri\Exception\InvalidFragmentException;
+use FireHub\Runtime;
+
+/**
+ * ### Represents a URI fragment
+ * @since 1.0.0
+ *
+ * @template TValue of string
+ *
+ * @extends \FireHub\Core\Type\ValueObject<TValue>
+ */
+final readonly class Fragment extends ValueObject {
+
+    /**
+     * ### Constructor
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Type\ValueObject::guard() As a guard.
+     * @uses \FireHub\Runtime\Str\SB\Regex::match() To validate the fragment.
+     *
+     * @param TValue $fragment <p>
+     * URI fragment.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidFragmentException If fragment has invalid pattern.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function __construct (
+        private string $fragment
+    ) {
+
+        $this->guard(
+            fn() => Runtime\Str\SB\Regex::match(
+                    '/\A(?:[A-Za-z0-9._~!$&\'()*+,;=:@\/?-]|%[A-Fa-f0-9]{2})*\z/',
+                    $fragment
+                ),
+            fn() => new InvalidFragmentException
+        );
+
+    }
+
+    /**
+     * ### Creates a URI fragment from a decoded string
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::encodeFragment() To encode the fragment.
+     *
+     * @param string $fragment <p>
+     * Decoded URI fragment.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidFragmentException If fragment has invalid pattern.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self<string> Encoded URI fragment.
+     */
+    public static function fromDecoded (string $fragment):self {
+
+        return new self(Percent::encodeFragment($fragment));
+
+    }
+
+    /**
+     * ### Gets the decoded URI fragment
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\PercentEncoder::decode() To decode the fragment.
+     *
+     * @return string Decoded URI fragment.
+     */
+    public function decoded ():string {
+
+        return Percent::decode($this->fragment);
+
+    }
+
+    /**
+     * ### Checks whether the fragment is empty
+     * @since 1.0.0
+     *
+     * @return bool True if the fragment is empty, false otherwise.
+     */
+    public function isEmpty ():bool {
+
+        return $this->fragment === '';
+
+    }
+
+    /**
+     * ### Gets the normalized fragment
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Encoding\Percent::normalize() To normalize the fragment.
+     *
+     * @return string Normalized fragment.
+     */
+    public function normalized ():string {
+
+        return Percent::normalize($this->fragment);
+
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @since 1.0.0
+     */
+    public function value ():string {
+
+        return $this->fragment;
+
+    }
+
+}
