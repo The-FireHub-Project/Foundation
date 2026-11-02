@@ -77,6 +77,60 @@ final readonly class Uri extends BaseUri {
     }
 
     /**
+     * ### Parses a URI reference
+     *
+     * Parses an absolute URI or relative reference according to RFC 3986.
+     *
+     * Preserves the original component representations, including percent-encoded sequences and empty query or
+     * fragment components.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Component\Authority::parse() To parse the authority.
+     * @uses \FireHub\Runtime\Str\SB\Regex::match() To match the URI pattern.
+     *
+     * @param string $uri <p>
+     * URI reference to parse.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidUriException If the URI is invalid.
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidSchemeException If scheme has invalid pattern.
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidPortException If port is not between 0 and 65535.
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidPathException If path has invalid pattern.
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidQueryException If query has invalid pattern.
+     * @throws \FireHub\Foundation\Uri\Exception\InvalidFragmentException If fragment has invalid pattern.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return self Parsed URI reference.
+     */
+    public static function parse (string $uri):self {
+
+        if (!Runtime\Str\SB\Regex::match(
+            '/\A(?:([A-Za-z][A-Za-z0-9+.-]*):)?(?:\/\/([^\/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?\z/s',
+            $uri,
+            result: $matches,
+            flags: PREG_UNMATCHED_AS_NULL
+        )) throw new InvalidUriException;
+
+        return new self(
+            $matches[1] !== null // @phpstan-ignore offsetAccess.notFound
+                ? new Scheme($matches[1]) // @phpstan-ignore argument.type
+                : null,
+            $matches[2] !== null // @phpstan-ignore offsetAccess.notFound
+                ? Authority::parse($matches[2]) // @phpstan-ignore argument.type
+                : null,
+            new Path($matches[3]), // @phpstan-ignore offsetAccess.notFound, argument.type
+            $matches[4] !== null // @phpstan-ignore offsetAccess.notFound
+                ? new Query($matches[4]) // @phpstan-ignore argument.type
+                : null,
+            $matches[5] !== null // @phpstan-ignore offsetAccess.notFound
+                ? new Fragment($matches[5]) // @phpstan-ignore argument.type
+                : null
+        );
+
+    }
+
+    /**
      * ### Gets the scheme
      * @since 1.0.0
      *
