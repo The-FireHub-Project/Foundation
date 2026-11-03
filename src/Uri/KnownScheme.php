@@ -150,4 +150,32 @@ enum KnownScheme:string {
      */
     case GIT = 'git';
 
+    /**
+     * ### Returns the default network port
+     *
+     * Returns the conventional network port associated with the URI scheme, or null if no default port is defined.
+     * @since 1.0.0
+     *
+     * @return null|int<0, 65535> Default network port.
+     */
+    public function defaultPort ():?int {
+
+        return match ($this) {
+            self::HTTP, self::WS => 80,
+            self::HTTPS, self::WSS => 443,
+            self::FTP => 21,
+            self::SSH => 22,
+            self::LDAP => 389,
+            self::LDAPS => 636,
+            self::SIP => 5060,
+            self::SIPS => 5061,
+            self::IRC => 6667,
+            self::IRCS => 6697,
+            self::NNTP => 119,
+            self::GIT => 9418,
+            default => null
+        };
+
+    }
+
 }
