@@ -14,6 +14,7 @@
 namespace FireHub\Foundation\Uri\Component;
 
 use FireHub\Core\Type\ValueObject;
+use FireHub\Foundation\Uri\KnownScheme;
 use FireHub\Foundation\Uri\Exception\InvalidSchemeException;
 use FireHub\Runtime;
 
@@ -57,6 +58,22 @@ final readonly class Scheme extends ValueObject {
                 ),
             fn() => new InvalidSchemeException
         );
+
+    }
+
+    /**
+     * ### Returns the known URI scheme
+     *
+     * Resolves the URI scheme to a known scheme enumeration.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Uri\Component\Scheme::normalized() To get the normalized scheme.
+     *
+     * @return null|\FireHub\Foundation\Uri\KnownScheme Known scheme or null.
+     */
+    public function known ():?KnownScheme {
+
+        return KnownScheme::tryFrom($this->normalized());
 
     }
 
