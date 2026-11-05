@@ -205,7 +205,7 @@ abstract class ResourceStream implements Stream {
         /** @var string $mode */
         $mode = $metadata['mode'] ?? '';
 
-        return Runtime\Str\SB\Search::contains($mode, '+')
+        return Runtime\Str\SB\Search::contains('+', $mode)
             || Runtime\Str\SB\Search::startsWith('r', $mode);
 
     }
@@ -234,7 +234,7 @@ abstract class ResourceStream implements Stream {
         /** @var string $mode */
         $mode = $metadata['mode'] ?? '';
 
-        return Runtime\Str\SB\Search::contains($mode, '+')
+        return Runtime\Str\SB\Search::contains('+', $mode)
             || Runtime\Str\SB\Search::startsWith('w', $mode)
             || Runtime\Str\SB\Search::startsWith('a', $mode)
             || Runtime\Str\SB\Search::startsWith('x', $mode)
