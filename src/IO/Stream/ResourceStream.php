@@ -49,11 +49,17 @@ abstract class ResourceStream implements Stream {
 
     /**
      * ### Attached stream filters
-     * @var list<\FireHub\Foundation\IO\Stream\Filter\Attachment>
-     *
      * @since 1.0.0
+     *
+     * @var array<int, \FireHub\Foundation\IO\Stream\Filter\Attachment>
      */
     private array $filters = [];
+
+    /**
+     * ### Next filter attachment identifier
+     * @since 1.0.0
+     */
+    private int $next_filter_id = 0;
 
     /**
      * ### Constructor
@@ -107,7 +113,10 @@ abstract class ResourceStream implements Stream {
      *
      * @uses \FireHub\Runtime\Stream\Handle::close() To close the underlying resource.
      * @uses \FireHub\Runtime\DataIs::resource() To validate the resource type.
+     * @uses \FireHub\Foundation\IO\Stream\Filter\Attachment::remove() To remove the stream filter.
      * @uses \FireHub\Foundation\IO\Stream\Filter\Attachment::invalidate() To invalidate the stream filter.
+     *
+     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If removing the filter fails.
      */
     final public function close ():void {
 
@@ -115,17 +124,23 @@ abstract class ResourceStream implements Stream {
 
         $resource = $this->resource;
 
+        if (
+            $this->ownership === Ownership::BORROWED
+            && Runtime\DataIs::resource($resource)
+        ) foreach ($this->filters as $attachment)
+            $attachment->remove();
+
         $this->resource = null;
-
-        foreach ($this->filters as $attachment)
-            $attachment->invalidate();
-
-        $this->filters = [];
 
         if (
             $this->ownership === Ownership::OWNED
             && Runtime\DataIs::resource($resource)
         ) Runtime\Stream\Handle::close($resource);
+
+        foreach ($this->filters as $attachment)
+            $attachment->invalidate();
+
+        $this->filters = [];
 
     }
 
@@ -529,9 +544,18 @@ abstract class ResourceStream implements Stream {
                 'Unable to append stream filter.'
             );
 
-        $attachment = new Attachment($resource);
+        $id = ++$this->next_filter_id;
 
-        $this->filters[] = $attachment;
+        $attachment = new Attachment(
+            $resource,
+            function () use ($id):void {
+
+                unset($this->filters[$id]);
+
+            }
+        );
+
+        $this->filters[$id] = $attachment;
 
         return $attachment;
 
@@ -573,9 +597,18 @@ abstract class ResourceStream implements Stream {
                 'Unable to prepend stream filter.'
             );
 
-        $attachment = new Attachment($resource);
+        $id = ++$this->next_filter_id;
 
-        $this->filters[] = $attachment;
+        $attachment = new Attachment(
+            $resource,
+            function () use ($id):void {
+
+                unset($this->filters[$id]);
+
+            }
+        );
+
+        $this->filters[$id] = $attachment;
 
         return $attachment;
 

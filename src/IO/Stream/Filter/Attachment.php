@@ -15,6 +15,7 @@ namespace FireHub\Foundation\IO\Stream\Filter;
 
 use FireHub\Foundation\IO\Stream\Exception\StreamException;
 use FireHub\Runtime;
+use Closure;
 
 /**
  * ### Stream Filter Attachment
@@ -27,6 +28,8 @@ use FireHub\Runtime;
  *
  * Closing the parent stream invalidates its filter attachments.
  * @since 1.0.0
+ *
+ * @internal
  */
 final class Attachment {
 
@@ -37,11 +40,15 @@ final class Attachment {
      * @param null|resource $resource <p>
      * Native PHP stream filter resource.
      * </p>
+     * @param null|Closure $on_removed <p>
+     * Callback invoked when the attachment is removed or invalidated.
+     * </p>
      *
      * @return void
      */
     public function __construct (
-        private mixed $resource = null
+        private mixed $resource = null,
+        private ?Closure $on_removed = null
     ) {}
 
     /**
@@ -66,6 +73,7 @@ final class Attachment {
      * Calling this method multiple times has no additional effect.
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\IO\Stream\Attachment::release() To release the attachment.
      * @uses \FireHub\Runtime\Stream\Filter::remove() To remove the native stream filter.
      *
      * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If removing the filter fails.
@@ -84,7 +92,7 @@ final class Attachment {
                 'Unable to remove stream filter.'
             );
 
-        $this->resource = null;
+        $this->release();
 
     }
 
@@ -96,12 +104,36 @@ final class Attachment {
      * Intended for use when the parent stream is closed.
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\IO\Stream\Attachment::release() To release the attachment.
+     *
      * @return void
      */
     public function invalidate ():void {
 
-        $this->resource = null;
+        $this->release();
 
     }
+
+    /**
+     * ### Releases the attachment
+     *
+     * Clears the native filter reference and notifies the parent stream.
+     * @since 1.0.0
+     *
+     * @return void
+     */
+    private function release ():void {
+
+        $this->resource = null;
+
+        $callback = $this->on_removed;
+
+        $this->on_removed = null;
+
+        if ($callback !== null)
+            $callback();
+
+    }
+
 
 }
