@@ -15,7 +15,9 @@ namespace FireHub\Foundation\IO\Stream;
 
 use FireHub\Core\Boundary\IO\Stream;
 use FireHub\Core\Type\IO\SeekOrigin;
+use FireHub\Foundation\IO\Stream\Filter\Attachment;
 use FireHub\Foundation\IO\Stream\Exception\StreamException;
+use FireHub\Runtime\Stream\Enum\FilterFlag;
 use FireHub\Runtime;
 
 /**
@@ -44,6 +46,14 @@ abstract class ResourceStream implements Stream {
      * @since 1.0.0
      */
     private readonly Ownership $ownership;
+
+    /**
+     * ### Attached stream filters
+     * @var list<\FireHub\Foundation\IO\Stream\Filter\Attachment>
+     *
+     * @since 1.0.0
+     */
+    private array $filters = [];
 
     /**
      * ### Constructor
@@ -97,6 +107,7 @@ abstract class ResourceStream implements Stream {
      *
      * @uses \FireHub\Runtime\Stream\Handle::close() To close the underlying resource.
      * @uses \FireHub\Runtime\DataIs::resource() To validate the resource type.
+     * @uses \FireHub\Foundation\IO\Stream\Filter\Attachment::invalidate() To invalidate the stream filter.
      */
     final public function close ():void {
 
@@ -105,6 +116,11 @@ abstract class ResourceStream implements Stream {
         $resource = $this->resource;
 
         $this->resource = null;
+
+        foreach ($this->filters as $attachment)
+            $attachment->invalidate();
+
+        $this->filters = [];
 
         if (
             $this->ownership === Ownership::OWNED
@@ -346,7 +362,7 @@ abstract class ResourceStream implements Stream {
      * ### Writes bytes to the resource
      * @since 1.0.0
      *
-     * @uses \FreHub\Foundation\IO\Stream\ResourceStream::resourceIsClosed() To check if the stream is closed.
+     * @uses \FireHub\Foundation\IO\Stream\ResourceStream::resourceIsClosed() To check if the stream is closed.
      * @uses \FireHub\Foundation\IO\Stream\ResourceStream::resourceIsWritable() To check if the stream is writable.
      * @uses \FireHub\Runtime\Stream\Write::bytes() To write bytes to the stream.
      *
@@ -474,6 +490,94 @@ abstract class ResourceStream implements Stream {
         return Runtime\Stream\Position::eof(
             $this->requireResource()
         );
+
+    }
+
+    /**
+     * ### Appends a filter to the stream
+     *
+     * Adds a native PHP stream filter to the end of the specified filter chain.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Stream\Filter::append() To append the native stream filter.
+     *
+     * @param non-empty-string $name <p>
+     * Name of the registered stream filter.
+     * </p>
+     * @param \FireHub\Runtime\Stream\Enum\FilterFlag $flag [optional] <p>
+     * Determines whether the filter processes reading, writing, or both.
+     * </p>
+     * @param mixed $params [optional] <p>
+     * Optional filter parameters.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If attaching the filter fails.
+     *
+     * @return \FireHub\Foundation\IO\Stream\Filter\Attachment Attached filter.
+     */
+    final public function appendFilter (string $name, FilterFlag $flag = FilterFlag::READ_WRITE, mixed $params = null):Attachment {
+
+        $resource = Runtime\Stream\Filter::append(
+            $this->requireResource(),
+            $name,
+            $flag,
+            $params
+        );
+
+        if ($resource === false)
+            throw new StreamException(
+                'Unable to append stream filter.'
+            );
+
+        $attachment = new Attachment($resource);
+
+        $this->filters[] = $attachment;
+
+        return $attachment;
+
+    }
+
+    /**
+     * ### Prepends a filter to the stream
+     *
+     * Adds a native PHP stream filter to the beginning of the specified filter chain.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Stream\Filter::prepend() To prepend the native stream filter.
+     *
+     * @param non-empty-string $name <p>
+     * Name of the registered stream filter.
+     * </p>
+     * @param \FireHub\Runtime\Stream\Enum\FilterFlag $flag [optional] <p>
+     * Determines whether the filter processes reading, writing, or both.
+     * </p>
+     * @param mixed $params [optional] <p>
+     * Optional filter parameters.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If attaching the filter fails.
+     *
+     * @return \FireHub\Foundation\IO\Stream\Filter\Attachment Attached filter.
+     */
+    final public function prependFilter (string $name, FilterFlag $flag = FilterFlag::READ_WRITE, mixed $params = null):Attachment {
+
+        $resource = Runtime\Stream\Filter::prepend(
+            $this->requireResource(),
+            $name,
+            $flag,
+            $params
+        );
+
+        if ($resource === false)
+            throw new StreamException(
+                'Unable to prepend stream filter.'
+            );
+
+        $attachment = new Attachment($resource);
+
+        $this->filters[] = $attachment;
+
+        return $attachment;
 
     }
 
