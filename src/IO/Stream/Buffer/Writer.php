@@ -92,7 +92,7 @@ final class Writer implements Writable {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Stream\ResourceStream::isWritable() To check if the underlying stream is writable.
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::isClosed() To check if the buffered reader is closed.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Writer::isClosed() To check if the buffered reader is closed.
      */
     public function isWritable ():bool {
 
@@ -105,7 +105,7 @@ final class Writer implements Writable {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::requireOpen() To check if the buffered reader is open.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Writer::requireOpen() To check if the buffered reader is open.
      * @uses \FireHub\Foundation\IO\Stream\ResourceStream::size() To get the underlying stream size.
      *
      * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the buffered writer is closed.
@@ -123,9 +123,9 @@ final class Writer implements Writable {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::requireOpen() To check if the buffered reader is open.
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::write() To write data to the buffered writer.
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::flush() To flush pending buffered data.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Writer::requireOpen() To check if the buffered reader is open.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Writer::flush() To flush pending buffered data.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Writer::writeDirect() To write data directly to the underlying stream.
      * @uses \FireHub\Foundation\IO\Stream\ResourceStream::isWritable() To check if the underlying stream is writable.
      * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the length of the string.
      *
@@ -141,14 +141,31 @@ final class Writer implements Writable {
                 'The underlying stream is not writable.'
             );
 
-        if ($data === '') return 0;
-
         $length = Runtime\Str\SB\Inspection::length($data);
 
-        $this->buffer .= $data;
+        if ($length === 0) return 0;
 
-        if (Runtime\Str\SB\Inspection::length($this->buffer) >= $this->buffer_size)
-            $this->flush();
+        $pending = Runtime\Str\SB\Inspection::length($this->buffer);
+
+        if ($pending + $length < $this->buffer_size) {
+
+            $this->buffer .= $data;
+
+            return $length;
+
+        }
+
+        if ($pending > 0) $this->flush();
+
+        if ($length >= $this->buffer_size) {
+
+            $this->writeDirect($data);
+
+            return $length;
+
+        }
+
+        $this->buffer = $data;
 
         return $length;
 
@@ -166,7 +183,7 @@ final class Writer implements Writable {
      * This method does not guarantee physical disk synchronization.
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::requireOpen() To check if the buffered reader is open.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Writer::requireOpen() To check if the buffered reader is open.
      * @uses \FireHub\Foundation\IO\Stream\ResourceStream::write() To write data to the underlying stream.
      * @uses \FireHub\Runtime\Str\SB\Access::part() To get a part of the string.
      * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the length of the string.
@@ -249,6 +266,54 @@ final class Writer implements Writable {
             throw new StreamException(
                 'The buffered writer is closed.'
             );
+
+    }
+
+    /**
+     * ### Writes data directly to the underlying stream
+     *
+     * Continues writing until all bytes have been transferred.
+     *
+     * Handles partial writes without discarding unwritten data.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Stream\ResourceStream::write() To write data to the underlying stream.
+     * @uses \FireHub\Runtime\Str\SB\Access::part() To get a part of the string.
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the length of the string.
+     *
+     * @param string $data <p>
+     * Data to write.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the underlying stream cannot make progress.
+     *
+     * @return void
+     */
+    private function writeDirect (string $data):void {
+
+        $length = Runtime\Str\SB\Inspection::length($data);
+
+        $offset = 0;
+
+        while ($offset < $length) {
+
+            $written = $this->stream->write(
+                Runtime\Str\SB\Access::part($data, $offset)
+            );
+
+            if ($written <= 0)
+                throw new StreamException(
+                    'The underlying stream could not accept the remaining data.'
+                );
+
+            if ($written > $length - $offset)
+                throw new StreamException(
+                    'The underlying stream reported an invalid write length.'
+                );
+
+            $offset += $written;
+
+        }
 
     }
 
