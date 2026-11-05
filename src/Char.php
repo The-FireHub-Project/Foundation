@@ -192,4 +192,34 @@ readonly class Char extends Encoded implements Caseable, Patternable {
 
     }
 
+    /**
+     * ### Returns the number of bytes in the character
+     *
+     * Returns the length of the underlying character representation in bytes, regardless of its character encoding.
+     *
+     * <code>
+     * use FireHub\Foundation\Char;
+     *
+     * $char = new Char('F')->bytes();
+     *
+     * // 1
+     *
+     * $char = new Char('🔥')->bytes();
+     *
+     * // 4
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the byte length.
+     *
+     * @return positive-int The number of bytes.
+     */
+    public function bytes ():int {
+
+        /** @var positive-int */
+        return Runtime\Str\SB\Inspection::length($this->value);
+
+    }
+
 }

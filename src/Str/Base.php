@@ -334,6 +334,29 @@ abstract readonly class Base extends Encoded {
     }
 
     /**
+     * ### Returns the number of bytes in the string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->bytes();
+     *
+     * // 19
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the string length.
+     *
+     * @return non-negative-int The number of bytes.
+     */
+    public function bytes ():int {
+
+        return Runtime\Str\SB\Inspection::length($this->value);
+
+    }
+
+    /**
      * ### Finds the first occurrence of a substring in the string
      *
      * <code>
