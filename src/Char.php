@@ -13,7 +13,7 @@
 
 namespace FireHub\Foundation;
 
-use FireHub\Core\Type\Char as BaseChar;
+use FireHub\Core\Type\Char\Encoded;
 use FireHub\Core\Type\Char\Codepoint;
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Core\Exception\Runtime\System\Invariant\InvalidCodepointException;
@@ -45,19 +45,19 @@ use FireHub\Runtime\Type\Str\ {
  *
  * @template TValue of non-empty-string
  *
- * @extends \FireHub\Core\Type\Char<TValue>
+ * @extends \FireHub\Core\Type\Char\Encoded<TValue>
  *
  * @phpstan-consistent-constructor
  */
-readonly class Char extends BaseChar implements Caseable, Patternable {
+readonly class Char extends Encoded implements Caseable, Patternable {
 
     /**
      * ### Base implementation for string-based Value Objects
      * @since 1.0.0
      *
-     * @use \FireHub\Foundation\StringValue<TValue>
+     * @use \FireHub\Foundation\EncodedStringValue<TValue>
      */
-    use StringValue;
+    use EncodedStringValue;
 
     /**
      * ### Constructor

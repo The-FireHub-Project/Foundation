@@ -13,9 +13,8 @@
 
 namespace FireHub\Foundation\Str\Case;
 
-use FireHub\Core\Type\ {
-    Char, Str
-};
+use FireHub\Core\Type\Str\Encoded as Str;
+use FireHub\Core\Type\Char\Encoded as Char;
 use FireHub\Foundation\Str\Boundary\Caseable;
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\CaseMode;

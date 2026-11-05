@@ -13,12 +13,13 @@
 
 namespace FireHub\Foundation\Str;
 
+use FireHub\Core\Type\Str\Encoded;
 use FireHub\Core\Type\ {
     Char as BaseChar, Str
 };
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Core\Meta\Enum\Side;
-use FireHub\Foundation\StringValue;
+use FireHub\Foundation\EncodedStringValue;
 use FireHub\Foundation\Char;
 use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
 use FireHub\Foundation\Str\Operation\ {
@@ -37,19 +38,19 @@ use FireHub\Runtime;
  *
  * @template TValue of string
  *
- * @extends \FireHub\Core\Type\Str<TValue>
+ * @extends \FireHub\Core\Type\Str\Encoded<TValue>
  *
  * @phpstan-consistent-constructor
  */
-abstract readonly class Base extends Str {
+abstract readonly class Base extends Encoded {
 
     /**
      * ### Base implementation for string-based Value Objects
      * @since 1.0.0
      *
-     * @use \FireHub\Foundation\StringValue<TValue>
+     * @use \FireHub\Foundation\EncodedStringValue<TValue>
      */
-    use StringValue;
+    use EncodedStringValue;
 
     /**
      * ### Constructor

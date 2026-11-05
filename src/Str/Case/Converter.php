@@ -13,7 +13,7 @@
 
 namespace FireHub\Foundation\Str\Case;
 
-use FireHub\Core\Type\Str;
+use FireHub\Core\Type\Str\Encoded as Str;
 use FireHub\Foundation\Str\Boundary\CaseTransformable;
 use FireHub\Foundation\Str\Tokenizer;
 use FireHub\Runtime;
@@ -36,7 +36,7 @@ readonly class Converter extends Casing {
      * ### Constructor
      * @since 1.0.0
      *
-     * @param \FireHub\Foundation\Str<string>&TCaseTransformable $str <p>
+     * @param \FireHub\Core\Type\Str\Encoded<string>&TCaseTransformable $str <p>
      * The string to convert.
      * </p>
      *
