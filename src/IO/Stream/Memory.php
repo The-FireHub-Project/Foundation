@@ -11,15 +11,12 @@
  * @package Foundation
  */
 
-namespace FireHub\Foundation\IO\Stream\Resource;
+namespace FireHub\Foundation\IO\Stream;
 
 use FireHub\Core\Boundary\IO\Stream\ {
     Positionable, Readable, Seekable, Writable
 };
 use FireHub\Core\Type\IO\SeekOrigin;
-use FireHub\Foundation\IO\Stream\ {
-    ResourceStream, Ownership
-};
 use FireHub\Foundation\IO\Stream\Exception\StreamException;
 use FireHub\Runtime;
 
