@@ -19,9 +19,9 @@ use FireHub\Core\Type\ {
 };
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Core\Meta\Enum\Side;
+use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
 use FireHub\Foundation\EncodedStringValue;
 use FireHub\Foundation\Char;
-use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
 use FireHub\Foundation\Str\Operation\ {
     Escape, Extract, Sanitize
 };
@@ -429,6 +429,8 @@ abstract readonly class Base extends Encoded {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\Str\Base::split() To split the string into an array of characters.
+     *
      * @throws \FireHub\Runtime\Exception\StringSplitLengthException If the $length parameter is less than 1.
      * @throws \FireHub\Foundation\Char\Exception\InvalidLengthException If the string length is not 1.
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
@@ -497,7 +499,7 @@ abstract readonly class Base extends Encoded {
      *
      * @throws \FireHub\Runtime\Exception\StringSplitLengthException If the $length parameter is less than 1.
      *
-     * @return list<non-empty-string> Grouped string into chunks
+     * @return list<non-empty-string> Grouped string into chunks.
      */
     public function group (int $number_of_groups):array {
 
@@ -684,6 +686,9 @@ abstract readonly class Base extends Encoded {
      * </code>
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str::prepend() To prepend the given string to the string.
+     * @uses \FireHub\Foundation\Str::append() To append the given string to the string.
      *
      * @param string $with <p>
      * The string to surround the current string with.
@@ -1013,6 +1018,10 @@ abstract readonly class Base extends Encoded {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\Str\Base::split() To split the string into an array of characters.
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To reverse the string.
+     * @uses \FireHub\Runtime\Arr\Transform::reverse() To reverse the string.
+     *
      * @throws \FireHub\Runtime\Exception\StringSplitLengthException If the $length parameter is less than 1.
      *
      * @return static<string> Returns a new instance with the reversed string.
@@ -1114,6 +1123,8 @@ abstract readonly class Base extends Encoded {
      * </code>
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Transform::trim() To trim the string.
      *
      * @param \FireHub\Core\Meta\Enum\Side $side [optional] <p>
      * Side to trim string.
