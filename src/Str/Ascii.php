@@ -16,6 +16,7 @@ namespace FireHub\Foundation\Str;
 use FireHub\Foundation\Str;
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Foundation\Str\Exception\InvalidAsciiException;
+use FireHub\Runtime;
 
 /**
  * ### Represents an ASCII encoded string value object
@@ -38,7 +39,7 @@ readonly class Ascii extends Str {
      * @since 1.0.0
      *
      * @uses \FireHub\Core\Type\ValueObject::guard() As a guard.
-     * @uses \FireHub\Foundation\Str\Ascii::pattern() To check valid ASCII pattern.
+     * @uses \FireHub\Runtime\Str\SB\Regex::match() To check valid ASCII pattern.
      *
      * @throws \FireHub\Foundation\Str\Exception\InvalidAsciiException If string is not valid ASCII or encoding is
      * not ASCII.
@@ -55,7 +56,7 @@ readonly class Ascii extends Str {
         );
 
         $this->guard(
-            fn() => $this->pattern()->match()->is()->ascii() === true,
+            fn() => !Runtime\Str\SB\Regex::match('/[\x80-\xFF]/', $value),
             fn() => new InvalidAsciiException('String must be valid ASCII.')
         );
 

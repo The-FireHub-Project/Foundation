@@ -13,9 +13,8 @@
 
 namespace FireHub\Foundation\Str\Pattern;
 
-use FireHub\Core\Type\ {
-    Char, Str
-};
+use FireHub\Core\Type\Str\Encoded as Str;
+use FireHub\Core\Type\Char\Encoded as Char;
 use FireHub\Foundation\Str\Boundary\Patternable;
 use FireHub\Foundation\Str\Pattern\Expression\ {
     Contains, EndsWith, Is, StartsWith

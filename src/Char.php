@@ -7,21 +7,21 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.4
+ * @php-version >=8.5
  * @package Foundation
  */
 
 namespace FireHub\Foundation;
 
-use FireHub\Core\Type\Char as BaseChar;
+use FireHub\Core\Type\Char\Encoded;
 use FireHub\Core\Type\Char\Codepoint;
 use FireHub\Core\Type\Str\Encoding;
-use FireHub\Core\Exception\Runtime\System\Invariant\InvalidCodepointException;
 use FireHub\Foundation\Str\Boundary\ {
     Caseable, Patternable
 };
 use FireHub\Foundation\Str\Case\Casing;
 use FireHub\Foundation\Str\Pattern;
+use FireHub\Core\Exception\Runtime\System\Invariant\InvalidCodepointException;
 use FireHub\Foundation\Char\Exception\InvalidLengthException;
 use FireHub\Runtime;
 use FireHub\Runtime\Type\Str\ {
@@ -45,19 +45,19 @@ use FireHub\Runtime\Type\Str\ {
  *
  * @template TValue of non-empty-string
  *
- * @extends \FireHub\Core\Type\Char<TValue>
+ * @extends \FireHub\Core\Type\Char\Encoded<TValue>
  *
  * @phpstan-consistent-constructor
  */
-readonly class Char extends BaseChar implements Caseable, Patternable {
+readonly class Char extends Encoded implements Caseable, Patternable {
 
     /**
      * ### Base implementation for string-based Value Objects
      * @since 1.0.0
      *
-     * @use \FireHub\Foundation\StringValue<TValue>
+     * @use \FireHub\Foundation\EncodedStringValue<TValue>
      */
-    use StringValue;
+    use EncodedStringValue;
 
     /**
      * ### Constructor
@@ -189,6 +189,36 @@ readonly class Char extends BaseChar implements Caseable, Patternable {
         return $codepoint !== false
             ? new Codepoint($codepoint)
             : throw new InvalidCodepointException;
+
+    }
+
+    /**
+     * ### Returns the number of bytes in the character
+     *
+     * Returns the length of the underlying character representation in bytes, regardless of its character encoding.
+     *
+     * <code>
+     * use FireHub\Foundation\Char;
+     *
+     * $char = new Char('F')->bytes();
+     *
+     * // 1
+     *
+     * $char = new Char('🔥')->bytes();
+     *
+     * // 4
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the byte length.
+     *
+     * @return positive-int The number of bytes.
+     */
+    public function bytes ():int {
+
+        /** @var positive-int */
+        return Runtime\Str\SB\Inspection::length($this->value);
 
     }
 

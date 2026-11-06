@@ -13,14 +13,15 @@
 
 namespace FireHub\Foundation\Str;
 
+use FireHub\Core\Type\Str\Encoded;
 use FireHub\Core\Type\ {
-    Char as BaseChar, Str
+    Char\Encoded as BaseChar, Str
 };
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Core\Meta\Enum\Side;
-use FireHub\Foundation\StringValue;
-use FireHub\Foundation\Char;
 use FireHub\Core\Foundation\Constant\Numeric\IntegerLimits;
+use FireHub\Foundation\EncodedStringValue;
+use FireHub\Foundation\Char;
 use FireHub\Foundation\Str\Operation\ {
     Escape, Extract, Sanitize
 };
@@ -37,19 +38,19 @@ use FireHub\Runtime;
  *
  * @template TValue of string
  *
- * @extends \FireHub\Core\Type\Str<TValue>
+ * @extends \FireHub\Core\Type\Str\Encoded<TValue>
  *
  * @phpstan-consistent-constructor
  */
-abstract readonly class Base extends Str {
+abstract readonly class Base extends Encoded {
 
     /**
      * ### Base implementation for string-based Value Objects
      * @since 1.0.0
      *
-     * @use \FireHub\Foundation\StringValue<TValue>
+     * @use \FireHub\Foundation\EncodedStringValue<TValue>
      */
-    use StringValue;
+    use EncodedStringValue;
 
     /**
      * ### Constructor
@@ -333,6 +334,29 @@ abstract readonly class Base extends Str {
     }
 
     /**
+     * ### Returns the number of bytes in the string
+     *
+     * <code>
+     * use FireHub\Foundation\Str;
+     *
+     * $string = Str::of('The FireHub Project')->bytes();
+     *
+     * // 19
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the string length.
+     *
+     * @return non-negative-int The number of bytes.
+     */
+    public function bytes ():int {
+
+        return Runtime\Str\SB\Inspection::length($this->value);
+
+    }
+
+    /**
      * ### Finds the first occurrence of a substring in the string
      *
      * <code>
@@ -405,6 +429,8 @@ abstract readonly class Base extends Str {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\Str\Base::split() To split the string into an array of characters.
+     *
      * @throws \FireHub\Runtime\Exception\StringSplitLengthException If the $length parameter is less than 1.
      * @throws \FireHub\Foundation\Char\Exception\InvalidLengthException If the string length is not 1.
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
@@ -473,7 +499,7 @@ abstract readonly class Base extends Str {
      *
      * @throws \FireHub\Runtime\Exception\StringSplitLengthException If the $length parameter is less than 1.
      *
-     * @return list<non-empty-string> Grouped string into chunks
+     * @return list<non-empty-string> Grouped string into chunks.
      */
     public function group (int $number_of_groups):array {
 
@@ -660,6 +686,9 @@ abstract readonly class Base extends Str {
      * </code>
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\Str::prepend() To prepend the given string to the string.
+     * @uses \FireHub\Foundation\Str::append() To append the given string to the string.
      *
      * @param string $with <p>
      * The string to surround the current string with.
@@ -989,6 +1018,10 @@ abstract readonly class Base extends Str {
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\Str\Base::split() To split the string into an array of characters.
+     * @uses \FireHub\Runtime\Str\SB\Delimiter::implode() To reverse the string.
+     * @uses \FireHub\Runtime\Arr\Transform::reverse() To reverse the string.
+     *
      * @throws \FireHub\Runtime\Exception\StringSplitLengthException If the $length parameter is less than 1.
      *
      * @return static<string> Returns a new instance with the reversed string.
@@ -1090,6 +1123,8 @@ abstract readonly class Base extends Str {
      * </code>
      *
      * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\MB\Transform::trim() To trim the string.
      *
      * @param \FireHub\Core\Meta\Enum\Side $side [optional] <p>
      * Side to trim string.
@@ -1352,7 +1387,7 @@ abstract readonly class Base extends Str {
      * @uses \FireHub\Runtime\Str\SB\Transform::repeat() To repeat the string.
      * @uses \FireHub\Foundation\Char::value() To get the character value.
      *
-     * @param \FireHub\Core\Type\Char<non-empty-string> $with <p>
+     * @param \FireHub\Core\Type\Char\Encoded<non-empty-string> $with <p>
      * The character to use for masking.
      * </p>
      * @param int $from

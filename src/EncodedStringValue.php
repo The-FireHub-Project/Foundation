@@ -17,7 +17,7 @@ use FireHub\Core\Type\Str\Encoding;
 use FireHub\Runtime;
 
 /**
- * ### Provides the base implementation for string-based Value Objects
+ * ### Provides the base implementation for encoded string-based Value Objects
  *
  * The StringValue class represents the common foundation for string-based Value Objects within the FireHub Foundation
  * layer.
@@ -31,7 +31,7 @@ use FireHub\Runtime;
  *
  * @template TValue of string
  */
-trait StringValue {
+trait EncodedStringValue {
 
     /**
      * ### Default encoding
