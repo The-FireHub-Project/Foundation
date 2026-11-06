@@ -21,6 +21,11 @@ use FireHub\Core\Exception\DomainException;
  */
 final class InvalidAsciiException extends DomainException {
 
+    /**
+     * @inheritdoc
+     *
+     * @since 1.0.0
+     */
     protected const string DEFAULT_MESSAGE = 'Invalid characters in ASCII string';
 
 }

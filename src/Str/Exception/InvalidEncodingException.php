@@ -21,6 +21,11 @@ use FireHub\Core\Exception\DomainException;
  */
 final class InvalidEncodingException extends DomainException {
 
+    /**
+     * @inheritdoc
+     *
+     * @since 1.0.0
+     */
     protected const string DEFAULT_MESSAGE = 'Invalid string encoding';
 
 }
