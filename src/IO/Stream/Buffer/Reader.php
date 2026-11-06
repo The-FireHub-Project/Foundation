@@ -127,10 +127,11 @@ final class Reader implements Readable {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::requireOpen() To check if the buffered reader is open.
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::fill() To fill the internal buffer.s
-     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the length of the internal buffer.
-     * @uses \FireHub\Runtime\Str\SB\Access::part() To get a part of the internal buffer.
-     * @uses \FireHub\Runtime\Math::min() To get the minimum of two values.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::unreadBytes() To get the number of unread buffered bytes.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::fill() To fill the internal buffer.
+     * @uses \FireHub\Runtime\Str\SB\Access::part() To extract data from the buffer.
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the buffer length.
+     * @uses \FireHub\Runtime\Math::min() To calculate the number of bytes to return.
      *
      * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the buffered reader is closed, or the read
      * length is invalid.
@@ -146,42 +147,35 @@ final class Reader implements Readable {
 
         if ($length === 0) return '';
 
-        $result = '';
+        if ($this->unreadBytes() === 0) {
 
-        while (Runtime\Str\SB\Inspection::length($result) < $length) {
+            if ($this->stream->eof()) return '';
 
-            $available = Runtime\Str\SB\Inspection::length($this->buffer) - $this->position;
+            $this->fill();
 
-            if ($available === 0) {
+        }
 
-                if ($this->stream->eof()) break;
+        $available = $this->unreadBytes();
 
-                $this->fill();
+        if ($available === 0) return '';
 
-                $available = Runtime\Str\SB\Inspection::length($this->buffer);
+        $take = Runtime\Math::min(
+            $length,
+            $available
+        );
 
-                if ($available === 0) break;
+        $result = Runtime\Str\SB\Access::part(
+            $this->buffer,
+            $this->position,
+            $take
+        );
 
-            }
+        $this->position += $take;
 
-            $remaining = $length - Runtime\Str\SB\Inspection::length($result);
+        if ($this->position === Runtime\Str\SB\Inspection::length($this->buffer)) {
 
-            $take = Runtime\Math::min($remaining, $available);
-
-            $result .= Runtime\Str\SB\Access::part(
-                $this->buffer,
-                $this->position,
-                $take
-            );
-
-            $this->position += $take;
-
-            if ($this->position === Runtime\Str\SB\Inspection::length($this->buffer)) {
-
-                $this->buffer = '';
-                $this->position = 0;
-
-            }
+            $this->buffer = '';
+            $this->position = 0;
 
         }
 
@@ -304,13 +298,11 @@ final class Reader implements Readable {
      *
      * @uses \FireHub\Foundation\IO\Stream\ResourceStream::read() To read from the underlying stream.
      * @uses \FireHub\Foundation\IO\Stream\ResourceStream::eof() To check if the underlying stream is at EOF.
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the length of the buffer.
      *
      * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the underlying stream cannot make progress.
      */
     private function fill ():void {
-
-        $this->buffer = '';
-        $this->position = 0;
 
         $chunk = $this->stream->read($this->buffer_size);
 
@@ -325,7 +317,13 @@ final class Reader implements Readable {
 
         }
 
+        if (Runtime\Str\SB\Inspection::length($chunk) > $this->buffer_size)
+            throw new StreamException(
+                'The stream returned more bytes than requested.'
+            );
+
         $this->buffer = $chunk;
+        $this->position = 0;
 
     }
 

@@ -78,7 +78,10 @@ final class Stream implements Readable, Writable {
      * Read buffer capacity.
      * </p>
      * @param positive-int $write_buffer_size [optional] <p>
-     * rite buffer capacity.
+     * Write buffer capacity.
+     * </p>
+     * @param \FireHub\Foundation\IO\Stream\Buffer\DuplexMode $mode [optional] <p>
+     * Defines how reading and writing are coordinated.
      * </p>
      *
      * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the buffer size is invalid.
@@ -88,7 +91,8 @@ final class Stream implements Readable, Writable {
     public function __construct (
         private readonly Readable&Writable $stream,
         int $read_buffer_size = 8192,
-        int $write_buffer_size = 8192
+        int $write_buffer_size = 8192,
+        private readonly DuplexMode $mode = DuplexMode::SHARED_POSITION
     ) {
 
         $this->reader = new Reader(
@@ -214,18 +218,20 @@ final class Stream implements Readable, Writable {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Stream::requireOpen() To check if the buffered reader is open.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Stream::requireOpen() To check whether the stream is open.
      * @uses \FireHub\Foundation\IO\Stream\Buffer\Stream::prepareRead() To prepare the stream for reading.
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::eof() To check if the underlying stream has reached EOF.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::eof() To check whether EOF has been reached.
      *
-     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the buffered reader is closed.
+     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the stream is closed or flushing fails.
      */
     public function eof ():bool {
 
         $this->requireOpen();
 
-        if ($this->writing)
-            $this->prepareRead();
+        if (
+            $this->writing
+            && $this->mode === DuplexMode::SHARED_POSITION
+        ) $this->prepareRead();
 
         return $this->reader->eof();
 
@@ -326,24 +332,26 @@ final class Stream implements Readable, Writable {
 
     /**
      * ### Prepares the stream for reading
+     *
+     * Flushes pending writes before reading when the stream uses a shared logical position.
+     *
+     * Independent-direction streams preserve pending writes.
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Stream\Buffer\Writer::flush() To flush pending writes.
      *
-     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the buffered writer is closed.
+     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If flushing fails.
      *
      * @return void
      */
     private function prepareRead ():void {
 
-        if ($this->writing) {
+        if (
+            $this->writing
+            && $this->mode === DuplexMode::SHARED_POSITION
+        ) $this->writer->flush();
 
-            $this->writer->flush();
-
-            $this->writing = false;
-
-        }
-
+        $this->writing = false;
         $this->reading = true;
 
     }
@@ -356,10 +364,7 @@ final class Stream implements Readable, Writable {
      * Non-seekable streams cannot safely switch from buffered reading to writing while unread data remains.
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::unreadBytes() To get the number of unread bytes.
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::clear() To clear the buffered reader.
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::isSeekable() To check if the underlying stream is seekable.
-     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::seek() To seek to the current position.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Stream::restoreReadPosition() To restore the logical position.
      *
      * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the buffered reader is closed or the stream
      * cannot be seeked.
@@ -370,29 +375,56 @@ final class Stream implements Readable, Writable {
 
         if ($this->reading) {
 
-            $unread = $this->reader->unreadBytes();
-
-            if ($unread > 0) {
-
-                if (!$this->stream instanceof Seekable || !$this->stream->isSeekable())
-                    throw new StreamException(
-                        'Cannot switch from reading to writing with unread buffered data on a non-seekable stream.'
-                    );
-
-                $this->stream->seek(
-                    -$unread,
-                    SeekOrigin::CURRENT
-                );
-
-            }
-
-            $this->reader->clear();
+            if ($this->mode === DuplexMode::SHARED_POSITION)
+                $this->restoreReadPosition();
 
             $this->reading = false;
 
         }
 
         $this->writing = true;
+
+    }
+
+    /**
+     * ### Restores the logical read position
+     *
+     * Repositions a shared-position stream to account for unread prefetched
+     * bytes before switching to writing.
+     *
+     * Buffered data is discarded only after successful repositioning.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::unreadBytes() To get the number of unread bytes.
+     * @uses \FireHub\Foundation\IO\Stream\Buffer\Reader::clear() To discard buffered data.
+     * @uses \FireHub\Core\Boundary\IO\Stream\Seekable::isSeekable() To check seeking support.
+     * @uses \FireHub\Core\Boundary\IO\Stream\Seekable::seek() To restore the logical position.
+     *
+     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If seeking is required but unavailable.
+     *
+     * @return void
+     */
+    private function restoreReadPosition ():void {
+
+        $unread = $this->reader->unreadBytes();
+
+        if ($unread > 0) {
+
+            if (
+                !$this->stream instanceof Seekable
+                || !$this->stream->isSeekable()
+            ) throw new StreamException(
+                'Cannot restore the logical position of a non-seekable stream.'
+            );
+
+            $this->stream->seek(
+                -$unread,
+                SeekOrigin::CURRENT
+            );
+
+        }
+
+        $this->reader->clear();
 
     }
 
