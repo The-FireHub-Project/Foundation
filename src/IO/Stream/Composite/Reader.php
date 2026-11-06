@@ -124,7 +124,7 @@ final class Reader implements Readable {
      *
      * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the reader is closed.
      */
-    public function size ():?int {
+    public function size ():null {
 
         $this->requireOpen();
 
