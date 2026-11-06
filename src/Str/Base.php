@@ -15,7 +15,7 @@ namespace FireHub\Foundation\Str;
 
 use FireHub\Core\Type\Str\Encoded;
 use FireHub\Core\Type\ {
-    Char as BaseChar, Str
+    Char\Encoded as BaseChar, Str
 };
 use FireHub\Core\Type\Str\Encoding;
 use FireHub\Core\Meta\Enum\Side;
@@ -1387,7 +1387,7 @@ abstract readonly class Base extends Encoded {
      * @uses \FireHub\Runtime\Str\SB\Transform::repeat() To repeat the string.
      * @uses \FireHub\Foundation\Char::value() To get the character value.
      *
-     * @param \FireHub\Core\Type\Char<non-empty-string> $with <p>
+     * @param \FireHub\Core\Type\Char\Encoded<non-empty-string> $with <p>
      * The character to use for masking.
      * </p>
      * @param int $from
