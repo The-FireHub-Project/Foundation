@@ -65,7 +65,7 @@ final class Phar extends ResourceStream implements Readable, Writable {
      * @return void
      *
      */
-    public function __construct(string $archive, string $entry, OpenMode $mode = OpenMode::READ_BINARY) {
+    public function __construct (string $archive, string $entry, OpenMode $mode = OpenMode::READ_BINARY) {
 
         if (!Runtime\System\Extension::hasExtension('phar'))
             throw new StreamException(

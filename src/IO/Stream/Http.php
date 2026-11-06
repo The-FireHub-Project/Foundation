@@ -49,7 +49,7 @@ final class Http extends ResourceStream implements Readable {
      *
      * @return void
      */
-    public function __construct(string $uri) {
+    public function __construct (string $uri) {
 
         if (
             !Runtime\Str\SB\Search::startsWith('http://', $uri)
