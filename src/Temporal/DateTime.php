@@ -217,8 +217,8 @@ readonly class DateTime extends BaseDateTime {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\Temporal\DateTime::from() To create a new DateTime instance with the specified timezone.
-     * @uses \FireHub\Foundation\Temporal\DateTime::value() To get the raw value of the DateTime instance.
+     * @uses \FireHub\Foundation\Temporal\NamedTimezone::native() To get the native timezone.
+     * @uses \FireHub\Foundation\Temporal\FixedTimezone::native() To get the native timezone.
      *
      * @param TimezoneType $timezone <p>
      * The timezone to set.
@@ -234,7 +234,9 @@ readonly class DateTime extends BaseDateTime {
     public function withTimezone (NamedTimezone|FixedTimezone $timezone):static {
 
         /** @var static<TValue> */
-        return self::from($this->value(), $timezone);
+        return new static(
+            $this->value->setTimezone($timezone->native())
+        );
 
     }
 
