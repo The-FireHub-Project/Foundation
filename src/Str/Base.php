@@ -542,6 +542,7 @@ abstract readonly class Base extends Encoded {
      */
     public function explode (string $separator, int $limit = IntegerLimits::MAX):array {
 
+        /** @var list<string> */
         return Runtime\Str\SB\Delimiter::explode($this->value, $separator, $limit);
 
     }

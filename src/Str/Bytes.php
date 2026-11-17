@@ -325,6 +325,7 @@ readonly class Bytes extends Str {
      */
     public function explode (string $separator, int $limit = IntegerLimits::MAX):array {
 
+        /** @var list<string> */
         return Runtime\Str\SB\Delimiter::explode($this->value, $separator, $limit);
 
     }
