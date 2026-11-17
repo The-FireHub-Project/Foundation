@@ -21,6 +21,11 @@ use FireHub\Core\Exception\RuntimeException;
  */
 final class PatternOccurrencesNumberException extends RuntimeException {
 
+    /**
+     * @inheritdoc
+     *
+     * @since 1.0.0
+     */
     protected const string DEFAULT_MESSAGE = 'The pattern occurrences number is not valid';
 
 }
