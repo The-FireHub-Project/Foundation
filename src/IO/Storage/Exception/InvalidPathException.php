@@ -13,15 +13,13 @@
 
 namespace FireHub\Foundation\IO\Storage\Exception;
 
-use FireHub\Core\Exception\Runtime\InvalidArgumentException;
-
 /**
  * ### Invalid storage path exception
  *
  * Thrown when a storage path contains an invalid value or violates storage path constraints.
  * @since 1.0.0
  */
-final class InvalidPathException extends InvalidArgumentException {
+final class InvalidPathException extends StorageException {
 
     /**
      * @inheritDoc

@@ -13,15 +13,13 @@
 
 namespace FireHub\Foundation\IO\Storage\Exception;
 
-use FireHub\Core\Exception\Runtime\InvalidArgumentException;
-
 /**
  * ### Invalid storage disk name exception
  *
  * Thrown when a storage disk identifier contains invalid characters or violates storage disk naming constraints.
  * @since 1.0.0
  */
-final class InvalidDiskNameException extends InvalidArgumentException {
+final class InvalidDiskNameException extends StorageException {
 
     /**
      * @inheritDoc
