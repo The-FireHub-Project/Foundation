@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.2
+ * @php-version >=8.5
  * @package Foundation
  */
 
@@ -17,11 +17,16 @@ use FireHub\Core\Boundary\IO\Storage\Path;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
     Locatable, Readable, Writable
 };
-use FireHub\Core\Boundary\IO\Stream\Readable as ReadableStream;
-use FireHub\Foundation\IO\Storage\Internal\PathResolver;
+use FireHub\Core\Boundary\IO\Stream\ {
+    Readable as ReadableStream, Writable as WritableStream
+};
+use FireHub\Foundation\IO\Storage\Internal\ {
+    AtomicWriter, PathResolver
+};
 use FireHub\Foundation\IO\Stream\ {
     Copier, File
 };
+use FireHub\Foundation\IO\Storage\Exception\WriteException;
 use FireHub\Runtime;
 
 /**
@@ -154,9 +159,7 @@ final readonly class Local implements Readable, Writable, Locatable {
     /**
      * ### Stores the contents of an object
      *
-     * Creates a stored object or replaces its existing contents.
-     *
-     * The parent directory must already exist.
+     * Creates a new stored object or replaces its existing contents through a temporary file.
      *
      * <code>
      * $driver->put(
@@ -168,18 +171,19 @@ final readonly class Local implements Readable, Writable, Locatable {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolve() To resolve the destination path.
-     * @uses \FireHub\Runtime\FileSystem\File::putContent() To store the contents of the object.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\AtomicWriter::write() To replace the destination contents.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Local::writeContents() To write the complete contents.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical path of the stored object.
      * </p>
      * @param string $contents <p>
-     * Contents to store, including binary data.
+     * Contents to store.
      * </p>
      *
-     * @throws \FireHub\Runtime\Exception\FileNotFoundException If $path is not file.
-     * @throws \FireHub\Runtime\Exception\FileWriteException If the $create_file option is off or couldn't put
-     * content on a path.
+     * @throws \FireHub\Runtime\Exception\DeleteFileException If we couldn't delete the file.
+     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the file cannot be opened.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\WriteException If the writer fails.
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
      * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
      * file doesn't exist, or a script doesn't have executable permissions.
@@ -190,9 +194,12 @@ final readonly class Local implements Readable, Writable, Locatable {
      */
     public function put (Path $path, string $contents):void {
 
-        Runtime\FileSystem\File::putContent(
+        AtomicWriter::write(
             $this->resolver->resolve($path),
-            $contents
+            static fn (WritableStream $stream) => self::writeContents(
+                $stream,
+                $contents
+            )
         );
 
     }
@@ -292,9 +299,7 @@ final readonly class Local implements Readable, Writable, Locatable {
     /**
      * ### Stores the contents of a readable stream
      *
-     * Copies the remaining contents of a readable stream into a stored object.
-     *
-     * The destination object is created or replaced.
+     * Copies the remaining source stream contents into a temporary file before replacing the destination object.
      *
      * The source stream remains owned by the caller.
      *
@@ -304,29 +309,35 @@ final readonly class Local implements Readable, Writable, Locatable {
      * );
      *
      * try {
+     *
      *     $driver->writeStream(
      *         new \FireHub\Foundation\IO\Storage\Path('backup.txt'),
      *         $source
      *     );
+     *
      * } finally {
+     *
      *     $source->close();
+     *
      * }
      * </code>
      *
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolve() To resolve the destination path.
-     * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To transfer stream contents.
-     * @uses \FireHub\Core\Boundary\IO\Stream\Readable::close() To close the source stream.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\AtomicWriter::write() To replace the destination contents.
+     * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To transfer the source stream contents.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical destination path.
      * </p>
      * @param \FireHub\Core\Boundary\IO\Stream\Readable $stream <p>
-     * Source stream to copy.
+     * Source stream containing the contents to store.
      * </p>
      *
-     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the stream cannot be copied.
+     * @throws \FireHub\Runtime\Exception\DeleteFileException If we couldn't delete the file.
+     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the file cannot be opened.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\WriteException If the writer fails.
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
      * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
      * file doesn't exist, or a script doesn't have executable permissions.
@@ -337,20 +348,14 @@ final readonly class Local implements Readable, Writable, Locatable {
      */
     public function writeStream (Path $path, ReadableStream $stream):void {
 
-        $destination = new File(
+        AtomicWriter::write(
             $this->resolver->resolve($path),
-            Runtime\Stream\Enum\OpenMode::WRITE_BINARY
+            static function (WritableStream $destination) use ($stream):void {
+
+                Copier::copy($stream, $destination);
+
+            }
         );
-
-        try {
-
-            Copier::copy($stream, $destination);
-
-        } finally {
-
-            $destination->close();
-
-        }
 
     }
 
@@ -383,6 +388,52 @@ final readonly class Local implements Readable, Writable, Locatable {
     public function locate (Path $path):string {
 
         return $this->resolver->locate($path);
+
+    }
+
+    /**
+     * ### Writes the complete contents to a stream
+     *
+     * Repeats partial writes until all supplied bytes have been accepted.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\IO\Stream\Writable::write() To write the remaining contents.
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To determine the content length.
+     * @uses \FireHub\Runtime\Str\SB\Access::part() To retrieve the remaining contents.
+     * @uses \FireHub\Runtime\Arr\Inspection::length() To determine the number of bytes to write.
+     *
+     * @param \FireHub\Core\Boundary\IO\Stream\Writable $stream <p>
+     * Destination stream.
+     * </p>
+     * @param string $contents <p>
+     * Contents to write.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\WriteException If the stream cannot accept the remaining
+     * contents.
+     *
+     * @return void
+     */
+    private static function writeContents (WritableStream $stream, string $contents):void {
+
+        $length = Runtime\Str\SB\Inspection::length($contents);
+        $offset = 0;
+
+        while ($offset < $length) {
+
+            $remaining = Runtime\Str\SB\Access::part(
+                $contents,
+                $offset
+            );
+
+            $written = $stream->write($remaining);
+
+            if ($written <= 0 || $written > $length - $offset)
+                throw new WriteException;
+
+            $offset += $written;
+
+        }
 
     }
 
