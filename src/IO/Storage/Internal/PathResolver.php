@@ -122,8 +122,8 @@ final readonly class PathResolver {
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
      * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
      * file doesn't exist, or a script doesn't have executable permissions.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path
-     * points outside the storage root directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path points outside
+     * the storage root directory.
      *
      * @return non-empty-string Resolved physical filesystem path.
      */
