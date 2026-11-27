@@ -550,6 +550,140 @@ final readonly class Disk implements DiskContract {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * foreach ($disk->files('documents') as $path) {
+     *
+     *     echo $path->value();
+     *
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::listable() To retrieve the listable storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::directoryPath() To normalize the logical directory path.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\Listable::files() To list stored objects.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function files (null|string|PathContract $directory = null):iterable {
+
+        return $this->listable()->files(
+            $this->directoryPath($directory)
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * foreach ($disk->allFiles('documents') as $path) {
+     *
+     *     echo $path->value();
+     *
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::listable() To retrieve the listable storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::directoryPath() To normalize the logical directory path.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\Listable::files() To recursively list stored objects.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function allFiles (null|string|PathContract $directory = null):iterable {
+
+        return $this->listable()->files(
+            $this->directoryPath($directory),
+            true
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * foreach ($disk->directories('documents') as $path) {
+     *
+     *     echo $path->value();
+     *
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::listable() To retrieve the listable storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::directoryPath() To normalize the logical directory path.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\Listable::directories() To list storage directories.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function directories (null|string|PathContract $directory = null):iterable {
+
+        return $this->listable()->directories(
+            $this->directoryPath($directory)
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * foreach ($disk->allDirectories('documents') as $path) {
+     *
+     *     echo $path->value();
+     *
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::listable() To retrieve the listable storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::directoryPath() To normalize the logical directory path.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\Listable::directories() To recursively list storage directories.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function allDirectories (null|string|PathContract $directory = null):iterable {
+
+        return $this->listable()->directories(
+            $this->directoryPath($directory),
+            true
+        );
+
+    }
+
+    /**
+     *{@inheritDoc}
+     *
+     * <code>
+     * $disk->isListable();
+     * // true
+     * </code>
+     *
+     * @since 1.0.0
+     */
+    public function isListable ():bool {
+
+        return $this->driver instanceof Driver\Listable;
+
+    }
+
+    /**
      * ### Resolves a logical storage path
      * @since 1.0.0
      *
@@ -658,6 +792,29 @@ final readonly class Disk implements DiskContract {
     }
 
     /**
+     * ### Gets the listable storage driver
+     *
+     * Ensures that the configured storage driver supports listing stored objects and directories.
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the configured storage
+     * driver is not listable.
+     *
+     * @return \FireHub\Core\Boundary\IO\Storage\Driver\Listable Listable storage driver.
+     */
+    private function listable ():Driver\Listable {
+
+        return $this->driver instanceof Driver\Listable
+            ? $this->driver
+            : throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'list'
+                ]
+            );
+
+    }
+
+    /**
      * ### Determines whether two paths identify the same logical object
      *
      * Compares normalized logical storage paths.
@@ -696,6 +853,33 @@ final readonly class Disk implements DiskContract {
             );
 
         return true;
+
+    }
+
+    /**
+     * ### Normalizes a logical storage directory path
+     *
+     * Preserves null as the storage root directory identifier. Non-null paths are normalized through the standard
+     * storage path normalization process.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::path() To normalize a non-null logical storage path.
+     *
+     * @param null|non-empty-string|\FireHub\Core\Boundary\IO\Storage\Path $directory <p>
+     * Logical directory path or null to identify the storage root.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return null|\FireHub\Foundation\IO\Storage\Path Normalized logical directory path or null for the storage root.
+     */
+    private function directoryPath (null|string|PathContract $directory):?Path {
+
+        return $directory === null
+            ? null
+            : $this->path($directory);
 
     }
 
