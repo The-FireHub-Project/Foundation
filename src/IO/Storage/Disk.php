@@ -17,7 +17,9 @@ use FireHub\Core\Boundary\IO\Storage\ {
     Disk as DiskContract, Driver, Path as PathContract
 };
 use FireHub\Core\Boundary\IO\Stream\Readable;
-use FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException;
+use FireHub\Foundation\IO\Storage\Exception\ {
+    ObjectNotFoundException, UnsupportedOperationException
+};
 
 /**
  * ### Storage disk
@@ -384,6 +386,170 @@ final readonly class Disk implements DiskContract {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->copy('example.txt', 'backup.txt');
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::isCopyable() To determine whether copying is supported.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::path() To normalize the logical storage paths.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::sameObject() To determine whether both paths identify the same
+     * logical object.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::readStream() To open the source object for reading.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::writeStream() To write the source contents to the destination object.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\Copyable::copy() To perform a native copy operation.
+     * @uses \FireHub\Core\Boundary\IO\Stream\Readable::close() To release the source stream.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If copying is not supported.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function copy (string|PathContract $source, string|PathContract $destination):void {
+
+        if (!$this->isCopyable())
+            throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'copy'
+                ]
+            );
+
+        $source = $this->path($source);
+        $destination = $this->path($destination);
+
+        if ($this->sameObject($source, $destination))
+            return;
+
+        if ($this->driver instanceof Driver\Copyable) {
+
+            $this->driver->copy($source, $destination);
+
+            return;
+
+        }
+
+        $stream = $this->readStream($source);
+
+        try {
+
+            $this->writeStream($destination, $stream);
+
+        } finally {
+
+            $stream->close();
+
+        }
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->move('example.txt', 'archive/example.txt');
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::isMovable() To determine whether moving is supported.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::path() To normalize the logical storage paths.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::sameObject() To determine whether both paths identify the same
+     * logical object.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::copy() To copy the source object when native moving is unavailable.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::delete() To delete the source object after a successful copy.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\Movable::move() To perform a native move operation.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If moving is not supported.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function move (string|PathContract $source, string|PathContract $destination):void {
+
+        if (!$this->isMovable())
+            throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'move'
+                ]
+            );
+
+        $source = $this->path($source);
+        $destination = $this->path($destination);
+
+        if ($this->sameObject($source, $destination))
+            return;
+
+        if ($this->driver instanceof Driver\Movable) {
+
+            $this->driver->move($source, $destination);
+
+            return;
+
+        }
+
+        $this->copy($source, $destination);
+
+        $this->delete($source);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * if ($disk->isCopyable()) {
+     *
+     *     $disk->copy('example.txt', 'backup.txt');
+     *
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::isReadable() To determine whether the storage driver supports reading.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::isWritable() To determine whether the storage driver supports writing.
+     *
+     * @return bool True if copying stored objects is supported.
+     */
+    public function isCopyable ():bool {
+
+        return $this->driver instanceof Driver\Copyable
+            || ($this->isReadable() && $this->isWritable());
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * if ($disk->isMovable()) {
+     *
+     *     $disk->move('example.txt', 'archive/example.txt');
+     *
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::isCopyable() To determine whether the disk supports fallback moving.
+     *
+     * @return bool True if moving stored objects is supported.
+     */
+    public function isMovable ():bool {
+
+        return $this->driver instanceof Driver\Movable
+            || $this->isCopyable();
+
+    }
+
+    /**
      * ### Resolves a logical storage path
      * @since 1.0.0
      *
@@ -488,6 +654,48 @@ final readonly class Disk implements DiskContract {
                     'operation' => 'append'
                 ]
             );
+
+    }
+
+    /**
+     * ### Determines whether two paths identify the same logical object
+     *
+     * Compares normalized logical storage paths.
+     *
+     * If both paths are identical, the source object must exist before the operation can be treated as a no-op.
+     *
+     * This method does not determine whether different logical paths refer to the same physical filesystem object.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Path::value() To retrieve the normalized logical path.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::exists() To determine whether the source object exists.
+     *
+     * @param \FireHub\Foundation\IO\Storage\Path $source <p>
+     * Normalized logical source path.
+     * </p>
+     * @param \FireHub\Foundation\IO\Storage\Path $destination <p>
+     * Normalized logical destination path.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return bool True if both logical storage paths are identical.
+     */
+    private function sameObject (Path $source, Path $destination):bool {
+
+        if ($source->value() !== $destination->value())
+            return false;
+
+        if (!$this->exists($source))
+            throw new ObjectNotFoundException(
+                context: [
+                    'path' => $source->value()
+                ]
+            );
+
+        return true;
 
     }
 
