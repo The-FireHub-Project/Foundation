@@ -70,12 +70,7 @@ final readonly class Copier {
      *
      * @return non-negative-int Number of bytes accepted by the destination.
      */
-    public static function copy (
-        Readable $source,
-        Writable $destination,
-        int $buffer_size = 65536,
-        ?int $limit = null
-    ):int {
+    public static function copy (Readable $source, Writable $destination, int $buffer_size = 65536, ?int $limit = null):int {
 
         self::validate(
             $source,
@@ -165,7 +160,7 @@ final readonly class Copier {
      *
      * @uses \FireHub\Foundation\IO\Stream\Copier::copyChunks() To transfer data between streams.
      * @uses \FireHub\Foundation\IO\Stream\Copier::readChunk() To read the next chunk.
-     * @uses \FireHub\Foundation\IO\Stream\Copier::writeChunk() To write the entire chunk.
+     * @uses \FireHub\Foundation\IO\Stream\Writer::write() To write the entire chunk.
      * @uses \FireHub\Runtime\Math::min() To clamp the buffer size to the limit.
      *
      * @param \FireHub\Core\Boundary\IO\Stream\Readable $source <p>
@@ -188,8 +183,7 @@ final readonly class Copier {
      *
      * @return non-negative-int Number of bytes copied.
      */
-    private static function copyChunks (
-        Readable $source, Writable $destination, int $buffer_size, ?int $limit):int {
+    private static function copyChunks (Readable $source, Writable $destination, int $buffer_size, ?int $limit):int {
 
         $copied = 0;
 
@@ -207,7 +201,7 @@ final readonly class Copier {
 
             if ($chunk === '') break;
 
-            $copied += self::writeChunk(
+            $copied += Writer::write(
                 $destination,
                 $chunk
             );
@@ -264,62 +258,6 @@ final readonly class Copier {
             );
 
         return $chunk;
-
-    }
-
-    /**
-     * ### Writes an entire chunk
-     *
-     * Handles partial writes by repeatedly writing the remaining bytes.
-     *
-     * An underlying writing that accepts zero bytes is treated as an error.
-     * @since 1.0.0
-     *
-     * @uses \FireHub\Runtime\Str\SB\Access::part() To get a part of the string.
-     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To get the length of the string.
-     * @uses \FireHub\Core\Boundary\IO\Stream\Writable::write() To write the entire chunk.
-     *
-     * @param \FireHub\Core\Boundary\IO\Stream\Writable $destination <p>
-     * Destination stream.
-     * </p>
-     * @param string $chunk <p>
-     * Data to write.
-     * </p>
-     *
-     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the destination cannot make progress or
-     * reports an invalid write length.
-     *
-     * @return non-negative-int Number of bytes accepted by the destination.
-     */
-    private static function writeChunk (Writable $destination, string $chunk):int {
-
-        $length = Runtime\Str\SB\Inspection::length($chunk);
-        $offset = 0;
-
-        while ($offset < $length) {
-
-            $remaining = Runtime\Str\SB\Access::part(
-                $chunk,
-                $offset
-            );
-
-            $written = $destination->write($remaining);
-
-            if ($written <= 0)
-                throw new StreamException(
-                    'The destination stream could not accept the remaining data.'
-                );
-
-            if ($written > Runtime\Str\SB\Inspection::length($remaining))
-                throw new StreamException(
-                    'The destination stream reported an invalid write length.'
-                );
-
-            $offset += $written;
-
-        }
-
-        return $offset;
 
     }
 

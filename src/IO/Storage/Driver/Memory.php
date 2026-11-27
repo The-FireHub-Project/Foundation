@@ -20,7 +20,7 @@ use FireHub\Core\Boundary\IO\Storage\Driver\ {
 use FireHub\Core\Boundary\IO\Stream\Readable as ReadableStream;
 use FireHub\Foundation\IO\Storage\Path;
 use FireHub\Foundation\IO\Stream\ {
-    Copier, Memory as MemoryStream
+    Copier, Memory as MemoryStream, Writer
 };
 use FireHub\Foundation\IO\Storage\Exception\ObjectNotFoundException;
 use FireHub\Foundation\IO\Stream\Exception\StreamException;
@@ -213,8 +213,8 @@ final class Memory implements Readable, Writable {
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::get() To retrieve the stored contents.
-     * @uses \FireHub\Foundation\IO\Stream\Memory::write() To populate the memory stream.
      * @uses \FireHub\Foundation\IO\Stream\Memory::rewind() To reset the stream position.
+     * @uses \FireHub\Foundation\IO\Stream\Writer::write() To write the stored contents to the stream.
      * @uses \FireHub\Core\Boundary\IO\Stream\Readable::close() To release the temporary stream.
      * @uses \FireHub\Runtime\Str\SB\Inspection::length() To check the length of the returned contents.
      *
@@ -236,16 +236,7 @@ final class Memory implements Readable, Writable {
 
         try {
 
-            if ($contents !== '') {
-
-                $written = $stream->write($contents);
-
-                if ($written !== Runtime\Str\SB\Inspection::length($contents))
-                    throw new StreamException(
-                        'Unable to populate the memory stream.'
-                    );
-
-            }
+            Writer::write($stream, $contents);
 
             $stream->rewind();
 
