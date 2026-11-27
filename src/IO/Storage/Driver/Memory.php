@@ -96,6 +96,8 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::normalizePath() To normalize the storage path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateAncestors() To validate the ancestor directories.
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the storage key.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
@@ -109,6 +111,10 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      * @return bool True if the stored object exists, false otherwise.
      */
     public function exists (PathContract $path):bool {
+
+        $path = $this->normalizePath($path);
+
+        $this->validateAncestors($path);
 
         return isset($this->objects[$this->key($path)]);
 
@@ -127,6 +133,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the storage key.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
@@ -142,8 +149,14 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      */
     public function get (PathContract $path):string {
 
+        $path = $this->validateObjectPath($path);
+
         return $this->objects[$this->key($path)]
-            ?? throw new ObjectNotFoundException;
+            ?? throw new ObjectNotFoundException(
+                context: [
+                    'path' => $path->value()
+                ]
+            );
 
     }
 
@@ -198,6 +211,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the storage key.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
@@ -212,7 +226,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      */
     public function delete (PathContract $path):void {
 
-        unset($this->objects[$this->key($path)]);
+        unset($this->objects[$this->key($this->validateObjectPath($path))]);
 
     }
 
@@ -520,8 +534,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::put() To store the source object.
      *
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
@@ -531,22 +544,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      */
     public function copy (PathContract $source, PathContract $destination):void {
 
-        $source_key = $this->key($source);
-        $destination_key = $this->key(
-            $this->validateObjectPath($destination)
-        );
-
-        if (!isset($this->objects[$source_key]))
-            throw new ObjectNotFoundException(
-                context: [
-                    'path' => $source->value()
-                ]
-            );
-
-        if ($source_key === $destination_key)
-            return;
-
-        $this->objects[$destination_key] = $this->objects[$source_key];
+        $this->put($destination, $this->get($source));
 
     }
 
@@ -573,6 +571,8 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::get() To retrieve the source object.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateWritableObjectPath() To validate the destination path.
      *
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
@@ -582,22 +582,19 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      */
     public function move (PathContract $source, PathContract $destination):void {
 
-        $source_key = $this->key($source);
-        $destination_key = $this->key(
-            $this->validateObjectPath($destination)
-        );
+        $source = $this->validateObjectPath($source);
 
-        if (!isset($this->objects[$source_key]))
-            throw new ObjectNotFoundException(
-                context: [
-                    'path' => $source->value()
-                ]
-            );
+        $contents = $this->get($source);
+
+        $destination = $this->validateWritableObjectPath($destination);
+
+        $source_key = $this->key($source);
+        $destination_key = $this->key($destination);
 
         if ($source_key === $destination_key)
             return;
 
-        $this->objects[$destination_key] = $this->objects[$source_key];
+        $this->objects[$destination_key] = $contents;
 
         unset($this->objects[$source_key]);
 
@@ -1023,6 +1020,8 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::normalizePath() To normalize the logical directory path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateAncestors() To validate the logical directory path
      *
      * @param null|\FireHub\Core\Boundary\IO\Storage\Path $directory <p>
      * Logical directory path or null for the storage root.
@@ -1040,6 +1039,10 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
 
         if ($directory === null)
             return self::KEY_PREFIX;
+
+        $directory = $this->normalizePath($directory);
+
+        $this->validateAncestors($directory);
 
         $key = $this->key($directory);
 
@@ -1163,9 +1166,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::normalizePath() To normalize the logical storage path.
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::directoryExists() To detect conflicting or missing
-     * directories.
-     * @uses \FireHub\Foundation\IO\Storage\Path::parent() To retrieve the logical parent directory.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateAncestors() To validate the logical path hierarchy.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical storage object path.
@@ -1183,19 +1184,52 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
 
         $this->validateAncestors($path);
 
-        if ($this->directoryExists($path))
+        if (isset($this->directories[$this->key($path)]))
             throw new InvalidObjectTypeException(
                 context: [
                     'path' => $path->value()
                 ]
             );
 
+        return $path;
+
+    }
+
+    /**
+     * ### Validates a writable logical storage object path
+     *
+     * Ensures that the specified logical path can identify a stored regular object and that its parent directory
+     * exists.
+     *
+     * The stored object itself is not required to exist.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the logical storage object
+     * path.
+     * @uses \FireHub\Foundation\IO\Storage\Path::parent() To retrieve the logical parent directory.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::directoryExists() To determine whether the parent
+     * directory exists.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical storage object path to validate.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return \FireHub\Foundation\IO\Storage\Path Validated writable storage object path.
+     */
+    private function validateWritableObjectPath (PathContract $path):Path {
+
+        $path = $this->validateObjectPath($path);
+
         $parent = $path->parent();
 
-        if (!$this->directoryExists($parent))
+        if ($parent !== null && !$this->directoryExists($parent))
             throw new DirectoryNotFoundException(
                 context: [
-                    'path' => $parent?->value()
+                    'path' => $parent->value()
                 ]
             );
 
