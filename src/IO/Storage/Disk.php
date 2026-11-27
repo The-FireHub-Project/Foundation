@@ -14,9 +14,10 @@
 namespace FireHub\Foundation\IO\Storage;
 
 use FireHub\Core\Boundary\IO\Storage\ {
-    Disk as DiskContract, Driver, Path as PathContract
+    Disk as DiskContract, Driver, Metadata as MetadataContract, Path as PathContract
 };
 use FireHub\Core\Boundary\IO\Stream\Readable;
+use FireHub\Core\Type\Temporal\DateTime;
 use FireHub\Foundation\IO\Storage\Exception\ {
     ObjectNotFoundException, UnsupportedOperationException
 };
@@ -918,6 +919,125 @@ final readonly class Disk implements DiskContract {
     }
 
     /**
+     * ### Determines whether the disk supports metadata retrieval
+     *
+     * Indicates storage driver capability rather than actual storage access permissions.
+     *
+     * <code>
+     * if ($disk->isMetadataAware()) {
+     *     $metadata = $disk->metadata('example.txt');
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @return bool True if metadata retrieval is supported.
+     */
+    public function isMetadataAware ():bool {
+
+        return $this->driver instanceof Driver\MetadataAware;
+
+    }
+
+    /**
+     * ### Retrieves stored object metadata
+     *
+     * <code>
+     * $metadata = $disk->metadata('documents/example.txt');
+     *
+     * echo $metadata->size();
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::metadataAware() To retrieve the metadata-aware storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::path() To normalize the logical storage object path.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\MetadataAware::metadata() To retrieve stored object metadata.
+     *
+     * @param non-empty-string|\FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the stored object.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If metadata retrieval is
+     * unsupported.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return \FireHub\Core\Boundary\IO\Storage\Metadata Stored object metadata.
+     */
+    public function metadata (string|PathContract $path):MetadataContract {
+
+        return $this->metadataAware()->metadata($this->path($path));
+
+    }
+
+    /**
+     * ### Retrieves the stored object size
+     *
+     * <code>
+     * echo $disk->size('example.txt').' bytes';
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::metadata() To retrieve stored object metadata.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Metadata::size() To retrieve the stored object size.
+     *
+     * @param non-empty-string|\FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the stored object.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If metadata retrieval is
+     * unsupported.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return non-negative-int Stored object size in bytes.
+     */
+    public function size (string|PathContract $path):int {
+
+        return $this->metadata($path)->size();
+
+    }
+
+    /**
+     * ### Retrieves the stored object last modification time
+     *
+     * Returns null if the underlying storage driver supports metadata retrieval but cannot provide the last
+     * modification time.
+     *
+     * <code>
+     * $modified = $disk->lastModified('example.txt');
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::metadata() To retrieve stored object metadata.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Metadata::lastModified() To retrieve the stored object last
+     * modification time.
+     *
+     * @param non-empty-string|\FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the stored object.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If metadata retrieval is
+     * unsupported.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return null|\FireHub\Core\Type\Temporal\DateTime<non-empty-string> Last modification time or null if
+     * unavailable.
+     */
+    public function lastModified (string|PathContract $path):?DateTime {
+
+        return $this->metadata($path)->lastModified();
+
+    }
+
+    /**
      * ### Resolves a logical storage path
      * @since 1.0.0
      *
@@ -1127,6 +1247,27 @@ final readonly class Disk implements DiskContract {
             : throw new UnsupportedOperationException(
                 context: [
                     'operation' => 'moveDirectory'
+                ]
+            );
+
+    }
+
+    /**
+     * ### Retrieves the metadata-aware storage driver
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the storage driver does not
+     * support metadata retrieval.
+     *
+     * @return \FireHub\Core\Boundary\IO\Storage\Driver\MetadataAware Metadata-aware storage driver.
+     */
+    private function metadataAware ():Driver\MetadataAware {
+
+        return $this->driver instanceof Driver\MetadataAware
+            ? $this->driver
+            : throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'metadata'
                 ]
             );
 
