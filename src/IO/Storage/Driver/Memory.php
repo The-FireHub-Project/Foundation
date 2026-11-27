@@ -15,7 +15,8 @@ namespace FireHub\Foundation\IO\Storage\Driver;
 
 use FireHub\Core\Boundary\IO\Storage\Path as PathContract;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
-    Appendable, Copyable, DirectoryWritable, Listable, Movable, Readable
+    Appendable, Copyable, Listable, Locatable, Movable, Readable,
+    DirectoryCopyable, DirectoryMovable, DirectoryWritable
 };
 use FireHub\Core\Boundary\IO\Stream\Readable as ReadableStream;
 use FireHub\Foundation\IO\Storage\Path;
@@ -23,7 +24,8 @@ use FireHub\Foundation\IO\Stream\ {
     Copier, Memory as MemoryStream, Writer
 };
 use FireHub\Foundation\IO\Storage\Exception\ {
-    DirectoryNotFoundException, DirectoryNotEmptyException, InvalidObjectTypeException, ObjectNotFoundException
+    DirectoryAlreadyExistsException, DirectoryNotFoundException, DirectoryNotEmptyException,
+    InvalidDirectoryDestinationException, InvalidObjectTypeException, ObjectNotFoundException
 };
 use FireHub\Runtime;
 use Throwable;
@@ -50,7 +52,8 @@ use Throwable;
  *
  * @since 1.0.0
  */
-final class Memory implements Readable, Appendable, Copyable, Movable, Listable, DirectoryWritable {
+final class Memory implements Readable, Appendable, Copyable, Movable, Listable, DirectoryWritable,
+    DirectoryCopyable, DirectoryMovable {
 
     /**
      * ### Internal storage key prefix
@@ -864,6 +867,128 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
     }
 
     /**
+     * ### Copies a storage directory
+     *
+     * Recursively copies the specified source directory and its descendant stored regular objects and directories to
+     * a new destination.
+     *
+     * Empty directories are preserved. The destination parent directory must already exist. Copying an existing
+     * directory to itself has no effect.
+     *
+     * Copying a directory into one of its descendants is not permitted.
+     *
+     * <code>
+     * $driver->copyDirectory(
+     *     new Path('documents'),
+     *     new Path('backup')
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::normalizePath() To normalize logical storage paths.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateDirectoryDestination() To validate the source and
+     * destination directory relationship.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To retrieve the internal destination directory key.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::transferDescendants() To copy descendant stored objects and
+     * directories.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $source <p>
+     * Logical path of the source directory.
+     * </p>
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $destination <p>
+     * Logical path of the destination directory.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\DirectoryNotFoundException If the source directory does not
+     * exist.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the destination path identifies
+     * an existing directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidDirectoryDestinationException If the destination path
+     * is not a descendant of the source.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function copyDirectory (PathContract $source, PathContract $destination):void {
+
+        $source = $this->normalizePath($source);
+        $destination = $this->normalizePath($destination);
+
+        if (!$this->validateDirectoryDestination($source, $destination))
+            return;
+
+        $this->directories[$this->key($destination)] = true;
+
+        $this->transferDescendants($source, $destination, false);
+
+    }
+
+    /**
+     * ### Moves a storage directory
+     *
+     * Relocates the specified source directory and its descendant stored regular objects and directories to a new
+     * destination.
+     *
+     * Empty directories and relative descendant paths are preserved. The destination parent directory must already
+     * exist. Moving an existing directory to itself has no effect.
+     *
+     * Moving a directory into one of its descendants is not permitted.
+     *
+     * <code>
+     * $driver->moveDirectory(
+     *     new Path('documents'),
+     *     new Path('archive')
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::normalizePath() To normalize logical storage paths.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateDirectoryDestination() To validate the source and
+     * destination directory relationship.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To retrieve internal storage directory keys.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::transferDescendants() To relocate descendant stored objects
+     * and directories.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $source <p>
+     * Logical path of the source directory.
+     * </p>
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $destination <p>
+     * Logical path of the destination directory.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\DirectoryNotFoundException If the source directory does not
+     * exist.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the destination path identifies
+     * an existing directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidDirectoryDestinationException If the destination path
+     * is not a descendant of the source.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function moveDirectory (PathContract $source, PathContract $destination):void {
+
+        $source = $this->normalizePath($source);
+        $destination = $this->normalizePath($destination);
+
+        if (!$this->validateDirectoryDestination($source, $destination))
+            return;
+
+        $this->directories[$this->key($destination)] = true;
+
+        $this->transferDescendants($source, $destination, true);
+
+        unset($this->directories[$this->key($source)]);
+
+    }
+
+    /**
      * ### Resolves an internal storage key
      *
      * Validates externally supplied path implementations and converts logical paths into internal storage keys.
@@ -1187,6 +1312,172 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
         foreach (Runtime\Arr\Access::keys($this->directories) as $key)
             if (Runtime\Str\SB\Search::startsWith($prefix, $key))
                 unset($this->directories[$key]);
+
+    }
+
+    /**
+     * ### Validates a directory transfer destination
+     *
+     * Validates the existence of the source directory, the availability of the destination path, and the
+     * relationship between both paths.
+     *
+     * Returns false if both paths identify the same existing directory.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateAncestors() To validate the logical directory path
+     * hierarchy.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To retrieve internal storage keys.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::directoryExists() To determine whether the destination
+     * parent directory exists.
+     * @uses \FireHub\Foundation\IO\Storage\Path::parent() To retrieve the logical destination parent directory.
+     * @uses \FireHub\Runtime\Str\SB\Search::startsWith() To determine whether the destination is a descendant of the
+     * source.
+     *
+     * @param \FireHub\Foundation\IO\Storage\Path $source <p>
+     * Logical source directory path.
+     * </p>
+     * @param \FireHub\Foundation\IO\Storage\Path $destination <p>
+     * Logical destination directory path.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\DirectoryNotFoundException If the source directory does not
+     * exist.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the destination path identifies
+     * an existing directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidDirectoryDestinationException If the destination path
+     * is not a descendant of the source.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return bool True if the directory transfer should proceed.
+     */
+    private function validateDirectoryDestination (Path $source, Path $destination):bool {
+
+        $this->validateAncestors($source);
+        $this->validateAncestors($destination);
+
+        $source_key = $this->key($source);
+        $destination_key = $this->key($destination);
+
+        if (isset($this->objects[$source_key]))
+            throw new InvalidObjectTypeException(
+                context: [
+                    'path' => $source->value()
+                ]
+            );
+
+        if (!isset($this->directories[$source_key]))
+            throw new DirectoryNotFoundException(
+                context: [
+                    'path' => $source->value()
+                ]
+            );
+
+        if ($source_key === $destination_key)
+            return false;
+
+        if (Runtime\Str\SB\Search::startsWith($source_key.'/', $destination_key))
+            throw new InvalidDirectoryDestinationException(
+                context: [
+                    'source' => $source->value(),
+                    'destination' => $destination->value()
+                ]
+            );
+
+        if (isset($this->objects[$destination_key]))
+            throw new InvalidObjectTypeException(
+                context: [
+                    'path' => $destination->value()
+                ]
+            );
+
+        if (isset($this->directories[$destination_key]))
+            throw new DirectoryAlreadyExistsException(
+                context: [
+                    'path' => $destination->value()
+                ]
+            );
+
+        $parent = $destination->parent();
+
+        if (!$this->directoryExists($parent))
+            throw new DirectoryNotFoundException(
+                context: [
+                    'path' => $parent?->value()
+                ]
+            );
+
+        return true;
+
+    }
+
+    /**
+     * ### Transfers storage directory descendants
+     *
+     * Copies or relocates all descendant-stored regular objects and directories from the source directory to the
+     * destination directory.
+     *
+     * Relative descendant paths and empty directories are preserved. This method does not transfer the source
+     * directory itself.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To retrieve internal storage directory keys.
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To determine the source directory prefix length.
+     * @uses \FireHub\Runtime\Str\SB\Search::startsWith() To identify descendant storage keys.
+     * @uses \FireHub\Runtime\Str\SB\Access::part() To retrieve relative descendant storage keys.
+     * @uses \FireHub\Runtime\Arr\Access::keys() To retrieve internal storage directory keys.
+     *
+     * @param \FireHub\Foundation\IO\Storage\Path $source <p>
+     * Logical source directory path.
+     * </p>
+     * @param \FireHub\Foundation\IO\Storage\Path $destination <p>
+     * Logical destination directory path.
+     * </p>
+     * @param bool $move <p>
+     * Whether source descendants should be removed after being transferred.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    private function transferDescendants (Path $source, Path $destination, bool $move):void {
+
+        $source_prefix = $this->key($source).'/';
+        $destination_prefix = $this->key($destination).'/';
+
+        $offset = Runtime\Str\SB\Inspection::length($source_prefix);
+
+        foreach (Runtime\Arr\Access::keys($this->directories) as $key) {
+
+            if (!Runtime\Str\SB\Search::startsWith($source_prefix, $key))
+                continue;
+
+            $target = $destination_prefix.Runtime\Str\SB\Access::part($key, $offset);
+
+            $this->directories[$target] = true;
+
+            if ($move)
+                unset($this->directories[$key]);
+
+        }
+
+        foreach ($this->objects as $key => $contents) {
+
+            if (!Runtime\Str\SB\Search::startsWith($source_prefix, $key))
+                continue;
+
+            $target = $destination_prefix.Runtime\Str\SB\Access::part($key, $offset);
+
+            $this->objects[$target] = $contents;
+
+            if ($move)
+                unset($this->objects[$key]);
+
+        }
 
     }
 
