@@ -21,7 +21,7 @@ use FireHub\Core\Foundation\Constant\Environment\Php\ {
 use FireHub\Foundation\IO\Storage\Path;
 use FireHub\Foundation\IO\Storage\Exception\ {
     InvalidObjectTypeException, InvalidPathException, InvalidRootDirectoryException, ObjectNotFoundException,
-    PathOutsideRootException, SymbolicLinkNotAllowedException
+    PathOutsideRootException, ReservedPathException, SymbolicLinkNotAllowedException
 };
 use FireHub\Runtime;
 
@@ -131,6 +131,7 @@ final readonly class PathResolver {
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
      * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
      * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\ReservedPathException If the path segment is reserved.
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
      * is not a directory.
      * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
@@ -392,7 +393,8 @@ final readonly class PathResolver {
      * Rejects filesystem names that are not supported by the current operating system.
      * @since 1.0.0
      *
-     * @uses \FireHub\Core\Constant\Environment\Php\PlatformInfo::OS_FAMILY To check the operating system.
+     * @uses \FireHub\Core\Foundation\Constant\Environment\Php\PlatformInfo::OS_FAMILY To check the operating system.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\AtomicWriter::isTemporary() To check for reserved names.
      * @uses \FireHub\Runtime\Str\SB\Regex::match() To check for invalid characters.
      *
      * @param non-empty-string $segment <p>
@@ -400,12 +402,20 @@ final readonly class PathResolver {
      * </p>
      *
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\ReservedPathException If the path segment is reserved.
      *
      * @return void
      */
     private function validateSegment (string $segment):void {
 
         if (PlatformInfo::OS_FAMILY !== 'Windows') return;
+
+        if (AtomicWriter::isTemporary($segment))
+            throw new ReservedPathException(
+                context: [
+                    'segment' => $segment
+                ]
+            );
 
         if (
             Runtime\Str\SB\Regex::match('/[<>:"|?*]/', $segment)

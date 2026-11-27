@@ -15,7 +15,7 @@ namespace FireHub\Foundation\IO\Storage\Driver;
 
 use FireHub\Core\Boundary\IO\Storage\Path;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
-    Appendable, Copyable, Locatable, Movable, Readable
+    Appendable, Copyable, Listable, Locatable, Movable, Readable
 };
 use FireHub\Core\Boundary\IO\Stream\ {
     Readable as ReadableStream, Writable as WritableStream
@@ -23,7 +23,7 @@ use FireHub\Core\Boundary\IO\Stream\ {
 use FireHub\Core\Foundation\Constant\Environment\Php\PlatformInfo;
 use FireHub\Foundation\IO\Storage\Permissions;
 use FireHub\Foundation\IO\Storage\Internal\ {
-    AtomicWriter, PathResolver
+    AtomicWriter, DirectoryIterator, PathResolver
 };
 use FireHub\Foundation\IO\Stream\ {
     Copier, File, Writer
@@ -50,13 +50,21 @@ use FireHub\Runtime;
  *
  * @since 1.0.0
  */
-final readonly class Local implements Readable, Appendable, Locatable, Copyable, Movable {
+final readonly class Local implements Readable, Appendable, Locatable, Copyable, Movable, Listable {
 
     /**
      * ### Storage path resolver
      * @since 1.0.0
      */
     private PathResolver $resolver;
+
+    /**
+     * ### Storage directory iterator
+     * @since 1.0.0
+     *
+     * @var \FireHub\Foundation\IO\Storage\Internal\DirectoryIterator
+     */
+    private DirectoryIterator $iterator;
 
     /**
      * ### Constructor
@@ -81,6 +89,8 @@ final readonly class Local implements Readable, Appendable, Locatable, Copyable,
     ) {
 
         $this->resolver = new PathResolver($root);
+
+        $this->iterator = new DirectoryIterator($this->resolver);
 
     }
 
@@ -738,6 +748,69 @@ final readonly class Local implements Readable, Appendable, Locatable, Copyable,
             return;
 
         Runtime\FileSystem\File::rename($resolved_source, $resolved_destination);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * foreach ($driver->files(
+     *     new \FireHub\Foundation\IO\Storage\Path('documents'),
+     *     recursive: true
+     * ) as $path) {
+     *
+     *     echo $path->value();
+     *
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\DirectoryIterator::files() To lazily enumerate stored files.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the starting directory is not a
+     * directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function files (?Path $directory = null, bool $recursive = false):iterable {
+
+        return $this->iterator->files($directory, $recursive);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * foreach ($driver->directories(
+     *     new \FireHub\Foundation\IO\Storage\Path('documents'),
+     *     recursive: true
+     * ) as $path) {
+     *
+     *     echo $path->value();
+     *
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\DirectoryIterator::directories() To lazily enumerate storage
+     * directories.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the starting directory is not a
+     * directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function directories (?Path $directory = null, bool $recursive = false):iterable {
+
+        return $this->iterator->directories($directory, $recursive);
 
     }
 

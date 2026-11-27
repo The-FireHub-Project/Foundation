@@ -7,7 +7,7 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.2
+ * @php-version >=8.3
  * @package Foundation
  */
 
@@ -15,14 +15,17 @@ namespace FireHub\Foundation\IO\Storage\Driver;
 
 use FireHub\Core\Boundary\IO\Storage\Path as PathContract;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
-    Appendable, Copyable, Movable, Readable
+    Appendable, Copyable, Listable, Movable, Readable
 };
 use FireHub\Core\Boundary\IO\Stream\Readable as ReadableStream;
 use FireHub\Foundation\IO\Storage\Path;
 use FireHub\Foundation\IO\Stream\ {
     Copier, Memory as MemoryStream, Writer
 };
-use FireHub\Foundation\IO\Storage\Exception\ObjectNotFoundException;
+use FireHub\Foundation\IO\Storage\Exception\ {
+    InvalidObjectTypeException, ObjectNotFoundException
+};
+use FireHub\Runtime;
 use Throwable;
 
 /**
@@ -47,7 +50,17 @@ use Throwable;
  *
  * @since 1.0.0
  */
-final class Memory implements Readable, Appendable, Copyable, Movable {
+final class Memory implements Readable, Appendable, Copyable, Movable, Listable {
+
+    /**
+     * ### Internal storage key prefix
+     *
+     * Prevents PHP from converting numeric logical paths into integer keys.
+     * @since 1.0.0
+     *
+     * @var non-empty-string
+     */
+    private const string KEY_PREFIX = 'storage:';
 
     /**
      * ### Stored objects
@@ -55,9 +68,19 @@ final class Memory implements Readable, Appendable, Copyable, Movable {
      * Maps logical storage paths to their corresponding contents.
      * @since 1.0.0
      *
-     * @var array<string, string>
+     * @var array<non-empty-string, string>
      */
     private array $objects = [];
+
+    /**
+     * ### Registered storage directories
+     *
+     * Stores explicitly created logical directories. The storage root directory exists implicitly.
+     * @since 1.0.0
+     *
+     * @var array<non-empty-string, true>
+     */
+    private array $directories = [];
 
     /**
      * ### Determines whether a stored object exists
@@ -560,12 +583,83 @@ final class Memory implements Readable, Appendable, Copyable, Movable {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * foreach ($driver->files(new Path('documents'), true) as $path) {
+     *
+     *     echo $path->value();
+     *
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::listingPrefix() To resolve the internal directory prefix.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::matchesPrefix() To determine whether a stored object
+     * belongs to the requested directory.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::pathFromKey() To reconstruct logical storage paths.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the specified directory path
+     * identifies a stored object.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function files (?PathContract $directory = null, bool $recursive = false):iterable {
+
+        $prefix = $this->listingPrefix($directory);
+
+        foreach ($this->objects as $key => $contents)
+
+            if ($this->matchesPrefix($key, $prefix, $recursive))
+                yield $this->pathFromKey($key);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * foreach ($driver->directories(new Path('documents'), true) as $path) {
+     *
+     *     echo $path->value();
+     *
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::listingPrefix() To resolve the internal directory prefix.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::matchesPrefix() To determine whether a directory belongs
+     * to the requested directory.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::pathFromKey() To reconstruct logical storage paths.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the specified directory path
+     * identifies a stored object.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function directories (?PathContract $directory = null, bool $recursive = false):iterable {
+
+        $prefix = $this->listingPrefix($directory);
+
+        foreach ($this->directories as $key => $exists)
+
+            if ($this->matchesPrefix($key, $prefix, $recursive))
+                yield $this->pathFromKey($key);
+
+    }
+
+    /**
      * ### Resolves an internal storage key
      *
      * Validates externally supplied path implementations and converts logical paths into internal storage keys.
      * @since 1.0.0
      *
      * @uses \FireHub\Core\Boundary\IO\Storage\Path::value() To retrieve the logical path value.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::KEY_PREFIX To prefix the internal storage key.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical storage path.
@@ -583,7 +677,124 @@ final class Memory implements Readable, Appendable, Copyable, Movable {
             ? $path
             : new Path($path->value());
 
-        return 'storage:'.$path->value();
+        return self::KEY_PREFIX.$path->value();
+
+    }
+
+    /**
+     * ### Resolves an internal directory listing prefix
+     *
+     * Converts a logical directory path into an internal storage key prefix.
+     *
+     * The storage root is represented by the internal key prefix itself. Non-root directory prefixes include a
+     * trailing path separator.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
+     *
+     * @param null|\FireHub\Core\Boundary\IO\Storage\Path $directory <p>
+     * Logical directory path or null for the storage root.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the specified directory path
+     * identifies a stored object.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return non-empty-string Internal directory listing prefix.
+     */
+    private function listingPrefix (?PathContract $directory):string {
+
+        if ($directory === null)
+            return self::KEY_PREFIX;
+
+        $key = $this->key($directory);
+
+        if (isset($this->objects[$key]))
+            throw new InvalidObjectTypeException(
+                context: [
+                    'path' => $directory->value()
+                ]
+            );
+
+        return $key.'/';
+
+    }
+
+    /**
+     * ### Determines whether a storage key matches a directory listing prefix
+     *
+     * Matches storage keys belonging to the specified logical directory.
+     *
+     * Non-recursive matching excludes objects and directories located
+     * within descendant directories.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Search::startsWith() To determine whether the storage key starts with the
+     * directory prefix.
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To determine the directory prefix length.
+     * @uses \FireHub\Runtime\Str\SB\Access::part() To retrieve the relative portion of the storage key.
+     * @uses \FireHub\Runtime\Str\SB\Search::contains() To determine whether the relative portion of the storage key
+     * contains the directory separator.
+     *
+     * @param non-empty-string $key <p>
+     * Internal storage key.
+     * </p>
+     * @param non-empty-string $prefix <p>
+     * Internal directory listing prefix.
+     * </p>
+     * @param bool $recursive <p>
+     * Whether descendant objects and directories should be included.
+     * </p>
+     *
+     * @return bool True if the storage key matches the listing criteria.
+     */
+    private function matchesPrefix (string $key, string $prefix, bool $recursive):bool {
+
+        if (!Runtime\Str\SB\Search::startsWith($prefix, $key))
+            return false;
+
+        if ($recursive)
+            return true;
+
+        $relative = Runtime\Str\SB\Access::part(
+            $key,
+            Runtime\Str\SB\Inspection::length($prefix)
+        );
+
+        return !Runtime\Str\SB\Search::contains('/', $relative);
+
+    }
+
+    /**
+     * ### Reconstructs a logical storage path from an internal storage key
+     *
+     * Removes the internal storage key prefix and constructs the corresponding logical storage path.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Inspection::length() To determine the internal storage key prefix length.
+     * @uses \FireHub\Runtime\Str\SB\Access::part() To remove the internal storage key prefix.
+     *
+     * @param non-empty-string $key <p>
+     * Internal storage key.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return \FireHub\Foundation\IO\Storage\Path Logical storage path.
+     */
+    private function pathFromKey (string $key):Path {
+
+        /** @var non-empty-string $value */
+        $value = Runtime\Str\SB\Access::part(
+            $key,
+            Runtime\Str\SB\Inspection::length(self::KEY_PREFIX)
+        );
+
+        return new Path($value);
 
     }
 
