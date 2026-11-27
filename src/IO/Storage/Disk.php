@@ -284,6 +284,106 @@ final readonly class Disk implements DiskContract {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->append('example.txt', 'Additional contents');
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::appendable() To retrieve the appendable storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::path() To normalize the logical storage path.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\Appendable::append() To append the supplied contents.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the configured driver is not
+     * appendable.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function append (string|PathContract $path, string $contents):void {
+
+        $this->appendable()->append(
+            $this->path($path),
+            $contents
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->prepend('example.txt', 'Header');
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::appendable() To retrieve the appendable storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::path() To normalize the logical storage path.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\Appendable::prepend() To prepend the supplied contents.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the driver does not support
+     * prepend operations.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function prepend (string|PathContract $path, string $contents):void {
+
+        $this->appendable()->prepend(
+            $this->path($path),
+            $contents
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->appendStream('example.txt', $stream);
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::appendable() To retrieve the appendable storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::path() To normalize the logical storage path.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\Appendable::appendStream() To append the source stream contents.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the driver does not support
+     * append operations.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function appendStream (string|PathContract $path, Readable $stream):void {
+
+        $this->appendable()->appendStream(
+            $this->path($path),
+            $stream
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->isAppendable();
+     * // true
+     * </code>
+     *
+     * @since 1.0.0
+     */
+    public function isAppendable ():bool {
+
+        return $this->driver instanceof Driver\Appendable;
+
+    }
+
+    /**
      * ### Resolves a logical storage path
      * @since 1.0.0
      *
@@ -318,7 +418,11 @@ final readonly class Disk implements DiskContract {
 
         return $this->driver instanceof Driver\Readable
             ? $this->driver
-            : throw new UnsupportedOperationException;
+            : throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'read'
+                ]
+            );
 
     }
 
@@ -335,7 +439,11 @@ final readonly class Disk implements DiskContract {
 
         return $this->driver instanceof Driver\Writable
             ? $this->driver
-            : throw new UnsupportedOperationException;
+            : throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'write'
+                ]
+            );
 
     }
 
@@ -352,7 +460,34 @@ final readonly class Disk implements DiskContract {
 
         return $this->driver instanceof Driver\Locatable
             ? $this->driver
-            : throw new UnsupportedOperationException;
+            : throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'locate'
+                ]
+            );
+
+    }
+
+    /**
+     * ### Gets the appendable storage driver
+     *
+     * Ensures that the configured storage driver supports extending stored object contents.
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the configured driver is not
+     * appendable.
+     *
+     * @return \FireHub\Core\Boundary\IO\Storage\Driver\Appendable Appendable storage driver.
+     */
+    private function appendable ():Driver\Appendable {
+
+        return $this->driver instanceof Driver\Appendable
+            ? $this->driver
+            : throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'append'
+                ]
+            );
 
     }
 
