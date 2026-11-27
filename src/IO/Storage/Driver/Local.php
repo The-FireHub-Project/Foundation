@@ -97,11 +97,14 @@ final readonly class Local implements Readable, Writable, Locatable {
      * Logical path of the stored object.
      * </p>
      *
-     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
-     * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
-     * file doesn't exist, or a script doesn't have executable permissions.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path points outside
-     * the storage root directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
      *
      * @return bool True if the stored object exists, false otherwise.
      */
@@ -138,12 +141,14 @@ final readonly class Local implements Readable, Writable, Locatable {
      * </p>
      *
      * @throws \FireHub\Runtime\Exception\ReadFileException If we can't get content from a path.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
-     * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
-     * file doesn't exist, or a script doesn't have executable permissions.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path
-     * points outside the storage root directory.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\ObjectNotFoundException If the stored object does not exist.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
      *
      * @return string Complete contents of the stored object.
      */
@@ -278,13 +283,14 @@ final readonly class Local implements Readable, Writable, Locatable {
      * Logical path of the stored object.
      * </p>
      *
-     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the file cannot be opened.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
-     * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
-     * file doesn't exist, or a script doesn't have executable permissions.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path
-     * points outside the storage root directory.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\ObjectNotFoundException If the stored object does not exist.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
      *
      * @return \FireHub\Core\Boundary\IO\Stream\Readable Readable file stream.
      */
@@ -379,12 +385,14 @@ final readonly class Local implements Readable, Writable, Locatable {
      * Logical path of the stored object.
      * </p>
      *
-     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
-     * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
-     * file doesn't exist, or a script doesn't have executable permissions.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path
-     * points outside the storage root directory.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\ObjectNotFoundException If the stored object does not exist.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
      */
     public function locate (Path $path):string {
 

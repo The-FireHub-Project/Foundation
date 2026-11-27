@@ -265,7 +265,7 @@ final readonly class PathResolver {
      * @uses \FireHub\Runtime\FileSystem\File::exist() To check if the path is a file.
      * @uses \FireHub\Runtime\FileSystem\File::isFile() To check if the path is a regular file.
      *
-     * throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
      * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
      * symbolic link.
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
