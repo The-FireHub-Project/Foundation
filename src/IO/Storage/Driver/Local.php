@@ -15,7 +15,7 @@ namespace FireHub\Foundation\IO\Storage\Driver;
 
 use FireHub\Core\Boundary\IO\Storage\Path;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
-    Locatable, Readable, Writable
+    Appendable, Locatable, Readable
 };
 use FireHub\Core\Boundary\IO\Stream\ {
     Readable as ReadableStream, Writable as WritableStream
@@ -49,7 +49,7 @@ use FireHub\Runtime;
  *
  * @since 1.0.0
  */
-final readonly class Local implements Readable, Writable, Locatable {
+final readonly class Local implements Readable, Appendable, Locatable {
 
     /**
      * ### Storage path resolver
@@ -406,6 +406,234 @@ final readonly class Local implements Readable, Writable, Locatable {
     public function locate (Path $path):string {
 
         return $this->resolver->locate($path);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $driver->append(
+     *     new \FireHub\Foundation\IO\Storage\Path('example.txt'),
+     *     'Additional contents'
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolveFile() To resolve the physical file path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Local::put() To create a missing stored file.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To invalidate cached filesystem metadata.
+     * @uses \FireHub\Runtime\FileSystem\File::isFile() To determine whether the file exists.
+     * @uses \FireHub\Runtime\FileSystem\File::putContent() To append contents to an existing file.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the stored file.
+     * </p>
+     * @param string $contents <p>
+     * Contents to append.
+     * </p>.
+     *
+     * @throws \FireHub\Runtime\Exception\FileNotFoundException If $path is not file.
+     * @throws \FireHub\Runtime\Exception\FileWriteException If the $create_file option is off or couldn't put
+     * content on a path.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return void
+     *
+     * @note Appending to an existing file is performed in place.
+     * A failed write may leave partially appended contents.
+     */
+    public function append (Path $path, string $contents):void {
+
+        $resolved = $this->resolver->resolveFile($path);
+
+        Runtime\FileSystem\Metadata::clearCache(true, $resolved);
+
+        if (!Runtime\FileSystem\File::isFile($resolved)) {
+
+            $this->put($path, $contents);
+
+            return;
+
+        }
+
+        Runtime\FileSystem\File::putContent(
+            $resolved,
+            $contents,
+            true,
+            create_file: false
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $driver->prepend(
+     *     new \FireHub\Foundation\IO\Storage\Path('example.txt'),
+     *     'Header'
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolveFile() To resolve the physical destination
+     * path.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\AtomicWriter::write() To replace the stored file through a
+     * temporary file.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Local::put() To create a missing stored file.
+     * @uses \FireHub\Foundation\IO\Stream\File::close() To close the source file stream.
+     * @uses \FireHub\Foundation\IO\Stream\Writer::write() To write the prepended contents.
+     * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To copy the existing file contents.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To invalidate cached filesystem metadata.
+     * @uses \FireHub\Runtime\FileSystem\File::isFile() To determine whether the file exists.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the stored file.
+     * </p>
+     * @param string $contents <p>
+     * Contents to prepend.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return void
+     */
+    public function prepend (Path $path, string $contents):void {
+
+        $resolved = $this->resolver->resolveFile($path);
+
+        Runtime\FileSystem\Metadata::clearCache(true, $resolved);
+
+        if (!Runtime\FileSystem\File::isFile($resolved)) {
+
+            $this->put($path, $contents);
+
+            return;
+
+        }
+
+        AtomicWriter::write(
+            $resolved,
+            static function (WritableStream $destination) use ($resolved, $contents):void {
+
+                $source = new File(
+                    $resolved,
+                    Runtime\Stream\Enum\OpenMode::READ_BINARY
+                );
+
+                try {
+
+                    Writer::write($destination, $contents);
+
+                    Copier::copy($source, $destination);
+
+                } finally {
+
+                    $source->close();
+
+                }
+
+            },
+            $this->permissions
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $driver->appendStream(
+     *     new \FireHub\Foundation\IO\Storage\Path('example.txt'),
+     *     $stream
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolveFile() To resolve the physical destination
+     * path.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\AtomicWriter::write() To replace the stored file through a
+     * temporary file.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Local::writeStream() To create a missing stored file.
+     * @uses \FireHub\Foundation\IO\Stream\File::close() To close the internally created source stream.
+     * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To copy existing and appended stream contents.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To invalidate cached filesystem metadata.
+     * @uses \FireHub\Runtime\FileSystem\File::isFile() To determine whether the file exists.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the stored file.
+     * </p>
+     * @param \FireHub\Core\Boundary\IO\Stream\Readable $stream <p>
+     * Source stream containing the contents to append.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return void
+     */
+    public function appendStream (Path $path, ReadableStream $stream):void {
+
+        $resolved = $this->resolver->resolveFile($path);
+
+        Runtime\FileSystem\Metadata::clearCache(true, $resolved);
+
+        if (!Runtime\FileSystem\File::isFile($resolved)) {
+
+            $this->writeStream($path, $stream);
+
+            return;
+
+        }
+
+        AtomicWriter::write(
+            $resolved,
+            static function (WritableStream $destination) use ($resolved, $stream):void {
+
+                $source = new File(
+                    $resolved,
+                    Runtime\Stream\Enum\OpenMode::READ_BINARY
+                );
+
+                try {
+
+                    Copier::copy($source, $destination);
+
+                } finally {
+
+                    $source->close();
+
+                }
+
+                Copier::copy($stream, $destination);
+
+            },
+            $this->permissions
+        );
 
     }
 
