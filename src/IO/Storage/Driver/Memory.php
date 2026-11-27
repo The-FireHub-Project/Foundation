@@ -15,7 +15,7 @@ namespace FireHub\Foundation\IO\Storage\Driver;
 
 use FireHub\Core\Boundary\IO\Storage\Path as PathContract;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
-    Readable, Writable
+    Appendable, Readable
 };
 use FireHub\Core\Boundary\IO\Stream\Readable as ReadableStream;
 use FireHub\Foundation\IO\Storage\Path;
@@ -23,8 +23,6 @@ use FireHub\Foundation\IO\Stream\ {
     Copier, Memory as MemoryStream, Writer
 };
 use FireHub\Foundation\IO\Storage\Exception\ObjectNotFoundException;
-use FireHub\Foundation\IO\Stream\Exception\StreamException;
-use FireHub\Runtime;
 use Throwable;
 
 /**
@@ -49,7 +47,7 @@ use Throwable;
  *
  * @since 1.0.0
  */
-final class Memory implements Readable, Writable {
+final class Memory implements Readable, Appendable {
 
     /**
      * ### Stored objects
@@ -318,6 +316,152 @@ final class Memory implements Readable, Writable {
         }
 
         $this->objects[$key] = $contents;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $driver = new Memory;
+     * $path = new \FireHub\Foundation\IO\Storage\Path('example.txt');
+     *
+     * $driver->put($path, 'FireHub');
+     * $driver->append($path, ' Project');
+     *
+     * $driver->get($path);
+     * // 'FireHub Project'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the stored object.
+     * </p>
+     * @param string $contents <p>
+     * Contents to append.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function append (PathContract $path, string $contents):void {
+
+        $key = $this->key($path);
+
+        $this->objects[$key] = ($this->objects[$key] ?? '').$contents;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $driver = new Memory;
+     * $path = new \FireHub\Foundation\IO\Storage\Path('example.txt');
+     *
+     * $driver->put($path, 'FireHub Project');
+     * $driver->prepend($path, 'The ');
+     *
+     * $driver->get($path);
+     * // 'The FireHub Project'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the stored object.
+     * </p>
+     * @param string $contents <p>
+     * Contents to prepend.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function prepend (PathContract $path, string $contents):void {
+
+        $key = $this->key($path);
+
+        $this->objects[$key] = $contents.($this->objects[$key] ?? '');
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $driver = new Memory;
+     * $path = new \FireHub\Foundation\IO\Storage\Path('example.txt');
+     *
+     * $driver->put($path, 'FireHub');
+     *
+     * $stream = new \FireHub\Foundation\IO\Stream\Memory;
+     *
+     * \FireHub\Foundation\IO\Stream\Writer::write($stream, ' Project');
+     *
+     * $stream->rewind();
+     *
+     * $driver->appendStream($path, $stream);
+     *
+     * $stream->close();
+     *
+     * $driver->get($path);
+     * // 'FireHub Project'
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
+     * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To copy the source stream contents.
+     * @uses \FireHub\Foundation\IO\Stream\Memory::rewind() To reset the temporary stream position.
+     * @uses \FireHub\Foundation\IO\Stream\Memory::contents() To retrieve the copied contents.
+     * @uses \FireHub\Foundation\IO\Stream\Memory::close() To release the temporary stream.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the stored object.
+     * </p>
+     * @param \FireHub\Core\Boundary\IO\Stream\Readable $stream <p>
+     * Source stream containing the contents to append.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function appendStream (PathContract $path, ReadableStream $stream):void {
+
+        $key = $this->key($path);
+
+        $destination = new MemoryStream;
+
+        try {
+
+            Copier::copy($stream, $destination);
+
+            $destination->rewind();
+
+            $contents = $destination->contents();
+
+        } finally {
+
+            $destination->close();
+
+        }
+
+        $this->objects[$key] = ($this->objects[$key] ?? '').$contents;
 
     }
 
