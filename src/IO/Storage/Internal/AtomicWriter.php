@@ -47,6 +47,40 @@ final readonly class AtomicWriter {
     private const string PREFIX = '.firehub-';
 
     /**
+     * ### Determines whether a filename is reserved for temporary storage files
+     *
+     * Identifies filenames reserved for temporary files created during atomic storage write operations.
+     *
+     * <code>
+     * AtomicWriter::isTemporary(
+     *     '.firehub-4e920bc18f4719f8cc38b64b62e1829f.tmp'
+     * );
+     * // true
+     *
+     * AtomicWriter::isTemporary('example.txt');
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\Str\SB\Regex::match() To match the reserved temporary filename format.
+     *
+     * @param non-empty-string $name <p>
+     * Filename to inspect.
+     * </p>
+     *
+     * @return bool True if the filename matches the reserved temporary file format.
+     */
+    public static function isTemporary (string $name):bool {
+
+        return Runtime\Str\SB\Regex::match(
+            '/\A\.firehub-[a-f0-9]{32}\.tmp\z/i',
+            $name
+        );
+
+    }
+
+    /**
      * ### Writes contents through a temporary file
      *
      * Creates a temporary file, invokes the supplied writer, closes the temporary stream, and replaces the
