@@ -15,11 +15,12 @@ namespace FireHub\Foundation\IO\Storage\Driver;
 
 use FireHub\Core\Boundary\IO\Storage\Path;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
-    Appendable, Locatable, Readable
+    Appendable, Copyable, Locatable, Movable, Readable
 };
 use FireHub\Core\Boundary\IO\Stream\ {
     Readable as ReadableStream, Writable as WritableStream
 };
+use FireHub\Core\Foundation\Constant\Environment\Php\PlatformInfo;
 use FireHub\Foundation\IO\Storage\Permissions;
 use FireHub\Foundation\IO\Storage\Internal\ {
     AtomicWriter, PathResolver
@@ -49,7 +50,7 @@ use FireHub\Runtime;
  *
  * @since 1.0.0
  */
-final readonly class Local implements Readable, Appendable, Locatable {
+final readonly class Local implements Readable, Appendable, Locatable, Copyable, Movable {
 
     /**
      * ### Storage path resolver
@@ -634,6 +635,141 @@ final readonly class Local implements Readable, Appendable, Locatable {
             },
             $this->permissions
         );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $driver->copy(
+     *     new \FireHub\Foundation\IO\Storage\Path('example.txt'),
+     *     new \FireHub\Foundation\IO\Storage\Path('backup.txt')
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::locate() To resolve the existing source file.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolveFile() To resolve the destination file path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Local::sameLocation() To determine whether both paths identify the
+     * same filesystem location.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\AtomicWriter::write() To replace the destination file through a
+     * temporary file.
+     * @uses \FireHub\Foundation\IO\Stream\File::close() To release the source file stream.
+     * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To copy the source file contents.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return void
+     */
+    public function copy (Path $source, Path $destination):void {
+
+        $resolved_source = $this->resolver->locate($source);
+        $resolved_destination = $this->resolver->resolveFile($destination);
+
+        if ($this->sameLocation($resolved_source, $resolved_destination))
+            return;
+
+        AtomicWriter::write(
+            $resolved_destination,
+            static function (WritableStream $stream) use ($resolved_source):void {
+
+                $file = new File($resolved_source, Runtime\Stream\Enum\OpenMode::READ_BINARY);
+
+                try {
+
+                    Copier::copy($file, $stream);
+
+                } finally {
+
+                    $file->close();
+
+                }
+
+            },
+            $this->permissions
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $driver->move(
+     *     new \FireHub\Foundation\IO\Storage\Path('example.txt'),
+     *     new \FireHub\Foundation\IO\Storage\Path('archive/example.txt')
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::locate() To resolve the existing source file.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolveFile() To resolve the destination file path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Local::sameLocation() To determine whether both paths identify the
+     * same filesystem location.
+     * @uses \FireHub\Runtime\FileSystem\File::rename() To move the source file to the destination location.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return void
+     */
+    public function move (Path $source, Path $destination):void {
+
+        $resolved_source = $this->resolver->locate($source);
+        $resolved_destination = $this->resolver->resolveFile($destination);
+
+        if ($this->sameLocation($resolved_source, $resolved_destination))
+            return;
+
+        Runtime\FileSystem\File::rename($resolved_source, $resolved_destination);
+
+    }
+
+    /**
+     * ### Determines whether two filesystem paths identify the same location
+     *
+     * Compares resolved filesystem paths.
+     *
+     * Windows paths are compared using an ASCII case-insensitive comparison. Other filesystem paths are compared
+     * using a case-sensitive comparison.
+     *
+     * This comparison does not guarantee physical file identity when filesystem aliases or hard links are involved.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Runtime\PlatformInfo::OS_FAMILY To determine the operating system family.
+     * @uses \FireHub\Runtime\Str\SB\Compare::lexical() To compare paths lexically.
+     *
+     * @param non-empty-string $source <p>
+     * Resolved physical source file path.
+     * </p>
+     * @param non-empty-string $destination <p>
+     * Resolved physical destination file path.
+     * </p>
+     *
+     * @return bool True if both paths identify the same filesystem location according to the configured comparison
+     * strategy.
+     */
+    private function sameLocation (string $source, string $destination):bool {
+
+        return PlatformInfo::OS_FAMILY === 'Windows'
+            ? Runtime\Str\SB\Compare::lexical($source, $destination, false) === 0
+            : $source === $destination;
 
     }
 

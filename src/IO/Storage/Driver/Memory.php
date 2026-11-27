@@ -15,7 +15,7 @@ namespace FireHub\Foundation\IO\Storage\Driver;
 
 use FireHub\Core\Boundary\IO\Storage\Path as PathContract;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
-    Appendable, Readable
+    Appendable, Copyable, Movable, Readable
 };
 use FireHub\Core\Boundary\IO\Stream\Readable as ReadableStream;
 use FireHub\Foundation\IO\Storage\Path;
@@ -47,7 +47,7 @@ use Throwable;
  *
  * @since 1.0.0
  */
-final class Memory implements Readable, Appendable {
+final class Memory implements Readable, Appendable, Copyable, Movable {
 
     /**
      * ### Stored objects
@@ -462,6 +462,100 @@ final class Memory implements Readable, Appendable {
         }
 
         $this->objects[$key] = ($this->objects[$key] ?? '').$contents;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $driver = new Memory;
+     *
+     * $source = new \FireHub\Foundation\IO\Storage\Path('example.txt');
+     * $destination = new \FireHub\Foundation\IO\Storage\Path('backup.txt');
+     *
+     * $driver->put($source, 'The FireHub Project');
+     * $driver->copy($source, $destination);
+     *
+     * $driver->get($destination);
+     * // 'The FireHub Project'
+     *
+     * $driver->exists($source);
+     * // true
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function copy (PathContract $source, PathContract $destination):void {
+
+        $source_key = $this->key($source);
+        $destination_key = $this->key($destination);
+
+        if (!isset($this->objects[$source_key]))
+            throw new ObjectNotFoundException(
+                context: [
+                    'path' => $source->value()
+                ]
+            );
+
+        if ($source_key === $destination_key)
+            return;
+
+        $this->objects[$destination_key] = $this->objects[$source_key];
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $driver = new Memory;
+     *
+     * $source = new \FireHub\Foundation\IO\Storage\Path('example.txt');
+     * $destination = new \FireHub\Foundation\IO\Storage\Path('archive/example.txt');
+     *
+     * $driver->put($source, 'The FireHub Project');
+     * $driver->move($source, $destination);
+     *
+     * $driver->get($destination);
+     * // 'The FireHub Project'
+     *
+     * $driver->exists($source);
+     * // false
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function move (PathContract $source, PathContract $destination):void {
+
+        $source_key = $this->key($source);
+        $destination_key = $this->key($destination);
+
+        if (!isset($this->objects[$source_key]))
+            throw new ObjectNotFoundException(
+                context: [
+                    'path' => $source->value()
+                ]
+            );
+
+        if ($source_key === $destination_key)
+            return;
+
+        $this->objects[$destination_key] = $this->objects[$source_key];
+
+        unset($this->objects[$source_key]);
 
     }
 
