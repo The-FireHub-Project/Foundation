@@ -684,6 +684,240 @@ final readonly class Disk implements DiskContract {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->isDirectoryAware();
+     * </code>
+     *
+     * @since 1.0.0
+     */
+    public function isDirectoryAware ():bool {
+
+        return $this->driver instanceof Driver\DirectoryAware;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->isDirectoryWritable();
+     * </code>
+     *
+     * @since 1.0.0
+     */
+    public function isDirectoryWritable ():bool {
+
+        return $this->driver instanceof Driver\DirectoryWritable;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->isDirectoryCopyable();
+     * </code>
+     *
+     * @since 1.0.0
+     */
+    public function isDirectoryCopyable ():bool {
+
+        return $this->driver instanceof Driver\DirectoryCopyable;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->isDirectoryMovable();
+     * </code>
+     *
+     * @since 1.0.0
+     */
+    public function isDirectoryMovable ():bool {
+
+        return $this->driver instanceof Driver\DirectoryMovable;
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->directoryExists('documents');
+     * $disk->directoryExists();
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::directoryAware() To retrieve the directory-aware storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::directoryPath() To normalize the logical directory path.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\DirectoryAware::directoryExists() To determine whether the
+     * storage directory exists.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the storage driver does not
+     * support directory awareness.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function directoryExists (null|string|PathContract $directory = null):bool {
+
+        return $this->directoryAware()->directoryExists(
+            $this->directoryPath($directory)
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * if ($disk->directoryMissing('documents')) {
+     *
+     *     $disk->makeDirectory('documents');
+     *
+     * }
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::directoryExists() To determine whether the storage directory exists.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the storage driver does not
+     * support directory awareness.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function directoryMissing (null|string|PathContract $directory = null):bool {
+
+        return !$this->directoryExists($directory);
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->makeDirectory('documents');
+     *
+     * $disk->makeDirectory('documents/archive/2026', recursive: true);
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::directoryWritable() To retrieve the directory-writable storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::path() To normalize the logical directory path.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\DirectoryWritable::makeDirectory() To create the storage
+     * directory.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the storage driver does not
+     * support directory awareness.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function makeDirectory (string|PathContract $directory, bool $recursive = false):void {
+
+        $this->directoryWritable()->makeDirectory(
+            $this->path($directory),
+            $recursive
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->deleteDirectory('empty');
+     *
+     * $disk->deleteDirectory('documents/archive', recursive: true);
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::directoryWritable() To retrieve the directory-writable storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::path() To normalize the logical directory path.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\DirectoryWritable::deleteDirectory() To delete the storage
+     * directory.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the storage driver does not
+     * support directory awareness.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function deleteDirectory (string|PathContract $directory, bool $recursive = false):void {
+
+        $this->directoryWritable()->deleteDirectory(
+            $this->path($directory),
+            $recursive
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->copyDirectory('documents', 'backup');
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::directoryCopyable() To retrieve the directory-copyable storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::path() To normalize the source and destination paths.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\DirectoryCopyable::copyDirectory() To copy the storage directory.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the storage driver does not
+     * support directory awareness.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function copyDirectory (string|PathContract $source, string|PathContract $destination):void {
+
+        $this->directoryCopyable()->copyDirectory(
+            $this->path($source),
+            $this->path($destination)
+        );
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $disk->moveDirectory('documents', 'archive');
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Disk::directoryMovable() To retrieve the directory-movable storage driver.
+     * @uses \FireHub\Foundation\IO\Storage\Disk::path() To normalize the source and destination paths.
+     * @uses \FireHub\Core\Boundary\IO\Storage\Driver\DirectoryMovable::moveDirectory() To move the storage directory.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the storage driver does not
+     * support directory awareness.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     */
+    public function moveDirectory (string|PathContract $source, string|PathContract $destination):void {
+
+        $this->directoryMovable()->moveDirectory(
+            $this->path($source),
+            $this->path($destination)
+        );
+
+    }
+
+    /**
      * ### Resolves a logical storage path
      * @since 1.0.0
      *
@@ -809,6 +1043,90 @@ final readonly class Disk implements DiskContract {
             : throw new UnsupportedOperationException(
                 context: [
                     'operation' => 'list'
+                ]
+            );
+
+    }
+
+    /**
+     * ### Retrieves the directory-aware storage driver
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the storage driver does not
+     * support directory awareness.
+     *
+     * @return \FireHub\Core\Boundary\IO\Storage\Driver\DirectoryAware Directory-aware storage driver.
+     */
+    private function directoryAware ():Driver\DirectoryAware {
+
+        return $this->driver instanceof Driver\DirectoryAware
+            ? $this->driver
+            : throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'directoryExists'
+                ]
+            );
+
+    }
+
+    /**
+     * ### Retrieves the directory-writable storage driver
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the storage driver does not
+     * support directory modification.
+     *
+     * @return \FireHub\Core\Boundary\IO\Storage\Driver\DirectoryWritable Directory-writable storage driver.
+     */
+    private function directoryWritable ():Driver\DirectoryWritable {
+
+        return $this->driver instanceof Driver\DirectoryWritable
+            ? $this->driver
+            : throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'directoryModification'
+                ]
+            );
+
+    }
+
+    /**
+     * ### Retrieves the directory-copyable storage driver
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the storage driver does not
+     * support directory copying.
+     *
+     * @return \FireHub\Core\Boundary\IO\Storage\Driver\DirectoryCopyable Directory-copyable storage driver.
+     */
+    private function directoryCopyable ():Driver\DirectoryCopyable {
+
+        return $this->driver instanceof Driver\DirectoryCopyable
+            ? $this->driver
+            : throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'copyDirectory'
+                ]
+            );
+
+    }
+
+    /**
+     * ### Retrieves the directory-movable storage driver
+     * @since 1.0.0
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\UnsupportedOperationException If the storage driver does not
+     * support directory moving.
+     *
+     * @return \FireHub\Core\Boundary\IO\Storage\Driver\DirectoryMovable Directory-movable storage driver.
+     */
+    private function directoryMovable ():Driver\DirectoryMovable {
+
+        return $this->driver instanceof Driver\DirectoryMovable
+            ? $this->driver
+            : throw new UnsupportedOperationException(
+                context: [
+                    'operation' => 'moveDirectory'
                 ]
             );
 
