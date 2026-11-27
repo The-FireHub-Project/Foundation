@@ -15,20 +15,27 @@ namespace FireHub\Foundation\IO\Storage\Driver;
 
 use FireHub\Core\Boundary\IO\Storage\Path;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
-    Appendable, Copyable, Listable, Locatable, Movable, Readable,
+    Appendable, Copyable, Listable, Locatable, MetadataAware, Movable, Readable,
     DirectoryCopyable, DirectoryMovable, DirectoryWritable
 };
 use FireHub\Core\Boundary\IO\Stream\ {
     Readable as ReadableStream, Writable as WritableStream
 };
 use FireHub\Core\Foundation\Constant\Environment\Php\PlatformInfo;
-use FireHub\Foundation\IO\Storage\Permissions;
+use FireHub\Foundation\IO\Storage\ {
+    Permissions, Metadata
+};
 use FireHub\Foundation\IO\Storage\Internal\ {
     AtomicWriter, DirectoryIterator, DirectoryOperator, PathResolver
 };
 use FireHub\Foundation\IO\Stream\ {
     Copier, File, Writer
 };
+use FireHub\Foundation\Temporal\ {
+    DateTime, UnixTimestamp
+};
+use FireHub\Core\Exception\FireHubException;
+use FireHub\Foundation\IO\Storage\Exception\MetadataException;
 use FireHub\Runtime;
 
 /**
@@ -52,7 +59,7 @@ use FireHub\Runtime;
  * @since 1.0.0
  */
 final readonly class Local implements Readable, Appendable, Locatable, Copyable, Movable, Listable,
-    DirectoryWritable, DirectoryCopyable, DirectoryMovable {
+    DirectoryWritable, DirectoryCopyable, DirectoryMovable, MetadataAware {
 
     /**
      * ### Storage path resolver
@@ -1057,6 +1064,78 @@ final readonly class Local implements Readable, Appendable, Locatable, Copyable,
     public function moveDirectory (Path $source, Path $destination):void {
 
         $this->directory_operator->move($source, $destination);
+
+    }
+
+    /**
+     * ### Retrieves stored object metadata
+     *
+     * Retrieves a snapshot of basic filesystem metadata associated with the specified stored regular object.
+     *
+     * The last modification time is represented in UTC.
+     *
+     * <code>
+     * $metadata = $driver->metadata(new Path('documents/example.txt'));
+     *
+     * echo $metadata->path()->value();
+     * echo $metadata->size();
+     * echo $metadata->lastModified()?->value();
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::locate() To resolve the physical path of the
+     * stored object.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To invalidate cached filesystem metadata.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::statistics() To retrieve filesystem statistics.
+     * @uses \FireHub\Foundation\Temporal\UnixTimestamp To represent the stored object last modification timestamp.
+     * @uses \FireHub\Foundation\Temporal\DateTime::fromTimestamp() To convert the last modification timestamp into a
+     * date and time value.
+     * @uses \FireHub\Foundation\IO\Storage\Metadata To represent the stored object metadata snapshot.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the stored object.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return \FireHub\Foundation\IO\Storage\Metadata Stored object metadata.
+     */
+    public function metadata (Path $path):Metadata {
+
+        $physical = $this->resolver->locate($path);
+
+        Runtime\FileSystem\Metadata::clearCache(true, $physical);
+
+        try {
+
+            $statistics = Runtime\FileSystem\Metadata::statistics($physical);
+
+            return new Metadata(
+                $path,
+                $statistics['size'],
+                DateTime::fromTimestamp(
+                    new UnixTimestamp($statistics['mtime'], 0)
+                )
+            );
+
+        } catch (FireHubException $exception) {
+
+            throw new MetadataException(
+                context: [
+                    'path' => $path->value()
+                ],
+                previous: $exception
+            );
+
+        }
 
     }
 

@@ -15,14 +15,18 @@ namespace FireHub\Foundation\IO\Storage\Driver;
 
 use FireHub\Core\Boundary\IO\Storage\Path as PathContract;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
-    Appendable, Copyable, Listable, Locatable, Movable, Readable,
+    Appendable, Copyable, Listable, MetadataAware, Movable, Readable,
     DirectoryCopyable, DirectoryMovable, DirectoryWritable
 };
 use FireHub\Core\Boundary\IO\Stream\Readable as ReadableStream;
-use FireHub\Foundation\IO\Storage\Path;
+use FireHub\Foundation\IO\Storage\ {
+    Path, Metadata
+};
 use FireHub\Foundation\IO\Stream\ {
     Copier, Memory as MemoryStream, Writer
 };
+use FireHub\Foundation\IO\Storage\Internal\Memory\StoredObject;
+use FireHub\Foundation\Temporal\DateTime;
 use FireHub\Foundation\IO\Storage\Exception\ {
     DirectoryAlreadyExistsException, DirectoryNotFoundException, DirectoryNotEmptyException,
     InvalidDirectoryDestinationException, InvalidObjectTypeException, ObjectNotFoundException
@@ -53,7 +57,7 @@ use Throwable;
  * @since 1.0.0
  */
 final class Memory implements Readable, Appendable, Copyable, Movable, Listable, DirectoryWritable,
-    DirectoryCopyable, DirectoryMovable {
+    DirectoryCopyable, DirectoryMovable, MetadataAware {
 
     /**
      * ### Internal storage key prefix
@@ -68,10 +72,10 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
     /**
      * ### Stored objects
      *
-     * Maps logical storage paths to their corresponding contents.
+     * Contains immutable stored object snapshots indexed by their internal logical storage keys.
      * @since 1.0.0
      *
-     * @var array<non-empty-string, string>
+     * @var array<non-empty-string, \FireHub\Foundation\IO\Storage\Internal\Memory\StoredObject>
      */
     private array $objects = [];
 
@@ -133,8 +137,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the storage key.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::object() To retrieve the stored object.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical path of the stored object.
@@ -149,14 +152,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      */
     public function get (PathContract $path):string {
 
-        $path = $this->validateObjectPath($path);
-
-        return $this->objects[$this->key($path)]
-            ?? throw new ObjectNotFoundException(
-                context: [
-                    'path' => $path->value()
-                ]
-            );
+        return $this->object($path)->contents();
 
     }
 
@@ -175,7 +171,9 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the storage key.
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateWritableObjectPath() To validate the writable
+     * object path.
+     * @uses \FireHub\Foundation\Temporal\DateTime::now() To retrieve the current date and time.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical path of the stored object.
@@ -192,9 +190,12 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      */
     public function put (PathContract $path, string $contents):void {
 
-        $key = $this->key($this->validateObjectPath($path));
+        $path = $this->validateWritableObjectPath($path);
 
-        $this->objects[$key] = $contents;
+        $this->objects[$this->key($path)] = new StoredObject(
+            $contents,
+            DateTime::now()
+        );
 
     }
 
@@ -320,12 +321,12 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the storage key.
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
-     * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To copy the source stream.
-     * @uses \FireHub\Foundation\IO\Stream\Memory::rewind() To reset the destination stream position.
-     * @uses \FireHub\Foundation\IO\Stream\Memory::contents() To retrieve the copied contents.
-     * @uses \FireHub\Foundation\IO\Stream\Memory::close() To release the temporary stream.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateWritableObjectPath() To validate the writable
+     * logical storage object path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::streamContents() To retrieve the remaining source stream
+     * contents.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::put() To store the transferred contents and update the
+     * modification time.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical destination path.
@@ -342,25 +343,9 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      */
     public function writeStream (PathContract $path, ReadableStream $stream):void {
 
-        $key = $this->key($this->validateObjectPath($path));
+        $path = $this->validateWritableObjectPath($path);
 
-        $destination = new MemoryStream;
-
-        try {
-
-            Copier::copy($stream, $destination);
-
-            $destination->rewind();
-
-            $contents = $destination->contents();
-
-        } finally {
-
-            $destination->close();
-
-        }
-
-        $this->objects[$key] = $contents;
+        $this->put($path, $this->streamContents($stream));
 
     }
 
@@ -380,8 +365,14 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateWritableObjectPath() To validate the writable
+     * logical storage object path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To generate the internal storage object key.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\Memory\StoredObject::contents() To retrieve the existing stored
+     * object contents.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\Memory\StoredObject::withContents() To create an updated stored
+     * object snapshot.
+     * @uses \FireHub\Foundation\Temporal\DateTime::now() To determine the stored object modification time.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical path of the stored object.
@@ -398,9 +389,20 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      */
     public function append (PathContract $path, string $contents):void {
 
-        $key = $this->key($this->validateObjectPath($path));
+        $path = $this->validateWritableObjectPath($path);
 
-        $this->objects[$key] = ($this->objects[$key] ?? '').$contents;
+        $key = $this->key($path);
+
+        $object = $this->objects[$key] ?? null;
+
+        $last_modified = DateTime::now();
+
+        $this->objects[$key] = $object !== null
+            ? $object->withContents(
+                $object->contents().$contents,
+                $last_modified
+            )
+            : new StoredObject($contents, $last_modified);
 
     }
 
@@ -420,8 +422,13 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical storage path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the path conflicts with an
+     * unsupported object type.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\DirectoryNotFoundException If the parent storage directory
+     * does not exist.
+     * @throws \FireHub\Foundation\Temporal\Exception\InvalidDateTimeException If the current datetime cannot be
+     * created.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical path of the stored object.
@@ -438,9 +445,20 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      */
     public function prepend (PathContract $path, string $contents):void {
 
-        $key = $this->key($this->validateObjectPath($path));
+        $path = $this->validateWritableObjectPath($path);
 
-        $this->objects[$key] = $contents.($this->objects[$key] ?? '');
+        $key = $this->key($path);
+
+        $object = $this->objects[$key] ?? null;
+
+        $last_modified = DateTime::now();
+
+        $this->objects[$key] = $object !== null
+            ? $object->withContents(
+                $contents.$object->contents(),
+                $last_modified
+            )
+            : new StoredObject($contents, $last_modified);
 
     }
 
@@ -469,12 +487,12 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
-     * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To copy the source stream contents.
-     * @uses \FireHub\Foundation\IO\Stream\Memory::rewind() To reset the temporary stream position.
-     * @uses \FireHub\Foundation\IO\Stream\Memory::contents() To retrieve the copied contents.
-     * @uses \FireHub\Foundation\IO\Stream\Memory::close() To release the temporary stream.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateWritableObjectPath() To validate the writable
+     * logical storage object path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::streamContents() To retrieve the remaining source stream
+     * contents.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::append() To append the transferred contents and update the
+     * modification time.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical path of the stored object.
@@ -491,25 +509,9 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      */
     public function appendStream (PathContract $path, ReadableStream $stream):void {
 
-        $key = $this->key($this->validateObjectPath($path));
+        $path = $this->validateWritableObjectPath($path);
 
-        $destination = new MemoryStream;
-
-        try {
-
-            Copier::copy($stream, $destination);
-
-            $destination->rewind();
-
-            $contents = $destination->contents();
-
-        } finally {
-
-            $destination->close();
-
-        }
-
-        $this->objects[$key] = ($this->objects[$key] ?? '').$contents;
+        $this->append($path, $this->streamContents($stream));
 
     }
 
@@ -534,8 +536,18 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::put() To store the source object.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the source storage object
+     * path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::object() To retrieve the existing source object.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateWritableObjectPath() To validate the destination
+     * storage object path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To generate the internal storage object keys.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\Memory\StoredObject::contents() To retrieve the source object
+     * contents.
+     * @uses \FireHub\Foundation\Temporal\DateTime::now() To determine the destination object modification time.
      *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the specified path identifies a
+     * non-existent stored object.
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
      * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
@@ -544,7 +556,21 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      */
     public function copy (PathContract $source, PathContract $destination):void {
 
-        $this->put($destination, $this->get($source));
+        $source = $this->validateObjectPath($source);
+
+        $object = $this->object($source);
+
+        $destination = $this->validateWritableObjectPath($destination);
+
+        $source_key = $this->key($source);
+        $destination_key = $this->key($destination);
+
+        if ($source_key === $destination_key) return;
+
+        $this->objects[$destination_key] = new StoredObject(
+            $object->contents(),
+            DateTime::now()
+        );
 
     }
 
@@ -569,11 +595,15 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::get() To retrieve the source object.
-     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateWritableObjectPath() To validate the destination path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the source storage object
+     * path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::object() To retrieve the existing source object.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateWritableObjectPath() To validate the destination
+     * storage object path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To generate the internal storage object keys.
      *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the specified path identifies a
+     * non-existent stored object.
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
      * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
@@ -584,17 +614,16 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
 
         $source = $this->validateObjectPath($source);
 
-        $contents = $this->get($source);
+        $object = $this->object($source);
 
         $destination = $this->validateWritableObjectPath($destination);
 
         $source_key = $this->key($source);
         $destination_key = $this->key($destination);
 
-        if ($source_key === $destination_key)
-            return;
+        if ($source_key === $destination_key) return;
 
-        $this->objects[$destination_key] = $contents;
+        $this->objects[$destination_key] = $object;
 
         unset($this->objects[$source_key]);
 
@@ -986,6 +1015,51 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <code>
+     * $driver->put(new Path('example.txt'), 'Contents');
+     *
+     * $metadata = $driver->metadata(new Path('example.txt'));
+     *
+     * echo $metadata->size();
+     *
+     * // 8
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::normalizePath() To normalize the logical storage object path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::object() To retrieve the existing stored object.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\Memory\StoredObject::size() To retrieve the stored object size.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\Memory\StoredObject::lastModified() To retrieve the stored
+     * object modification time.
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectSizeException If the object size exceeds the
+     * maximum allowed.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the specified path identifies a
+     * non-existent stored object.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return \FireHub\Foundation\IO\Storage\Metadata Stored object metadata.
+     */
+    public function metadata (PathContract $path):Metadata {
+
+        $path = $this->normalizePath($path);
+
+        $object = $this->object($path);
+
+        return new Metadata(
+            $path,
+            $object->size(),
+            $object->lastModified()
+        );
+
+    }
+
+    /**
      * ### Resolves an internal storage key
      *
      * Validates externally supplied path implementations and converts logical paths into internal storage keys.
@@ -1007,6 +1081,41 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
     private function key (PathContract $path):string {
 
         return self::KEY_PREFIX.$this->normalizePath($path)->value();
+
+    }
+
+    /**
+     * ### Retrieves an existing in-memory stored object
+     *
+     * Validates the logical storage path and retrieves the corresponding immutable stored object snapshot.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the logical storage
+     * object path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To generate the internal storage object key.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the stored object.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If the specified path identifies a
+     * non-existent stored object.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return \FireHub\Foundation\IO\Storage\Internal\Memory\StoredObject Existing stored object snapshot.
+     */
+    private function object (PathContract $path):StoredObject {
+
+        $path = $this->validateObjectPath($path);
+
+        return $this->objects[$this->key($path)]
+            ?? throw new ObjectNotFoundException(
+                context: [
+                    'path' => $path->value()
+                ]
+            );
 
     }
 
@@ -1461,6 +1570,12 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
      * @uses \FireHub\Runtime\Str\SB\Search::startsWith() To identify descendant storage keys.
      * @uses \FireHub\Runtime\Str\SB\Access::part() To retrieve relative descendant storage keys.
      * @uses \FireHub\Runtime\Arr\Access::keys() To retrieve internal storage directory keys.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\Memory\StoredObject::withContents() To create a copied stored
+     * object snapshot.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\Memory\StoredObject::contents() To retrieve the source stored
+     * object contents.
+     * @uses \FireHub\Foundation\Temporal\DateTime::now() To determine the shared modification time of copied stored
+     * objects.
      *
      * @param \FireHub\Foundation\IO\Storage\Path $source <p>
      * Logical source directory path.
@@ -1485,31 +1600,78 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable,
 
         $offset = Runtime\Str\SB\Inspection::length($source_prefix);
 
+        $last_modified = $move ? null : DateTime::now();
+
         foreach (Runtime\Arr\Access::keys($this->directories) as $key) {
 
-            if (!Runtime\Str\SB\Search::startsWith($source_prefix, $key))
-                continue;
+            if (!Runtime\Str\SB\Search::startsWith($source_prefix, $key)) continue;
 
             $target = $destination_prefix.Runtime\Str\SB\Access::part($key, $offset);
 
             $this->directories[$target] = true;
 
-            if ($move)
-                unset($this->directories[$key]);
+            if ($move) unset($this->directories[$key]);
 
         }
 
-        foreach ($this->objects as $key => $contents) {
+        foreach ($this->objects as $key => $object) {
 
-            if (!Runtime\Str\SB\Search::startsWith($source_prefix, $key))
-                continue;
+            if (!Runtime\Str\SB\Search::startsWith($source_prefix, $key)) continue;
 
             $target = $destination_prefix.Runtime\Str\SB\Access::part($key, $offset);
 
-            $this->objects[$target] = $contents;
+            $this->objects[$target] = $last_modified === null
+                ? $object
+                : $object->withContents(
+                    $object->contents(),
+                    $last_modified
+                );
 
-            if ($move)
-                unset($this->objects[$key]);
+            if ($move) unset($this->objects[$key]);
+
+        }
+
+
+    }
+
+    /**
+     * ### Retrieves the remaining contents of a readable stream
+     *
+     * Reads the source stream from its current position until the end of the stream without closing or rewinding the
+     * source stream.
+     *
+     * The temporary destination stream is owned and released by this method.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To transfer the source stream contents into the temporary
+     * memory stream.
+     * @uses \FireHub\Foundation\IO\Stream\Memory::rewind() To position the temporary stream at the beginning.
+     * @uses \FireHub\Foundation\IO\Stream\Memory::contents() To retrieve the complete transferred contents.
+     * @uses \FireHub\Foundation\IO\Stream\Memory::close() To release the temporary stream resources.
+     *
+     * @param \FireHub\Core\Boundary\IO\Stream\Readable $stream <p>
+     * Source readable stream.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the copy operation cannot be completed.
+     *
+     * @return string Complete binary-safe contents read from the source stream.
+     */
+    private function streamContents (ReadableStream $stream):string {
+
+        $destination = new MemoryStream;
+
+        try {
+
+            Copier::copy($stream, $destination);
+
+            $destination->rewind();
+
+            return $destination->contents();
+
+        } finally {
+
+            $destination->close();
 
         }
 
