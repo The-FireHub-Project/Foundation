@@ -20,7 +20,8 @@ use FireHub\Core\Foundation\Constant\Environment\Php\ {
 };
 use FireHub\Foundation\IO\Storage\Path;
 use FireHub\Foundation\IO\Storage\Exception\ {
-    InvalidPathException, InvalidRootDirectoryException, ObjectNotFoundException, PathOutsideRootException
+    InvalidObjectTypeException, InvalidPathException, InvalidRootDirectoryException, ObjectNotFoundException,
+    PathOutsideRootException, SymbolicLinkNotAllowedException
 };
 use FireHub\Runtime;
 
@@ -95,45 +96,62 @@ final readonly class PathResolver {
     /**
      * ### Resolves a logical storage path
      *
-     * Resolves a logical storage path into a physical filesystem path. The target object and its parent directories
-     * are not required to exist.
+     * Resolves a logical storage path into a physical filesystem path within the configured storage root directory.
+     *
+     * Existing path components are checked individually to prevent traversal through symbolic links or incompatible
+     * filesystem objects.
+     *
+     * The destination object is not required to exist.
      *
      * <code>
-     * $path = $resolver->resolve(new Path('documents/example.txt'));
+     * $resolver = new PathResolver(__DIR__.'/storage');
+     *
+     * $path = $resolver->resolve(
+     *     new \FireHub\Foundation\IO\Storage\Path('documents/report.pdf')
+     * );
      * </code>
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\IO\Storage\Path::segments() To retrieve logical path segments.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::validateSegment() To validate platform-specific
+     * path restrictions.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::contains() To verify the resolved path boundary.
+     * @uses \FireHub\Runtime\Str\SB\Transform::trim() To normalize directory separators.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To invalidate cached filesystem metadata.
+     * @uses \FireHub\Runtime\FileSystem\Link::symbolicExists() To detect symbolic links.
+     * @uses \FireHub\Runtime\FileSystem\File::exist() To determine whether a filesystem object exists.
+     * @uses \FireHub\Runtime\FileSystem\Path::absolute() To resolve existing filesystem paths.
+     * @uses \FireHub\Runtime\FileSystem\Folder::exists() To validate intermediate directories.
+     *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
-     * Logical path of a stored object.
+     * Logical storage path.
      * </p>
      *
-     * @uses \FireHub\Foundation\IO\Storage\Path::segments() To retrieve the logical path segments.
-     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::validateSegment() To validate each path segment.
-     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::contains() To verify storage root containment.
-     * @uses \FireHub\Runtime\FileSystem\Path::absolute() To resolve existing filesystem paths.
-     * @uses \FireHub\Runtime\Str\SB\Transform::trim() To remove the trailing directory separator.
-     * @uses \FireHub\Core\Foundation\Constant\Environment\Php\Paths::DIRECTORY_SEPARATOR To check for directory
-     * separators.
-     * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To clear the filesystem metadata cache.
-     * @uses \FireHub\Runtime\FileSystem\Link::symbolicExists() To check if the path is a symbolic link.
-     * @uses \FireHub\Runtime\FileSystem\File::exist() To check if the path is a file.
-     *
-     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
-     * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
-     * file doesn't exist, or a script doesn't have executable permissions.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path points outside
-     * the storage root directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
      *
      * @return non-empty-string Resolved physical filesystem path.
      */
     public function resolve (PathContract $path):string {
 
-        $path = $path instanceof Path ? $path : new Path($path->value());
+        $path = $path instanceof Path
+            ? $path
+            : new Path($path->value());
+
+        $segments = $path->segments();
 
         $resolved = $this->root;
 
-        foreach ($path->segments() as $segment) {
+        $last = Runtime\Arr\Inspection::count($segments) - 1;
+
+        foreach ($segments as $index => $segment) {
 
             $this->validateSegment($segment);
 
@@ -145,13 +163,84 @@ final readonly class PathResolver {
 
             Runtime\FileSystem\Metadata::clearCache(true, $resolved);
 
-            if (Runtime\FileSystem\Link::symbolicExists($resolved) || Runtime\FileSystem\File::exist($resolved))
+            if (Runtime\FileSystem\Link::symbolicExists($resolved))
+                throw new SymbolicLinkNotAllowedException(
+                    context: [
+                        'path' => $path->value()
+                    ]
+                );
+
+            if (Runtime\FileSystem\File::exist($resolved)) {
+
                 $resolved = Runtime\FileSystem\Path::absolute($resolved);
+
+                if ($index !== $last && !Runtime\FileSystem\Folder::exists($resolved))
+                    throw new InvalidObjectTypeException(
+                        context: [
+                            'path' => $path->value()
+                        ]
+                    );
+
+            }
 
             if (!$this->contains($resolved))
                 throw new PathOutsideRootException;
 
         }
+
+        return $resolved;
+
+    }
+
+    /**
+     * ### Resolves a storage file path
+     *
+     * Resolves a logical storage path that identifies either an existing regular file or a nonexistent destination.
+     *
+     * <code>
+     * $resolver = new PathResolver(__DIR__.'/storage');
+     *
+     * $destination = $resolver->resolveFile(
+     *     new \FireHub\Foundation\IO\Storage\Path('new-file.txt')
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolve() To resolve the logical storage path.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To invalidate cached filesystem metadata.
+     * @uses \FireHub\Runtime\FileSystem\File::exist() To determine whether the filesystem object exists.
+     * @uses \FireHub\Runtime\FileSystem\File::isFile() To validate the filesystem object type.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical storage file path.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return non-empty-string Physical storage file path.
+     */
+    public function resolveFile (PathContract $path):string {
+
+        $resolved = $this->resolve($path);
+
+        Runtime\FileSystem\Metadata::clearCache(true, $resolved);
+
+        if (
+            Runtime\FileSystem\File::exist($resolved)
+            && !Runtime\FileSystem\File::isFile($resolved)
+        ) throw new InvalidObjectTypeException(
+            context: [
+                'path' => $path->value()
+            ]
+        );
 
         return $resolved;
 
@@ -172,18 +261,18 @@ final readonly class PathResolver {
      * Logical path of an existing stored object.
      * </p>
      *
-     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolve() To resolve the logical storage path.
-     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::contains() To verify storage root containment.
-     * @uses \FireHub\Runtime\FileSystem\Path::absolute() To resolve the canonical filesystem path.
      * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To clear the filesystem metadata cache.
      * @uses \FireHub\Runtime\FileSystem\File::exist() To check if the path is a file.
+     * @uses \FireHub\Runtime\FileSystem\File::isFile() To check if the path is a regular file.
      *
-     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
-     * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
-     * file doesn't exist, or a script doesn't have executable permissions.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path
-     * points outside the storage root directory.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\ObjectNotFoundException If the stored object does not exist.
+     * throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
      *
      * @return non-empty-string Canonical absolute filesystem path of the stored object.
      */
@@ -194,12 +283,77 @@ final readonly class PathResolver {
         Runtime\FileSystem\Metadata::clearCache(true, $resolved);
 
         if (!Runtime\FileSystem\File::exist($resolved))
-            throw new ObjectNotFoundException;
+            throw new ObjectNotFoundException(
+                context: [
+                    'path' => $path->value()
+                ]
+            );
 
-        $resolved = Runtime\FileSystem\Path::absolute($resolved);
+        if (!Runtime\FileSystem\File::isFile($resolved))
+            throw new InvalidObjectTypeException(
+                context: [
+                    'path' => $path->value()
+                ]
+            );
 
-        if (!$this->contains($resolved))
-            throw new PathOutsideRootException;
+        return $resolved;
+
+    }
+
+    /**
+     * ### Locates an existing storage directory
+     *
+     * Resolves the logical storage path and ensures that it identifies an existing directory.
+     *
+     * <code>
+     * $resolver = new PathResolver(__DIR__.'/storage');
+     *
+     * $directory = $resolver->locateDirectory(
+     *     new \FireHub\Foundation\IO\Storage\Path('documents')
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolve() To resolve the logical storage path.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To invalidate cached filesystem metadata.
+     * @uses \FireHub\Runtime\FileSystem\File::exist() To determine whether the filesystem object exists.
+     * @uses \FireHub\Runtime\FileSystem\Folder::exists() To validate the directory type.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical path of the storage directory.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return non-empty-string Physical path of the storage directory.
+     */
+    public function locateDirectory (PathContract $path):string {
+
+        $resolved = $this->resolve($path);
+
+        Runtime\FileSystem\Metadata::clearCache(true, $resolved);
+
+        if (!Runtime\FileSystem\File::exist($resolved))
+            throw new ObjectNotFoundException(
+                context: [
+                    'path' => $path->value()
+                ]
+            );
+
+        if (!Runtime\FileSystem\Folder::exists($resolved))
+            throw new InvalidObjectTypeException(
+                context: [
+                    'path' => $path->value()
+                ]
+            );
 
         return $resolved;
 

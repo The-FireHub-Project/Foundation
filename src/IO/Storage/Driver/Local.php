@@ -171,7 +171,7 @@ final readonly class Local implements Readable, Writable, Locatable {
      *
      * @uses \FireHub\Foundation\IO\Storage\Internal\AtomicWriter::write() To replace the destination contents.
      * @uses \FireHub\Foundation\IO\Stream\Writer::write() To write the contents to the temporary file.
-     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolve() To resolve the destination path.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolveFile() To resolve the destination path.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical path of the stored object.
@@ -180,21 +180,21 @@ final readonly class Local implements Readable, Writable, Locatable {
      * Contents to store.
      * </p>
      *
-     * @throws \FireHub\Runtime\Exception\DeleteFileException If we couldn't delete the file.
-     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the file cannot be opened.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\WriteException If the writer fails.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
-     * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
-     * file doesn't exist, or a script doesn't have executable permissions.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path points outside
-     * the storage root directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
      *
      * @return void
      */
     public function put (Path $path, string $contents):void {
 
         AtomicWriter::write(
-            $this->resolver->resolve($path),
+            $this->resolver->resolveFile($path),
             static function (WritableStream $stream) use ($contents):void {
 
                 Writer::write($stream, $contents);
@@ -219,7 +219,8 @@ final readonly class Local implements Readable, Writable, Locatable {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolve() To resolve the physical filesystem path.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolveFile() To resolve the physical filesystem
+     * path.
      * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To clear the filesystem metadata cache.
      * @uses \FireHub\Runtime\FileSystem\File::isFile() To determine whether the resolved path is a regular file.
      * @uses \FireHub\Runtime\FileSystem\File::delete() To delete the stored object.
@@ -228,20 +229,20 @@ final readonly class Local implements Readable, Writable, Locatable {
      * Logical path of the stored object.
      * </p>
      *
-     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
-     * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
-     * file doesn't exist, or a script doesn't have executable permissions.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path points outside
-     * the storage root directory.
-     * @throws \FireHub\Runtime\Exception\DeleteFileException If we couldn't delete the file.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
      *
      * @return void
      */
     public function delete (Path $path):void {
 
-        $resolved = $this->resolver->resolve($path);
-
-        Runtime\FileSystem\Metadata::clearCache(true, $resolved);
+        $resolved = $this->resolver->resolveFile($path);
 
         if (!Runtime\FileSystem\File::isFile($resolved))
             return;
@@ -324,7 +325,7 @@ final readonly class Local implements Readable, Writable, Locatable {
      *
      * @since 1.0.0
      *
-     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolve() To resolve the destination path.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolveFile() To resolve the destination path.
      * @uses \FireHub\Foundation\IO\Storage\Internal\AtomicWriter::write() To replace the destination contents.
      * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To transfer the source stream contents.
      *
@@ -335,21 +336,21 @@ final readonly class Local implements Readable, Writable, Locatable {
      * Source stream containing the contents to store.
      * </p>
      *
-     * @throws \FireHub\Runtime\Exception\DeleteFileException If we couldn't delete the file.
-     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If the file cannot be opened.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\WriteException If the writer fails.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the path segment is invalid.
-     * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
-     * file doesn't exist, or a script doesn't have executable permissions.
-     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path points outside
-     * the storage root directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
      *
      * @return void
      */
     public function writeStream (Path $path, ReadableStream $stream):void {
 
         AtomicWriter::write(
-            $this->resolver->resolve($path),
+            $this->resolver->resolveFile($path),
             static function (WritableStream $destination) use ($stream):void {
 
                 Copier::copy($stream, $destination);
