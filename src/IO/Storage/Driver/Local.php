@@ -15,7 +15,8 @@ namespace FireHub\Foundation\IO\Storage\Driver;
 
 use FireHub\Core\Boundary\IO\Storage\Path;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
-    Appendable, Copyable, Listable, Locatable, Movable, Readable
+    Appendable, Copyable, Listable, Locatable, Movable, Readable,
+    DirectoryCopyable, DirectoryMovable, DirectoryWritable
 };
 use FireHub\Core\Boundary\IO\Stream\ {
     Readable as ReadableStream, Writable as WritableStream
@@ -23,7 +24,7 @@ use FireHub\Core\Boundary\IO\Stream\ {
 use FireHub\Core\Foundation\Constant\Environment\Php\PlatformInfo;
 use FireHub\Foundation\IO\Storage\Permissions;
 use FireHub\Foundation\IO\Storage\Internal\ {
-    AtomicWriter, DirectoryIterator, PathResolver
+    AtomicWriter, DirectoryIterator, DirectoryOperator, PathResolver
 };
 use FireHub\Foundation\IO\Stream\ {
     Copier, File, Writer
@@ -50,7 +51,8 @@ use FireHub\Runtime;
  *
  * @since 1.0.0
  */
-final readonly class Local implements Readable, Appendable, Locatable, Copyable, Movable, Listable {
+final readonly class Local implements Readable, Appendable, Locatable, Copyable, Movable, Listable,
+    DirectoryWritable, DirectoryCopyable, DirectoryMovable {
 
     /**
      * ### Storage path resolver
@@ -65,6 +67,14 @@ final readonly class Local implements Readable, Appendable, Locatable, Copyable,
      * @var \FireHub\Foundation\IO\Storage\Internal\DirectoryIterator
      */
     private DirectoryIterator $iterator;
+
+    /**
+     * ### Storage directory operator
+     * @since 1.0.0
+     *
+     * @var \FireHub\Foundation\IO\Storage\Internal\DirectoryOperator
+     */
+    private DirectoryOperator $directory_operator;
 
     /**
      * ### Constructor
@@ -91,6 +101,11 @@ final readonly class Local implements Readable, Appendable, Locatable, Copyable,
         $this->resolver = new PathResolver($root);
 
         $this->iterator = new DirectoryIterator($this->resolver);
+
+        $this->directory_operator = new DirectoryOperator(
+            $this->resolver,
+            $this->permissions
+        );
 
     }
 
@@ -811,6 +826,237 @@ final readonly class Local implements Readable, Appendable, Locatable, Copyable,
     public function directories (?Path $directory = null, bool $recursive = false):iterable {
 
         return $this->iterator->directories($directory, $recursive);
+
+    }
+
+    /**
+     * ### Determines whether a storage directory exists
+     *
+     * If no directory is specified, the storage root directory is inspected. A path identifying a regular file
+     * produces false.
+     *
+     * <code>
+     * $driver->directoryExists(new Path('documents'));
+     *
+     * $driver->directoryExists();
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\DirectoryOperator::exists() To determine whether the physical
+     * directory exists.
+     *
+     * @param null|\FireHub\Core\Boundary\IO\Storage\Path $directory [optional] <p>
+     * Logical directory path or null to inspect the storage root.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\ReservedPathException If the path segment is reserved.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return bool True if the specified storage directory exists.
+     */
+    public function directoryExists (?Path $directory = null):bool {
+
+        return $this->directory_operator->exists($directory);
+
+    }
+
+    /**
+     * ### Creates a storage directory
+     *
+     * Creating an existing directory has no effect. Recursive creation includes all missing parent directories.
+     *
+     * Newly created directories use the configured storage directory permission policy.
+     *
+     * <code>
+     * $driver->makeDirectory(new Path('documents'));
+     *
+     * $driver->makeDirectory(
+     *     new Path('documents/archive/2026'),
+     *     recursive: true
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\DirectoryOperator::create() To create the physical storage
+     * directory.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $directory <p>
+     * Logical path of the directory to create.
+     * </p>
+     * @param bool $recursive [optional] <p>
+     * Whether missing parent directories should also be created.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\DirectoryNotFoundException If the parent directory does not
+     * exist and recursive creation is not allowed.
+     * @throws \FireHub\Runtime\Exception\CreateFolderException If we couldn't create a folder.
+     * @throws \FireHub\Runtime\Exception\PathPermissionsException If failed to set permissions for a path.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\ReservedPathException If the path segment is reserved.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return void
+     */
+    public function makeDirectory (Path $directory, bool $recursive = false):void {
+
+        $this->directory_operator->create($directory, $recursive);
+
+    }
+
+    /**
+     * ### Deletes a storage directory
+     *
+     * Deleting a nonexistent directory has no effect. If recursive deletion is disabled, the directory must be empty.
+     *
+     * Recursive deletion removes all supported descendant filesystem objects and directories.
+     *
+     * Recursive deletion is not guaranteed to be atomic.
+     *
+     * <code>
+     * $driver->deleteDirectory(new Path('empty'));
+     *
+     * $driver->deleteDirectory(
+     *     new Path('documents/archive'),
+     *     recursive: true
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\DirectoryOperator::delete() To delete the physical storage
+     * directory.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $directory <p>
+     * Logical path of the directory to delete.
+     * </p>
+     * @param bool $recursive [optional] <p>
+     * Whether descendant objects and directories should also be deleted.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return void
+     */
+    public function deleteDirectory (Path $directory, bool $recursive = false):void {
+
+        $this->directory_operator->delete($directory, $recursive);
+
+    }
+
+    /**
+     * ### Copies a storage directory
+     *
+     * Recursively copies the source directory and its descendant regular files and directories to a new destination.
+     *
+     * Empty directories are preserved. The destination parent directory must already exist. Copying an existing
+     * directory to itself has no effect.
+     *
+     * Newly created filesystem objects use the configured storage permission policy.
+     *
+     * Directory copying is not guaranteed to be atomic.
+     *
+     * <code>
+     * $driver->copyDirectory(
+     *     new Path('documents'),
+     *     new Path('backup')
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\DirectoryOperator::copy() To recursively copy the physical
+     * storage directory.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $source <p>
+     * Logical source directory path.
+     * </p>
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $destination <p>
+     * Logical destination directory path.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\ReservedPathException If the path segment is reserved.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return void
+     */
+    public function copyDirectory (Path $source, Path $destination):void {
+
+        $this->directory_operator->copy($source, $destination);
+
+    }
+
+    /**
+     * ### Moves a storage directory
+     *
+     * Moves the source directory and its descendant filesystem objects to a new destination using native filesystem
+     * relocation.
+     *
+     * The destination parent directory must already exist. Moving an existing directory to itself has no effect.
+     *
+     * Existing filesystem permissions are not explicitly modified.
+     *
+     * <code>
+     * $driver->moveDirectory(
+     *     new Path('documents/archive'),
+     *     new Path('backup/archive')
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\DirectoryOperator::move() To relocate the physical storage
+     * directory.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $source <p>
+     * Logical source directory path.
+     * </p>
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $destination <p>
+     * Logical destination directory path.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return void
+     */
+    public function moveDirectory (Path $source, Path $destination):void {
+
+        $this->directory_operator->move($source, $destination);
 
     }
 

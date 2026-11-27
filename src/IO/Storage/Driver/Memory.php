@@ -15,7 +15,7 @@ namespace FireHub\Foundation\IO\Storage\Driver;
 
 use FireHub\Core\Boundary\IO\Storage\Path as PathContract;
 use FireHub\Core\Boundary\IO\Storage\Driver\ {
-    Appendable, Copyable, Listable, Movable, Readable
+    Appendable, Copyable, DirectoryWritable, Listable, Movable, Readable
 };
 use FireHub\Core\Boundary\IO\Stream\Readable as ReadableStream;
 use FireHub\Foundation\IO\Storage\Path;
@@ -23,7 +23,7 @@ use FireHub\Foundation\IO\Stream\ {
     Copier, Memory as MemoryStream, Writer
 };
 use FireHub\Foundation\IO\Storage\Exception\ {
-    InvalidObjectTypeException, ObjectNotFoundException
+    DirectoryNotFoundException, DirectoryNotEmptyException, InvalidObjectTypeException, ObjectNotFoundException
 };
 use FireHub\Runtime;
 use Throwable;
@@ -50,7 +50,7 @@ use Throwable;
  *
  * @since 1.0.0
  */
-final class Memory implements Readable, Appendable, Copyable, Movable, Listable {
+final class Memory implements Readable, Appendable, Copyable, Movable, Listable, DirectoryWritable {
 
     /**
      * ### Internal storage key prefix
@@ -159,6 +159,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the storage key.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical path of the stored object.
@@ -175,7 +176,9 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      */
     public function put (PathContract $path, string $contents):void {
 
-        $this->objects[$this->key($path)] = $contents;
+        $key = $this->key($this->validateObjectPath($path));
+
+        $this->objects[$key] = $contents;
 
     }
 
@@ -243,9 +246,10 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      * Logical path of the stored object.
      * </p>
      *
-     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
      * @throws \FireHub\Foundation\IO\Storage\Exception\ObjectNotFoundException If the stored object does not exist.
-     * @throws \FireHub\Foundation\IO\Stream\Exception\StreamException If writing fails.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
      *
      * @return \FireHub\Core\Boundary\IO\Stream\Readable Readable stream positioned at the beginning of the object.
      */
@@ -300,6 +304,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the storage key.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
      * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To copy the source stream.
      * @uses \FireHub\Foundation\IO\Stream\Memory::rewind() To reset the destination stream position.
      * @uses \FireHub\Foundation\IO\Stream\Memory::contents() To retrieve the copied contents.
@@ -320,7 +325,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      */
     public function writeStream (PathContract $path, ReadableStream $stream):void {
 
-        $key = $this->key($path);
+        $key = $this->key($this->validateObjectPath($path));
 
         $destination = new MemoryStream;
 
@@ -359,6 +364,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical path of the stored object.
@@ -375,7 +381,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      */
     public function append (PathContract $path, string $contents):void {
 
-        $key = $this->key($path);
+        $key = $this->key($this->validateObjectPath($path));
 
         $this->objects[$key] = ($this->objects[$key] ?? '').$contents;
 
@@ -398,6 +404,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
      *
      * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
      * Logical path of the stored object.
@@ -414,7 +421,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      */
     public function prepend (PathContract $path, string $contents):void {
 
-        $key = $this->key($path);
+        $key = $this->key($this->validateObjectPath($path));
 
         $this->objects[$key] = $contents.($this->objects[$key] ?? '');
 
@@ -446,6 +453,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      * @since 1.0.0
      *
      * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
      * @uses \FireHub\Foundation\IO\Stream\Copier::copy() To copy the source stream contents.
      * @uses \FireHub\Foundation\IO\Stream\Memory::rewind() To reset the temporary stream position.
      * @uses \FireHub\Foundation\IO\Stream\Memory::contents() To retrieve the copied contents.
@@ -466,7 +474,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      */
     public function appendStream (PathContract $path, ReadableStream $stream):void {
 
-        $key = $this->key($path);
+        $key = $this->key($this->validateObjectPath($path));
 
         $destination = new MemoryStream;
 
@@ -509,6 +517,9 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
+     *
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
      * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
@@ -518,7 +529,9 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
     public function copy (PathContract $source, PathContract $destination):void {
 
         $source_key = $this->key($source);
-        $destination_key = $this->key($destination);
+        $destination_key = $this->key(
+            $this->validateObjectPath($destination)
+        );
 
         if (!isset($this->objects[$source_key]))
             throw new ObjectNotFoundException(
@@ -555,6 +568,9 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      *
      * @since 1.0.0
      *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To resolve the internal storage key.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateObjectPath() To validate the object path.
+     *
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
      * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
      * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
@@ -564,7 +580,9 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
     public function move (PathContract $source, PathContract $destination):void {
 
         $source_key = $this->key($source);
-        $destination_key = $this->key($destination);
+        $destination_key = $this->key(
+            $this->validateObjectPath($destination)
+        );
 
         if (!isset($this->objects[$source_key]))
             throw new ObjectNotFoundException(
@@ -653,6 +671,199 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
     }
 
     /**
+     * ### Determines whether a storage directory exists
+     *
+     * Determines whether the specified logical path identifies an existing in-memory storage directory.
+     *
+     * The storage root directory always exists. A path identifying a stored regular object produces false.
+     *
+     * <code>
+     * $driver->directoryExists(new Path('documents'));
+     *
+     * $driver->directoryExists();
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key()
+     * To retrieve the internal storage key.
+     *
+     * @param null|\FireHub\Core\Boundary\IO\Storage\Path $directory [optional] <p>
+     * Logical directory path or null to inspect the storage root.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return bool True if the specified storage directory exists.
+     */
+    public function directoryExists (?PathContract $directory = null):bool {
+
+        return $directory === null
+            || isset($this->directories[$this->key($directory)]);
+
+    }
+
+    /**
+     * ### Creates a storage directory
+     *
+     * Creates an in-memory directory at the specified logical storage path.
+     *
+     * Creating an existing directory has no effect. Recursive creation includes all missing parent directories.
+     *
+     * A directory cannot occupy the same logical path as a stored object.
+     *
+     * <code>
+     * $driver->makeDirectory(new Path('documents'));
+     *
+     * $driver->makeDirectory(
+     *     new Path('documents/archive/2026'),
+     *     recursive: true
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::normalizePath() To normalize the logical directory path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To retrieve the internal storage key.
+     * @uses \FireHub\Foundation\IO\Storage\Path::parent() To retrieve the logical parent directory.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::directoryExists() To determine whether the parent
+     * directory exists.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::makeDirectory() To recursively create missing parent
+     * directories.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $directory <p>
+     * Logical path of the directory to create.
+     * </p>
+     * @param bool $recursive [optional] <p>
+     * Whether missing parent directories should also be created.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function makeDirectory (PathContract $directory, bool $recursive = false):void {
+
+        $directory = $this->normalizePath($directory);
+        $key = $this->key($directory);
+
+        if (isset($this->directories[$key]))
+            return;
+
+        if (isset($this->objects[$key]))
+            throw new InvalidObjectTypeException(
+                context: [
+                    'path' => $directory->value()
+                ]
+            );
+
+        $parent = $directory->parent();
+
+        if ($parent !== null && !$this->directoryExists($parent)) {
+
+            if (isset($this->objects[$this->key($parent)]))
+                throw new InvalidObjectTypeException(
+                    context: [
+                        'path' => $parent->value()
+                    ]
+                );
+
+            if (!$recursive)
+                throw new DirectoryNotFoundException(
+                    context: [
+                        'path' => $parent->value()
+                    ]
+                );
+
+            $this->makeDirectory($parent, true);
+
+        }
+
+        $this->directories[$key] = true;
+
+    }
+
+    /**
+     * ### Deletes a storage directory
+     *
+     * Removes the specified in-memory storage directory.
+     *
+     * Deleting a nonexistent directory has no effect. If recursive deletion is disabled, the directory must be empty.
+     *
+     * Recursive deletion removes all descendant-stored regular objects and directories.
+     *
+     * <code>
+     * $driver->deleteDirectory(new Path('empty'));
+     *
+     * $driver->deleteDirectory(
+     *     new Path('documents/archive'),
+     *     recursive: true
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::normalizePath() To normalize the logical directory path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::validateAncestors() To validate the logical directory path
+     * hierarchy.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To retrieve the internal storage directory key.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::isDirectoryEmpty() To determine whether the directory
+     * contains descendants.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::deleteDescendants() To remove descendant stored objects
+     * and directories.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $directory <p>
+     * Logical directory path to delete.
+     * </p>
+     * @param bool $recursive [optional] <p>
+     * Whether descendant stored objects and directories should also be deleted.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    public function deleteDirectory (PathContract $directory, bool $recursive = false):void {
+
+        $directory = $this->normalizePath($directory);
+
+        $this->validateAncestors($directory);
+
+        $key = $this->key($directory);
+
+        if (isset($this->objects[$key]))
+            throw new InvalidObjectTypeException(
+                context: [
+                    'path' => $directory->value()
+                ]
+            );
+
+        if (!isset($this->directories[$key]))
+            return;
+
+        if ($recursive)
+
+            $this->deleteDescendants($directory);
+
+        else if (!$this->isDirectoryEmpty($directory))
+
+            throw new DirectoryNotEmptyException(
+                context: [
+                    'path' => $directory->value()
+                ]
+            );
+
+        unset($this->directories[$key]);
+
+    }
+
+    /**
      * ### Resolves an internal storage key
      *
      * Validates externally supplied path implementations and converts logical paths into internal storage keys.
@@ -673,11 +884,7 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
      */
     private function key (PathContract $path):string {
 
-        $path = $path instanceof Path
-            ? $path
-            : new Path($path->value());
-
-        return self::KEY_PREFIX.$path->value();
+        return self::KEY_PREFIX.$this->normalizePath($path)->value();
 
     }
 
@@ -795,6 +1002,191 @@ final class Memory implements Readable, Appendable, Copyable, Movable, Listable 
         );
 
         return new Path($value);
+
+    }
+
+    /**
+     * ### Normalizes a logical storage path
+     *
+     * Converts a storage path contract implementation into a validated Foundation storage path.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Core\Boundary\IO\Storage\Path::value() To retrieve the logical storage path value.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical storage path to normalize.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return \FireHub\Foundation\IO\Storage\Path Normalized storage path.
+     */
+    private function normalizePath (PathContract $path):Path {
+
+        return $path instanceof Path
+            ? $path
+            : new Path($path->value());
+
+    }
+
+    /**
+     * ### Validates a logical storage object path
+     *
+     * Ensures that the specified logical path does not identify a directory and that its parent directory exists.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::normalizePath() To normalize the logical storage path.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::directoryExists() To detect conflicting or missing
+     * directories.
+     * @uses \FireHub\Foundation\IO\Storage\Path::parent() To retrieve the logical parent directory.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $path <p>
+     * Logical storage object path.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return \FireHub\Foundation\IO\Storage\Path Validated storage object path.
+     */
+    private function validateObjectPath (PathContract $path):Path {
+
+        $path = $this->normalizePath($path);
+
+        $this->validateAncestors($path);
+
+        if ($this->directoryExists($path))
+            throw new InvalidObjectTypeException(
+                context: [
+                    'path' => $path->value()
+                ]
+            );
+
+        $parent = $path->parent();
+
+        if (!$this->directoryExists($parent))
+            throw new DirectoryNotFoundException(
+                context: [
+                    'path' => $parent?->value()
+                ]
+            );
+
+        return $path;
+
+    }
+
+    /**
+     * ### Validates logical storage path ancestors
+     *
+     * Ensures that no ancestor of the specified logical storage path identifies a stored regular object.
+     *
+     * Missing ancestor directories are permitted.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Path::parent() To retrieve logical ancestor paths.
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To retrieve internal storage keys.
+     *
+     * @param \FireHub\Foundation\IO\Storage\Path $path <p>
+     * Logical storage path whose ancestors should be validated.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    private function validateAncestors (Path $path):void {
+
+        $parent = $path->parent();
+
+        while ($parent !== null) {
+
+            if (isset($this->objects[$this->key($parent)]))
+                throw new InvalidObjectTypeException(
+                    context: [
+                        'path' => $parent->value()
+                    ]
+                );
+
+            $parent = $parent->parent();
+
+        }
+
+    }
+
+    /**
+     * ### Determines whether a storage directory is empty
+     *
+     * Determines whether the specified storage directory contains any descendant-stored objects or directories.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To retrieve the internal storage directory key.
+     * @uses \FireHub\Runtime\Arr\Access::keys() To retrieve the internal storage directory contents.
+     * @uses \FireHub\Runtime\Str\SB\Search::startsWith() To identify descendant storage keys.
+     *
+     * @param \FireHub\Foundation\IO\Storage\Path $directory <p>
+     * Logical directory path to inspect.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return bool True if the directory contains no descendants.
+     */
+    private function isDirectoryEmpty (Path $directory):bool {
+
+        $prefix = $this->key($directory).'/';
+
+        foreach (Runtime\Arr\Access::keys($this->objects) as $key)
+            if (Runtime\Str\SB\Search::startsWith($prefix, $key))
+                return false;
+
+        foreach (Runtime\Arr\Access::keys($this->directories) as $key)
+            if (Runtime\Str\SB\Search::startsWith($prefix, $key))
+                return false;
+
+        return true;
+
+    }
+
+    /**
+     * ### Deletes storage directory descendants
+     *
+     * Removes all stored regular objects and directories located within the specified logical directory hierarchy.
+     *
+     * The specified directory itself is not removed.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Driver\Memory::key() To retrieve the internal storage directory key.
+     * @uses \FireHub\Runtime\Arr\Access::keys() To retrieve internal storage keys.
+     * @uses \FireHub\Runtime\Str\SB\Search::startsWith() To identify descendant storage keys.
+     *
+     * @param \FireHub\Foundation\IO\Storage\Path $directory <p>
+     * Logical directory whose descendants should be deleted.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the storage path is invalid.
+     * @throws \FireHub\Core\Exception\FireHubException If the condition is not met.
+     * @throws \FireHub\Core\Type\Exception\ValueObjectException If the exception is not a FireHubException.
+     *
+     * @return void
+     */
+    private function deleteDescendants (Path $directory):void {
+
+        $prefix = $this->key($directory).'/';
+
+        foreach (Runtime\Arr\Access::keys($this->objects) as $key)
+            if (Runtime\Str\SB\Search::startsWith($prefix, $key))
+                unset($this->objects[$key]);
+
+        foreach (Runtime\Arr\Access::keys($this->directories) as $key)
+            if (Runtime\Str\SB\Search::startsWith($prefix, $key))
+                unset($this->directories[$key]);
 
     }
 

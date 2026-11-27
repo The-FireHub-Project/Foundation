@@ -27,8 +27,9 @@ use FireHub\Foundation\IO\Stream\ {
 use FireHub\Core\Exception\FireHubException;
 use FireHub\Foundation\IO\Storage\Exception\ {
     DirectoryAlreadyExistsException, DirectoryCopyException, DirectoryCreationException, DirectoryDeletionException,
-    DirectoryNotEmptyException, DirectoryNotFoundException, InvalidDirectoryDestinationException,
-    InvalidObjectTypeException, ReservedPathException, SymbolicLinkNotAllowedException
+    DirectoryMoveException, DirectoryNotEmptyException, DirectoryNotFoundException,
+    InvalidDirectoryDestinationException, InvalidObjectTypeException, ReservedPathException,
+    SymbolicLinkNotAllowedException
 };
 use FireHub\Runtime;
 
@@ -377,6 +378,72 @@ final readonly class DirectoryOperator {
         $this->validateTree($source);
 
         $this->copyTree($source, $destination);
+
+    }
+
+    /**
+     * ### Moves a storage directory
+     *
+     * Moves the specified source directory and its descendant filesystem objects to a new destination.
+     *
+     * The destination parent directory must already exist. Moving an existing directory to itself has no effect.
+     *
+     * Moving a directory into one of its descendants is not permitted. Symbolic links, reserved temporary files, and
+     * unsupported filesystem object types prevent directory relocation.
+     *
+     * The operation uses native filesystem relocation rather than copying and deleting individual filesystem objects.
+     *
+     * <code>
+     * $operator->move(
+     *     new Path('documents/archive'),
+     *     new Path('backup/archive')
+     * );
+     * </code>
+     *
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Path::__construct() To normalize logical storage paths.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\DirectoryOperator::validateDestination() To validate the source
+     * and destination directory relationship.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\DirectoryOperator::validateTree() To validate the source
+     * directory tree before relocation.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\DirectoryOperator::moveDirectory() To relocate the physical
+     * directory.
+     *
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $source <p>
+     * Logical path of the source directory.
+     * </p>
+     * @param \FireHub\Core\Boundary\IO\Storage\Path $destination <p>
+     * Logical path of the destination directory.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return void
+     */
+    public function move (PathContract $source, PathContract $destination):void {
+
+        $source = $source instanceof Path
+            ? $source
+            : new Path($source->value());
+
+        $destination = $destination instanceof Path
+            ? $destination
+            : new Path($destination->value());
+
+        if (!$this->validateDestination($source, $destination))
+            return;
+
+        $this->validateTree($source);
+
+        $this->moveDirectory($source, $destination);
 
     }
 
@@ -777,6 +844,78 @@ final readonly class DirectoryOperator {
         } finally {
 
             Runtime\FileSystem\Metadata::clearCache(true, $physical);
+
+        }
+
+    }
+
+    /**
+     * ### Relocates a physical storage directory
+     *
+     * Relocates an existing physical directory and its descendant filesystem objects using native filesystem
+     * relocation.
+     *
+     * The source and destination paths are revalidated immediately before relocation.
+     *
+     * The operation does not explicitly modify filesystem permissions, ownership, or file contents.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Internal\DirectoryOperator::validateDestination() To revalidate the
+     * directory transfer destination.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::locateDirectory() To safely resolve the existing
+     * source directory.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\PathResolver::resolve() To safely resolve the destination
+     * directory path.
+     * @uses \FireHub\Runtime\FileSystem\File::rename() To relocate the physical directory.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To clear cached filesystem metadata.
+     *
+     * @param \FireHub\Foundation\IO\Storage\Path $source <p>
+     * Logical source directory path.
+     * </p>
+     * @param \FireHub\Foundation\IO\Storage\Path $destination <p>
+     * Logical destination directory path.
+     * </p>
+     *
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidPathException If the logical path is invalid.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\SymbolicLinkNotAllowedException If a path component is a
+     * symbolic link.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidObjectTypeException If an intermediate path component
+     * is not a directory.
+     * @throws \FireHub\Foundation\IO\Storage\Exception\PathOutsideRootException If the resolved path is outside the
+     * storage root directory.
+     * @throws \FireHub\Core\Exception\FireHubException If an existing filesystem path cannot be resolved.
+     *
+     * @return void
+     */
+    private function moveDirectory (Path $source, Path $destination):void {
+
+        if (!$this->validateDestination($source, $destination))
+            return;
+
+        $source_physical = $this->resolver->locateDirectory($source);
+        $destination_physical = $this->resolver->resolve($destination);
+
+        try {
+
+            Runtime\FileSystem\File::rename(
+                $source_physical,
+                $destination_physical
+            );
+
+        } catch (FireHubException $exception) {
+
+            throw new DirectoryMoveException(
+                context: [
+                    'source' => $source->value(),
+                    'destination' => $destination->value()
+                ],
+                previous: $exception
+            );
+
+        } finally {
+
+            Runtime\FileSystem\Metadata::clearCache(true, $source_physical);
+            Runtime\FileSystem\Metadata::clearCache(true, $destination_physical);
 
         }
 
