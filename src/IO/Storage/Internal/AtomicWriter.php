@@ -7,13 +7,16 @@
  * @copyright 2026-present The FireHub Project - All rights reserved
  * @license https://opensource.org/license/Apache-2-0 Apache License, Version 2.0
  *
- * @php-version >=8.3
+ * @php-version >=8.5
  * @package Foundation
  */
 
 namespace FireHub\Foundation\IO\Storage\Internal;
 
+use FireHub\Core\Meta\Enum\FileSystem\Permission;
+use FireHub\Core\Type\FileSystem\PermissionMode;
 use FireHub\Core\Foundation\Constant\Environment\Php\Paths;
+use FireHub\Foundation\IO\Storage\Permissions;
 use FireHub\Foundation\IO\Stream\File;
 use FireHub\Foundation\IO\Storage\Exception\WriteException;
 use FireHub\Runtime;
@@ -68,8 +71,11 @@ final readonly class AtomicWriter {
      * path.
      * @uses \FireHub\Foundation\IO\Storage\Internal\AtomicWriter::cleanup() To remove the temporary file after a
      * failed operation.
+     * @uses \FireHub\Foundation\IO\Storage\Internal\AtomicWriter::permissionMode() To determine the destination file
+     * permission mode.
      * @uses \FireHub\Foundation\IO\Stream\File::close() To close the temporary file stream.
      * @uses \FireHub\Runtime\FileSystem\File::rename() To replace the destination file.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::setPermissions() To set the temporary file permission mode.
      *
      * @param non-empty-string $destination <p>
      * Resolved physical destination path.
@@ -84,10 +90,15 @@ final readonly class AtomicWriter {
      *
      * @return void
      */
-    public static function write (string $destination, Closure $writer):void {
+    public static function write (string $destination, Closure $writer, Permissions $permissions = new Permissions):void {
 
         $temporary = null; $stream = null; $created = false;
         try {
+
+            $mode = self::permissionMode(
+                $destination,
+                $permissions
+            );
 
             $temporary = self::temporaryPath($destination);
 
@@ -98,11 +109,25 @@ final readonly class AtomicWriter {
 
             $created = true;
 
+            Runtime\FileSystem\Metadata::setPermissions(
+                $temporary,
+                new PermissionMode(
+                    Permission::READ_WRITE,
+                    Permission::NONE,
+                    Permission::NONE
+                )
+            );
+
             $writer($stream);
 
             $stream->close();
 
             $stream = null;
+
+            Runtime\FileSystem\Metadata::setPermissions(
+                $temporary,
+                $mode
+            );
 
             Runtime\FileSystem\File::rename(
                 $temporary,
@@ -166,6 +191,47 @@ final readonly class AtomicWriter {
             .self::PREFIX
             .Runtime\Encoding::hexEncode(Runtime\Random::bytes(16))
             .'.tmp';
+
+    }
+
+    /**
+     * ### Determines the destination permission mode
+     *
+     * Preserves the standard permission bits of an existing destination file when required by the storage permission
+     * policy.
+     *
+     * Otherwise, returns the configured default file permission mode.
+     * @since 1.0.0
+     *
+     * @uses \FireHub\Foundation\IO\Storage\Permissions::preserveExisting() To determine whether existing permissions
+     * should be preserved.
+     * @uses \FireHub\Foundation\IO\Storage\Permissions::file() To retrieve the default file permission mode.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::clearCache() To invalidate cached filesystem metadata.
+     * @uses \FireHub\Runtime\FileSystem\Metadata::getPermissions() To retrieve existing file permissions.
+     * @uses \FireHub\Runtime\FileSystem\File::isFile() To determine whether the destination file exists.
+     *
+     * @param non-empty-string $destination <p>
+     * Resolved physical destination path.
+     * </p>
+     * @param \FireHub\Foundation\IO\Storage\Permissions $permissions <p>
+     * Filesystem permission policy.
+     * </p>
+     *
+     * @throws \FireHub\Runtime\Exception\PathPermissionsException If failed to permissions for a path.
+     * @throws \FireHub\Runtime\Exception\InvalidNumberBaseException If failed to convert a number to a base.
+     *
+     * @return \FireHub\Core\Type\FileSystem\PermissionMode Destination file permission mode.
+     */
+    private static function permissionMode (string $destination, Permissions $permissions):PermissionMode {
+
+        Runtime\FileSystem\Metadata::clearCache(
+            true,
+            $destination
+        );
+
+        return $permissions->preserveExisting() && Runtime\FileSystem\File::isFile($destination)
+            ? Runtime\FileSystem\Metadata::getPermissions($destination)
+            : $permissions->file();
 
     }
 

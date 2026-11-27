@@ -20,6 +20,7 @@ use FireHub\Core\Boundary\IO\Storage\Driver\ {
 use FireHub\Core\Boundary\IO\Stream\ {
     Readable as ReadableStream, Writable as WritableStream
 };
+use FireHub\Foundation\IO\Storage\Permissions;
 use FireHub\Foundation\IO\Storage\Internal\ {
     AtomicWriter, PathResolver
 };
@@ -63,6 +64,9 @@ final readonly class Local implements Readable, Writable, Locatable {
      * @param non-empty-string $root <p>
      * Existing local filesystem directory used as the storage root.
      * </p>
+     * @param \FireHub\Foundation\IO\Storage\Permissions $permissions [optional] <p>
+     * Filesystem permission policy.
+     * </p>
      *
      * @throws \FireHub\Foundation\IO\Storage\Exception\InvalidRootDirectoryException If the root directory is invalid.
      * @throws \FireHub\Runtime\Exception\PathResolutionException If we couldn't get an absolute path for a path or
@@ -70,7 +74,10 @@ final readonly class Local implements Readable, Writable, Locatable {
      *
      * @return void
      */
-    public function __construct (string $root) {
+    public function __construct (
+        string $root,
+        private Permissions $permissions = new Permissions
+    ) {
 
         $this->resolver = new PathResolver($root);
 
@@ -204,7 +211,8 @@ final readonly class Local implements Readable, Writable, Locatable {
 
                 Writer::write($stream, $contents);
 
-            }
+            },
+            $this->permissions
         );
 
     }
@@ -361,7 +369,8 @@ final readonly class Local implements Readable, Writable, Locatable {
 
                 Copier::copy($stream, $destination);
 
-            }
+            },
+            $this->permissions
         );
 
     }
